@@ -184,7 +184,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
-        A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)])
+        A.j = t(cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)]))
         sigma.j = t(A.j) %*% sigma A.j
         sigma.j.chol = chol(sigma.j)
         sigma.j.inv = chol2inv(sigma.j.chol)
