@@ -167,7 +167,6 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
 
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
-
 V_logskew <- function(x,par,parallel=TRUE,ncores=2){
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
@@ -201,7 +200,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
         func_temp <- function(i){
             xi = x[,i]
             mu = rbind(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),b2)
-            val = pnorm(mu)^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n+1),upper=mu,sigma=sigma_circ)[1]
+            val = pnorm(mu)^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[1]
             return(val)
         }
         val = unlist(lapply(1:ncol(x),func_temp))
@@ -278,7 +277,7 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         scale.val = cbind(rbind(sigma.2.1.bar, b2),rbind(b2,1))
         phi = pnorm(b2)
         intensity.marginal = intensity_logskew(xi[idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),parallel=FALSE,log=FALSE)
-        val = intensity.marginal * phi^(-1) * mvtnorm::pmvnorm(lower=rep(-Inf,n-1),upper=mu.val,sigma=scale.val)[1] 
+        val = intensity.marginal * phi^(-1) * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[1] 
         return(val)
     }
     if(parallel){
