@@ -1,0 +1,7 @@
+56b30cb3b4d204c40c32e2d6bada590f *DESCRIPTION
+9da09e11f5786e87e7fdb929e6e0b9ca *NAMESPACE
+3fb4d53ed1d822de00e8e4679dd1047a *R/truncsimf.R
+c39aa80e6bfc4db36a7f2eaca6f410bf *man/tmvnsim.Rd
+d03d8f2d1ddbe3b20d490f41dbdb798a *src/Fortran2CWrapper.c
+3996e7c16bfb96fad295ee425815cb4d *src/Makevars
+19424d46f8fcd9648f45b8c841e04027 *src/tmvnghk.f90
