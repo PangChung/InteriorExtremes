@@ -3,12 +3,12 @@
 ###################################################################################
 
 # Simulate a truncated extremal-t max-stable process
-# @n : number of observations
+# @m : number of replicates
 # @par : parameters of the model
     # @par[[1]] : nu: degrees of freedom
     # @par[[2]] : sigma: correlation matrix
-simu_truncT <- function(m,par,parallel=TRUE,ncores){    
-    nu = par[[1]]
+simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){    
+    nu = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     phi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
     gamma_1 = log(gamma((nu+1)/2))
@@ -37,14 +37,18 @@ simu_truncT <- function(m,par,parallel=TRUE,ncores){
                 }else{
                     r = r + rexp(1)
                 }
-                
             }
         }
+        return(z)
     }
-    
-    
-    
-
+    if(parallel){
+        Z = mclapply(1:m,func,mc.cores=ncores)
+        
+    }else{
+       Z = lapply(1:m,func)
+    }
+    Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
+    return(Z)
 }
 
 # Example for full rank with strong dependence
@@ -66,10 +70,50 @@ t4 <- system.time(ans.5 <- tmvnsim(n=1,k=d, means=rep(0,d), sigma=Sigma, lower=r
 t4 <- system.time(ans.5 <- tmvtsim(n=1,k=d,df=10, means=rep(0,d), sigma=Sigma, lower=rep(0,d),upper=rep(Inf,d))[[1]])[3] ## certainly this is the best
 
 # Simulate a log-skew normal based max-stable process
-# @n : number of observations
+# @m : number of replicates
 # @par : parameters of the model
-simu_logskew <- function(n,par,parallel=TRUE,ncores){  
-    alpha = par[[1]]; sigma = par[[2]]
+    # @par[[1]] : nu: degrees of freedom
+    # @par[[2]] : sigma: correlation matrix
+simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){    
+    alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
+    omega = diag(sqrt(diag(sigma)))
+    omega_inv = diag(diag(omega)^(-1))
+    sigma_bar = omega_inv %*% sigma %*% omega_inv
+    chol.sigma = chol(sigma)
+    inv.sigma = chol2inv(chol.sigma)
+    logdet.sigma = sum(log(diag(chol.sigma)))*2
+    delta = sigma_bar %*% alpha/(1+t(alpha) %*% sigma_bar %*% alpha)
+    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
+    sum.inv.sigma = sum(omega_inv)
+    
+    
 
+    # Simulate the max-stable process
+    func <- function(idx){
+        r = rexp(1)
+        z = rep(0,n)
+        for(j in 1:n){
+            while(1/r > z[j]){
+                z_temp = rep(1,n)
+                z_temp[-j] = tmvtsim(n=1,k=d-1, means=sigma[-j,j], sigma=sigma.list[[j]], lower=rep(0,d),upper=rep(Inf,d),df=nu+1)[[1]]
+                z_temp[-j] = z_temp[-j]^nu * a[j] / a[-j]
+                z_temp = z_temp / r
+                if(any(! z_temp[0:j] < z[0:j])){
+                    z = pmax(z,z_temp)
+                }else{
+                    r = r + rexp(1)
+                }
+            }
+        }
+        return(z)
+    }
+    if(parallel){
+        Z = mclapply(1:m,func,mc.cores=ncores)
+        
+    }else{
+       Z = lapply(1:m,func)
+    }
+    Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
+    return(Z)
 }

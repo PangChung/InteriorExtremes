@@ -221,6 +221,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
+#TODO: equation 46, 50 and page 130 eqaution 5.28
 partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
@@ -230,49 +231,53 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     omega = diag(sqrt(diag(sigma)))
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
-    sigma.11 = sigma[idx,idx]
-    sigma.11.chol = chol(sigma.11)
-    sigma.11.inv = chol2inv(sigma.11.chol)
-    omega.11 = diag(sqrt(diag(sigma.11)))
-    sigma.11.bar.inv = omega.11 %*% sigma.11.inv %*% omega.11
-    omega.2.1.inv = diag(1/sqrt(diag(sigma.11)))
-    sigma.11.bar = omega.2.1.inv %*% sigma.11 %*% omega.2.1.inv
-    sigma.2.1 = sigma[-idx,-idx] - sigma[-idx,idx] %*% sigma.11.inv %*% sigma[idx,-idx]
-    omega.2.1.inv = diag(1/sqrt(diag(sigma.2.1)))
-    sigma.2.1.bar = omega.2.1.inv %*% sigma.2.1 %*% omega.2.1.inv
-    sigma.tilde.inv = sigma.inv %*% rep(1,n) %*% t(rep(1,n)) %*% sigma.inv/sum.sigma.inv - sigma.inv
-    sigma.tilde.chol = chol(sigma.tilde.inv)
-    sigma.tilde = chol2inv(sigma.tilde.chol)
+    ones <- rep(1,n)
+    
+    sigma.bar.11.inv = chol2inv(chol(sigma.bar[idx,idx]))
+    sigma.2.1.bar = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx]
+    sigma.tilde.inv = sigma.inv %*% ones %*% t(ones) %*% sigma.inv/sum.sigma.inv - sigma.inv
+    sigma.tilde.inv.chol = chol(sigma.tilde.inv)
+    sigma.tilde = chol2inv(chol(sigma.tilde.inv.chol))
     omega.tilde = diag(sqrt(diag(sigma.tilde)))
     omega.tilde.inv = diag(diag(omega.tilde)^(-1))
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
+    sigma.tilde.11 = sigma.tilde[idx,idx]
+    sigma.tilde.11.chol = chol(sigma.tilde.11)
+    sigma.tilde.11.inv = chol2inv(sigma.tilde.11.chol)
+    sigma.tilde.11.bar = sigma.tilde.bar[idx,idx]
+    sigma.tilde.11.bar.inv = chol2inv(chol(sigma.tilde.11.bar))
+    sigma.tilde.2.1.bar = sigma.tilde.bar[-idx,-idx] - sigma.tilde.bar[-idx,idx] %*% sigma.tilde.11.bar.inv %*% sigma.tilde.bar[idx,-idx]
+    sigma.tilde.2.1 = sigma.tilde[-idx,-idx] - sigma.tilde[-idx,idx] %*% sigma.tilde.11.inv %*% sigma.tilde[idx,-idx]
+    omega.tilde.2.1 = diag(sqrt(diag(sigma.tilde.2.1)))
+    omega.tilde.2.1.inv = diag(diag(omega.tilde.2.1)^(-1))
+    sigma.tilde.2.1.bar.true = omega.tilde.2.1.inv %*% sigma.tilde.2.1.bar %*% omega.tilde.2.1.inv
+    mu.tilde = sigma.tilde.inv %*% sigma.inv %*% ones /sum.sigma.inv/2
     
-    sigma.tilde.inv22 = sigma.tilde.inv[-idx,-idx]
-    sigma.tilde.inv22.inv = chol2inv(chol(sigma.tilde.inv22))
-    omega2.1 = diag(sqrt(diag(sigma.tilde.inv22)))
-    #omega2.1.inv = diag(diag(omega2.1)^(-1))
-
-    mu.tilde = sigma.tilde.inv %*% sigma.inv %*% rep(1,n)/sum.sigma.inv/2
-    
-    alpha.tilde =  t(alpha) %*% omega %*% (diag(rep(1,n)) + rep(1,n) %*% t(colSums(sigma.inv))) * (1+b)^(-1/2)
-
-
-    b = (t(alpha) %*% omega.inv %*% rep(1,n))^2/sum.sigma.inv)
-    delta.hat = (1+b)^(-1/2)*sqrt(b)
-    alpha.tilde.0 = delta.hat * sum.sigma.inv^(-1/2) + t(alpha.tilde) %*% mu.tilde
-    tau.tilde = alpha.tilde.0 * (1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2)
     delta = sigma_bar %*% alpha/(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    alpha2.1 = omega2.1 %*% omega.tilde.inv %*% alpha.tilde[-idx]
-    alpha1.2 = (1 + t(alpha.tilde[-idx]) %*% sigma.tilde.inv22 )
+
+    b = (t(alpha) %*% omega.inv %*% ones)^2/sum.sigma.inv)
+    alpha.tilde =  t(alpha) %*% omega %*% (diag(ones) + ones %*% t(colSums(sigma.inv))) * (1+b)^(-1/2)
+    delta.hat = (1+b)^(-1/2)*sqrt(b)
+
+    alpha.tilde.0 = delta.hat/sqrt(sum.sigma.inv) + t(alpha.tilde) %*% mu.tilde
+
+    tau.tilde = alpha.tilde.0 * (1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2)
+    
+    
+
+    alpha2.1 = omega.tilde.2.1 %*% omega.tilde.inv[-idx,-idx] %*% alpha.tilde[-idx]
+
+    alpha1.2 = (1 + t(alpha.tilde[-idx]) %*% sigma.tilde.2.1.bar %*% alpha.tilde[-idx])^(-1/2) * (alpha.tilde[idx] - sigma.tilde.11.bar.inv %*% 
+                sigma.tilde.bar[idx,-idx] %*% alpha.tilde[-idx] )
     alpha.k = (1 + t(alpha[-idx]) %*%  sigma.2.1.bar %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.11.bar.inv %*% sigma.bar[idx,-idx] %*% alpha[-idx] )
 
-    b1 = t(alpha2.1) %*% sigma.2.1.bar %*% alpha2.1
-    b2 = (1+ b1)^(-1/2) * sigma.2.1.bar %*% alpha2.1
+    b1 = t(alpha2.1) %*% sigma.tilde.2.1.bar.true %*% alpha2.1
+    b2 = (1+ b1)^(-1/2) * sigma.tilde.2.1.bar.true %*% alpha2.1
     func <- function(i){
         xi = x[,i]
-        tau2.1 = tau.tilde * (1 + t(alpha1.2) %*% sigma.tilde.bar[idx,idx] %*% alpha1.2 + alpha1.2 %*% omega.tilde.inv[idx,idx] %*% (log(xi[idx]) + a[idx] - mu.tilde[idx])
-        mu.2.1 = mu.tilde[-idx] - sigma.tilde.inv22.inv %*% sigma.tilde.inv[-idx,idx] %*% (log(x[idx]) + a[idx] - mu.tilde[idx])) 
+        tau2.1 = tau.tilde * (1 + t(alpha1.2) %*% sigma.tilde.11.bar %*% alpha1.2 + alpha1.2 %*% omega.tilde.inv[idx,idx] %*% (log(xi[idx]) + a[idx] - mu.tilde[idx])
+        mu.2.1 = mu.tilde[-idx] - sigma.tilde[-idx,idx] %*% sigma.tilde.11.inv %*% (log(x[idx]) + a[idx] - mu.tilde[idx])) 
         mu.val = rbind(omega2.1.inv %*% (log(xi[-idx]) + a[-idx] - mu.2.1),tau2.1 * (1+b1)^(-1/2))
         scale.val = cbind(rbind(sigma.2.1.bar, b2),rbind(b2,1))
         phi = pnorm(b2)
