@@ -78,16 +78,45 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
-    omega_inv = diag(diag(omega)^(-1))
-    sigma_bar = omega_inv %*% sigma %*% omega_inv
+    omega.inv = diag(diag(omega)^(-1))
+    sigma.bar = omega.inv %*% sigma %*% omega.inv
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
     delta = sigma_bar %*% alpha/(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    sum.inv.sigma = sum(omega_inv)
+    sum.inv.sigma = sum(inv.sigma)
+    ones = rep(1,n)
     
+    b = (t(alpha) %*% omega.inv %*% ones)
+    alpha.hat = t(alpha) %*% omega.inv * (1 + b^2)^(-1/2) %*% omega
+    alpha.0.hat = (1+b^2)^(-1/2) * b * (sum.inv.sigma)^(-1/2)
+    tau.hat = alpha.0.hat * (1 + t(alpha.hat) %*% sigma.bar %*% alpha.hat)^(-1/2)
+
+    func_paras <- function(idx){
+        sigma.11 = sigma[idx,idx]
+        mu.2.1 = sigma[-idx,idx]/sigma.11 * a[idx]
+        sigma.2.1 = sigma[-idx,-idx] - sigma[-idx,idx] %*% sigma[idx,-idx]/sigma.11
+        omega.2.1 = diag(sqrt(diag(sigma.2.1)))
+        omega.2.1.inv = diag(diag(omega.2.1)^(-1))
+        sigma.2.1.bar.true = omega.2.1.inv %*% sigma.2.1 %*% omega.2.1.inv
+        alpha.2.1 = omega.2.1 %*% omega.inv[-idx,-idx] %*% alpha.hat[-idx]
+        sigma.2.1.bar = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar[idx,-idx]
+        alpha.1.2 = (1 + alpha.hat[-idx] %*% sigma.2.1.bar %*% alpha.hat[-idx])^(-1/2) * (alpha.hat[idx] + sigma.bar[idx,-idx] %*% alpha.hat[-idx])
+        tau.2.1 = tau.hat * (1 + alpha.1.2^2)^(1/2) + alpha.1.2 * omega.inv[idx,idx]*a[idx]
+        
+        detla.2.1 = (1 + t(alpha.2.1) %*% sigma.2.1.bar.true %*% alpha.2.1)^(-1/2) * sigma.2.1.bar.true %*% alpha.2.1
+        Psi = sigma.2.1.bar.true - delta.2.1 %*% t(delta.2.1)
+        Psi.chol = chol(Psi)
+        return(list(psi.chol = Psi.chol,delta = delta.2.1,omega = omega.2.1,tau = tau.2.1,mu = mu.2.1))
+    }
     
+    if(parallel){
+        paras.list = mclapply(1:n,func_paras,mc.cores=ncores)
+        
+    }else{
+       paras.list = lapply(1:n,func_paras)
+    }
 
     # Simulate the max-stable process
     func <- function(idx){
@@ -96,8 +125,12 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
         for(j in 1:n){
             while(1/r > z[j]){
                 z_temp = rep(1,n)
-                z_temp[-j] = tmvtsim(n=1,k=d-1, means=sigma[-j,j], sigma=sigma.list[[j]], lower=rep(0,d),upper=rep(Inf,d),df=nu+1)[[1]]
-                z_temp[-j] = z_temp[-j]^nu * a[j] / a[-j]
+                u0 = rnorm(1)
+                while(u0 <= paras.list[[idx]]$tau){
+                    u0 = rnorm(1)
+                }
+                u1 = paras.list[[idx]]$omega %*% (paras.list[[idx]]$psi.chol %*% rnorm(n-1) + paras.list[[idx]]$delta * u0) + paras.list[[idx]]$mu
+                z_temp[-j] = exp(u1-a[-idx])
                 z_temp = z_temp / r
                 if(any(! z_temp[0:j] < z[0:j])){
                     z = pmax(z,z_temp)
@@ -108,6 +141,7 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
         }
         return(z)
     }
+
     if(parallel){
         Z = mclapply(1:m,func,mc.cores=ncores)
         
@@ -117,3 +151,6 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
     Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
     return(Z)
 }
+
+
+
