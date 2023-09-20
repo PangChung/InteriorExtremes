@@ -141,7 +141,7 @@ tmvtsim <- function(nsamp, k, lower=rep(-Inf,k), upper=rep(Inf,k), imod=rep(FALS
 	#if(is.loaded("tmvnlib.so")) dyn.unload("tmvnlib.so")
 	xx <- matrix(ret$X, ncol=k, byrow=TRUE)
 	wts <- ret$W
-    samp = apply(xx[,ord],1,function(x){x/denom  + means[ord]},simplify = TRUE)
+    samp = apply(xx[,ord,drop=F],1,function(x){x/denom  + means[ord]},simplify = TRUE)
 	if(any(is.na(xx)) || any(is.nan(xx)) || any(is.na(wts)) || any(is.nan(wts))) stop("NA/NaN in wts !!")  
 	return(list(samp=samp, wts=wts))	
 }
