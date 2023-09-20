@@ -126,11 +126,11 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
             while(1/r > z[j]){
                 z_temp = rep(1,n)
                 u0 = rnorm(1)
-                while(u0 <= paras.list[[idx]]$tau){
+                while(u0 <= paras.list[[j]]$tau){
                     u0 = rnorm(1)
                 }
-                u1 = paras.list[[idx]]$omega %*% (paras.list[[idx]]$psi.chol %*% rnorm(n-1) + paras.list[[idx]]$delta * u0) + paras.list[[idx]]$mu
-                z_temp[-j] = exp(u1-a[-idx])
+                u1 = paras.list[[j]]$omega %*% (paras.list[[j]]$psi.chol %*% rnorm(n-1) + paras.list[[j]]$delta * u0) + paras.list[[j]]$mu
+                z_temp[-j] = exp(u1-a[-j])
                 z_temp = z_temp / r
                 if(any(! z_temp[0:j] < z[0:j])){
                     z = pmax(z,z_temp)
@@ -151,6 +151,8 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
     Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
     return(Z)
 }
+
+
 
 
 
