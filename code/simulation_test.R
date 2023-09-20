@@ -16,3 +16,15 @@ hist(Z[,1],50,prob=TRUE)
 x = seq(0,1000,1)
 y = dgev(x,loc=0,scale=1,shape=1)
 lines(x,y,col="red",lwd=2)
+
+
+# Simulate a log-skew normal based max-stable process
+alpha = rep(0.5,d)
+par <- list(alpha=alpha,sigma=Sigma)
+Z = simu_logskew(m=1000,par=par,parallel=TRUE,ncores=10)
+hist(Z[,1],50,prob=TRUE)
+x = seq(0,1000,1)
+y = dgev(x,loc=0,scale=1,shape=1)
+lines(x,y,col="red",lwd=2)
+
+
