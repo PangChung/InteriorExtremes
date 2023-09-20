@@ -65,29 +65,29 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    delta = sigma_bar %*% alpha/(1+t(alpha) %*% sigma_bar %*% alpha)
+    delta = c(sigma.bar %*% alpha)/c(1+ t(alpha) %*% sigma.bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(inv.sigma)
     ones = rep(1,n)
     
-    b = (t(alpha) %*% omega.inv %*% ones)
-    alpha.hat = t(alpha) %*% omega.inv * (1 + b^2)^(-1/2) %*% omega
+    b = c(t(alpha) %*% omega.inv %*% ones)
+    alpha.hat = c(t(alpha) %*% omega.inv %*% omega * (1 + b^2)^(-1/2))
     alpha.0.hat = (1+b^2)^(-1/2) * b * (sum.inv.sigma)^(-1/2)
     tau.hat = alpha.0.hat * (1 + t(alpha.hat) %*% sigma.bar %*% alpha.hat)^(-1/2)
 
     func_paras <- function(idx){
         sigma.11 = sigma[idx,idx]
         mu.2.1 = sigma[-idx,idx]/sigma.11 * a[idx]
-        sigma.2.1 = sigma[-idx,-idx] - sigma[-idx,idx] %*% sigma[idx,-idx]/sigma.11
+        sigma.2.1 = sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% sigma[idx,-idx,drop=F]/sigma.11
         omega.2.1 = diag(sqrt(diag(sigma.2.1)))
         omega.2.1.inv = diag(diag(omega.2.1)^(-1))
         sigma.2.1.bar.true = omega.2.1.inv %*% sigma.2.1 %*% omega.2.1.inv
         alpha.2.1 = omega.2.1 %*% omega.inv[-idx,-idx] %*% alpha.hat[-idx]
-        sigma.2.1.bar = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar[idx,-idx]
-        alpha.1.2 = (1 + alpha.hat[-idx] %*% sigma.2.1.bar %*% alpha.hat[-idx])^(-1/2) * (alpha.hat[idx] + sigma.bar[idx,-idx] %*% alpha.hat[-idx])
-        tau.2.1 = tau.hat * (1 + alpha.1.2^2)^(1/2) + alpha.1.2 * omega.inv[idx,idx]*a[idx]
+        sigma.2.1.bar = sigma.bar[-idx,-idx,drop=F] - sigma.bar[-idx,idx,drop=F] %*% sigma.bar[idx,-idx,drop=F]
+        alpha.1.2 = c((1 + alpha.hat[-idx] %*% sigma.2.1.bar %*% alpha.hat[-idx])^(-1/2) * (alpha.hat[idx] + sigma.bar[idx,-idx] %*% alpha.hat[-idx]))
+        tau.2.1 = c(tau.hat * (1 + alpha.1.2^2)^(1/2) + alpha.1.2 * omega.inv[idx,idx]*a[idx])
         
-        detla.2.1 = (1 + t(alpha.2.1) %*% sigma.2.1.bar.true %*% alpha.2.1)^(-1/2) * sigma.2.1.bar.true %*% alpha.2.1
+        delta.2.1 = c(c(1 + t(alpha.2.1) %*% sigma.2.1.bar.true %*% alpha.2.1)^(-1/2) * sigma.2.1.bar.true %*% alpha.2.1)
         Psi = sigma.2.1.bar.true - delta.2.1 %*% t(delta.2.1)
         Psi.chol = chol(Psi)
         return(list(psi.chol = Psi.chol,delta = delta.2.1,omega = omega.2.1,tau = tau.2.1,mu = mu.2.1))
