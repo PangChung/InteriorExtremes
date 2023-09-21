@@ -17,7 +17,7 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
         val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.11_j/(nu+1),df=nu+1)[1]
         return(list(log(val),sigma.11_j))
     }
-    if(parallel) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1)))
+    if(parallel) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])
     a_j = T_j_val-logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
@@ -25,14 +25,19 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
     # Simulate the max-stable process
     func <- function(idx){
         r = rexp(1)
-        z = rep(0,n)
-        for(j in 1:n){
+        z = rep(1,n)
+        z[-1] = tmvtsim(n=1,k=n-1, means=sigma[-1,1], sigma=sigma.list[[1]]/(nu+1), lower=rep(0,n-1),upper=rep(Inf,n-1),df=nu+1)[[1]]
+        z[-1] = z[-1]^nu * a[1] / a[-1]
+        z = z/r
+        
+        for(j in 2:n){
+            r = rexp(1)
             while(1/r > z[j]){
                 z_temp = rep(1,n)
                 z_temp[-j] = tmvtsim(n=1,k=n-1, means=sigma[-j,j], sigma=sigma.list[[j]]/(nu+1), lower=rep(0,n-1),upper=rep(Inf,n-1),df=nu+1)[[1]]
                 z_temp[-j] = z_temp[-j]^nu * a[j] / a[-j]
                 z_temp = z_temp / r
-                if(any(! z_temp[0:j] < z[0:j])){
+                if(!any( z_temp[0:j] > z[0:j])){
                     z = pmax(z,z_temp)
                 }
                 r = r + rexp(1)
@@ -97,8 +102,16 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
     # Simulate the max-stable process
     func <- function(idx){
         r = rexp(1)
-        z = rep(0,n)
-        for(j in 1:n){
+        z = rep(1,n)
+        u0 = rnorm(1)
+        while(u0 <= paras.list[[1]]$tau){
+            u0 = rnorm(1)
+        }
+        u1 = paras.list[[1]]$omega %*% (paras.list[[1]]$psi.chol %*% rnorm(n-1) + paras.list[[1]]$delta * u0) + paras.list[[1]]$mu
+        z[-1] = exp(u1-a[-1])
+        z = z / r
+        for(j in 2:n){
+            r = rexp(1)
             while(1/r > z[j]){
                 z_temp = rep(1,n)
                 u0 = rnorm(1)

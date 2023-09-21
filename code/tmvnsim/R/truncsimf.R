@@ -124,25 +124,27 @@ tmvtsim <- function(nsamp, k, lower=rep(-Inf,k), upper=rep(Inf,k), imod=rep(FALS
 	#if(!is.loaded("tmvnlib.so")) dyn.load("tmvnlib.so")
 	xx <- matrix(0, nsamp, k)
 	wts <- rep(0, nsamp)
-    denom <- sqrt(rchisq(1, df=df)/df)
-	ret <- .Fortran("rtmvnghk",
-                              n      = as.integer(nsamp),
-                              d      = as.integer(k),
-                              means  = as.double(rep(0,k)),
-                              sroot  = as.double(sroot),
-                              a      = as.double((lower-means)*denom), 
-                              b      = as.double((upper-means)*denom),
-                              imod   = as.integer(imod),
-                              elen   = as.integer(sapply(list.e, length)),
-                              epos   = as.integer(unlist(list.e)),
-                              X      = as.double(xx),
-                              W = as.double(wts),
-                              NAOK=TRUE, PACKAGE="tmvnsim")
-	#if(is.loaded("tmvnlib.so")) dyn.unload("tmvnlib.so")
-	xx <- matrix(ret$X, ncol=k, byrow=TRUE)
-	wts <- ret$W
-    samp = apply(xx[,ord,drop=F],1,function(x){x/denom  + means[ord]},simplify = TRUE)
-	if(any(is.na(xx)) || any(is.nan(xx)) || any(is.na(wts)) || any(is.nan(wts))) stop("NA/NaN in wts !!")  
-	return(list(samp=samp, wts=wts))	
+    func <- function(idx){
+        denom <- sqrt(rchisq(1, df=df)/df)
+        ret <- .Fortran("rtmvnghk",
+                                    n      = 1,
+                                    d      = as.integer(k),
+                                    means  = as.double(rep(0,k)),
+                                    sroot  = as.double(sroot),
+                                    a      = as.double((lower-means)*denom), 
+                                    b      = as.double((upper-means)*denom),
+                                    imod   = as.integer(imod),
+                                    elen   = as.integer(sapply(list.e, length)),
+                                    epos   = as.integer(unlist(list.e)),
+                                    X      = as.double(xx),
+                                    W = as.double(wts),
+                                    NAOK=TRUE, PACKAGE="tmvnsim")
+        #if(is.loaded("tmvnlib.so")) dyn.unload("tmvnlib.so")
+        xx <- ret$X[ord]/denom  + means[ord]
+        wts <- ret$W
+        return(xx[ord])
+    }
+    samp = matrix(unlist(lapply(1:nsamp,func)),nrow=nsamp,byrow=TRUE)
+	return(samp)	
 }
 
