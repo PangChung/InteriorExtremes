@@ -29,7 +29,6 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
         z[-1] = tmvtsim(n=1,k=n-1, means=sigma[-1,1], sigma=sigma.list[[1]]/(nu+1), lower=rep(0,n-1),upper=rep(Inf,n-1),df=nu+1)[[1]]
         z[-1] = z[-1]^nu * a[1] / a[-1]
         z = z/r
-        
         for(j in 2:n){
             r = rexp(1)
             while(1/r > z[j]){
@@ -37,7 +36,7 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
                 z_temp[-j] = tmvtsim(n=1,k=n-1, means=sigma[-j,j], sigma=sigma.list[[j]]/(nu+1), lower=rep(0,n-1),upper=rep(Inf,n-1),df=nu+1)[[1]]
                 z_temp[-j] = z_temp[-j]^nu * a[j] / a[-j]
                 z_temp = z_temp / r
-                if(!any( z_temp[0:j] > z[0:j])){
+                if(!any( z_temp[0:(j-1)] > z[0:(j-1)])){
                     z = pmax(z,z_temp)
                 }
                 r = r + rexp(1)
@@ -121,7 +120,7 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
                 u1 = paras.list[[j]]$omega %*% (paras.list[[j]]$psi.chol %*% rnorm(n-1) + paras.list[[j]]$delta * u0) + paras.list[[j]]$mu
                 z_temp[-j] = exp(u1-a[-j])
                 z_temp = z_temp / r
-                if(any(! z_temp[0:j] < z[0:j])){
+                if(!any(z_temp[0:(j-1)] > z[0:(j-1)])){
                     z = pmax(z,z_temp)
                 }
                 r = r + rexp(1)
@@ -129,13 +128,7 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
         }
         return(z)
     }
-
-    if(parallel){
-        Z = mclapply(1:m,func,mc.cores=ncores)
-        
-    }else{
-       Z = lapply(1:m,func)
-    }
+    if(parallel)  Z = mclapply(1:m,func,mc.cores=ncores) else Z = lapply(1:m,func)
     Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
     return(Z)
 }
