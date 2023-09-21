@@ -14,10 +14,10 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
     gamma_1 = log(gamma((nu+1)/2))
     a_fun <- function(j,upper){
         sigma.11_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
-        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j]*sqrt(nu+1),sigma=sigma.11_j,df=nu+1)[1]
+        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.11_j/(nu+1),df=nu+1)[1]
         return(list(log(val),sigma.11_j))
     }
-    ifelse(parallel,T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores),T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1)))
+    if(parallel) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1)))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])
     a_j = T_j_val-logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
@@ -34,19 +34,13 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
                 z_temp = z_temp / r
                 if(any(! z_temp[0:j] < z[0:j])){
                     z = pmax(z,z_temp)
-                }else{
-                    r = r + rexp(1)
                 }
+                r = r + rexp(1)
             }
         }
         return(z)
     }
-    if(parallel){
-        Z = mclapply(1:m,func,mc.cores=ncores)
-        
-    }else{
-       Z = lapply(1:m,func)
-    }
+    if(parallel) Z = mclapply(1:m,func,mc.cores=ncores) else Z = lapply(1:m,func)
     Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
     return(Z)
 }
@@ -116,9 +110,8 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
                 z_temp = z_temp / r
                 if(any(! z_temp[0:j] < z[0:j])){
                     z = pmax(z,z_temp)
-                }else{
-                    r = r + rexp(1)
                 }
+                r = r + rexp(1)
             }
         }
         return(z)

@@ -11,20 +11,15 @@ nu = 10
 par <- list(nu=nu,sigma=Sigma)
 
 # Simulate a truncated extremal-t max-stable process
-Z = simu_truncT(m=1000,par=par,parallel=TRUE,ncores=10)
-hist(Z[,1],50,prob=TRUE)
-x = seq(0,1000,1)
-y = dgev(x,loc=0,scale=1,shape=1)
-lines(x,y,col="red",lwd=2)
+Z = simu_truncT(m=100000,par=par,parallel=TRUE,ncores=10)
+hist(pgev(Z[,2],loc=0,scale=1,shape=1),50,prob=TRUE)
 
 
 # Simulate a log-skew normal based max-stable process
 alpha = rep(0.5,d)
 par <- list(alpha=alpha,sigma=Sigma)
-Z = simu_logskew(m=1000,par=par,parallel=TRUE,ncores=10)
-hist(Z[,1],50,prob=TRUE)
-x = seq(0,1000,1)
-y = dgev(x,loc=0,scale=1,shape=1)
-lines(x,y,col="red",lwd=2)
+Z = simu_logskew(m=100000,par=par,parallel=TRUE,ncores=10)
+hist(pgev(Z[,4],loc=0,scale=1,shape=1),50,prob=TRUE)
+
 
 

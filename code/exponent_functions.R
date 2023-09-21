@@ -47,7 +47,7 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
     gamma_1 = gamma((nu+1)/2)
 
     sigma_fun <- function(j){
-        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) * (nu + 1)
+        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
     }
 
     a_fun <- function(j,upper,sigma_j){
