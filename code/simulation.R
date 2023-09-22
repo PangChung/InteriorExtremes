@@ -13,33 +13,40 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
     gamma_1 = log(gamma((nu+1)/2))
     a_fun <- function(j,upper){
-        sigma.11_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
-        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.11_j/(nu+1),df=nu+1)[1]
-        return(list(log(val),sigma.11_j))
+        sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
+        #sigma.j = (sigma - sigma[, j,drop=F] %*% sigma[j,,drop=F]) 
+        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[1]
+        return(list(log(val),sigma.1.j))
     }
     if(parallel) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])
     a_j = T_j_val-logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
     a = exp(a_j)
+    message("normalizing constants computed")
     # Simulate the max-stable process
     func <- function(idx){
         r = rexp(1)
-        z = rep(1,n)
-        z[-1] = tmvtsim(n=1,k=n-1, means=sigma[-1,1], sigma=sigma.list[[1]]/(nu+1), lower=rep(0,n-1),upper=rep(Inf,n-1),df=nu+1)[[1]]
-        z[-1] = z[-1]^nu * a[1] / a[-1]
-        z = z/r
+        r.hat = 1/r
+        z = rep(NA,n)
+        z[1] = 1
+        k = nrow(sigma.list[[1]])
+        z[-1] = tmvtsim(n=1,k=k, means=sigma[,1], sigma=sigma.list[[1]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
+        z[-1] = z[-1]^nu * a[1]/a[-1]
+        z = z * r.hat
         for(j in 2:n){
             r = rexp(1)
-            while(1/r > z[j]){
-                z_temp = rep(1,n)
-                z_temp[-j] = tmvtsim(n=1,k=n-1, means=sigma[-j,j], sigma=sigma.list[[j]]/(nu+1), lower=rep(0,n-1),upper=rep(Inf,n-1),df=nu+1)[[1]]
-                z_temp[-j] = z_temp[-j]^nu * a[j] / a[-j]
-                z_temp = z_temp / r
+            r.hat = 1/r
+            while(r.hat > z[j]){
+                z_temp = rep(NA,n);z_temp[j] = 1
+                z_temp[-j] = tmvtsim(n=1,k=k, means=sigma[,j], sigma=sigma.list[[j]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
+                z_temp[-j] = z_temp[-j]^nu * a[j]/a[-j]
+                z_temp = z_temp * r.hat
                 if(!any( z_temp[1:(j-1)] > z[1:(j-1)])){
                     z = pmax(z,z_temp)
                 }
                 r = r + rexp(1)
+                r.hat = 1/r
             }
         }
         return(z)
@@ -106,6 +113,7 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
         while(u0 <= paras.list[[1]]$tau){
             u0 = rnorm(1)
         }
+        r.hat = 1/r
         u1 = paras.list[[1]]$omega %*% (paras.list[[1]]$psi.chol %*% rnorm(n-1) + paras.list[[1]]$delta * u0) + paras.list[[1]]$mu
         z[-1] = exp(u1-a[-1])
         z = z / r
