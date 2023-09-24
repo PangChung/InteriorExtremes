@@ -7,7 +7,7 @@
 # @par : parameters of the model
     # @par[[1]] : nu: degrees of freedom
     # @par[[2]] : sigma: correlation matrix
-simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){    
+simu_truncT <- function(m,par,ncores=NULL){    
     nu = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
@@ -25,7 +25,7 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
     a = exp(a_j)
     message("normalizing constants computed")
     # Simulate the max-stable process
-    func <- function(idx){
+    simu <- function(idx){
         r = rexp(1)
         r.hat = 1/r
         z = rep(NA,n)
@@ -51,7 +51,7 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
         }
         return(z)
     }
-    if(parallel) Z = mclapply(1:m,func,mc.cores=ncores) else Z = lapply(1:m,func)
+    if(ncores!=NULL) Z = mclapply(1:m,simu,mc.cores=ncores) else Z = lapply(1:m,simu)
     Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
     return(Z)
 }
@@ -64,7 +64,7 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
 # @par : parameters of the model
     # @par[[1]] : alpha: slant parameter of the skew normal distribution
     # @par[[2]] : sigma: correlation matrix
-simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){  
+simu_logskew <- function(m,par,ncores=NULL){  
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
@@ -80,7 +80,7 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
     sigma.star.chol = chol(sigma.star)
     message("normalizing constants computed")
     # Simulate the max-stable process
-    func <- function(idx){
+    simu <- function(idx){
         r <- rexp(1)
         r.hat <- 1/r
         x <- t(sigma.star.chol) %*% rnorm(n+1)
@@ -106,7 +106,7 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
         }
         return(z)
     }
-    if(parallel)  Z = mclapply(1:m,func,mc.cores=ncores) else Z = lapply(1:m,func)
+    if(ncores!=NULL)  Z = mclapply(1:m,simu,mc.cores=ncores) else Z = lapply(1:m,simu)
     Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
     return(Z)
 }
