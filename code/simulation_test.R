@@ -1,14 +1,16 @@
 library(tmvnsim)
 library(parallel)
 library(evd)
+library(sn)
 source("code/simulation.R")
 ### testing the simulator ###
-d <- 10
+d <- 5
 coord = as.matrix(expand.grid(1:d,1:d)/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
 corr <- function(x,r=0.5,v=1) exp(- (sum(x^2)/r)^v)                          
 cov.mat <- matrix(apply(diff.vector, 1, corr), ncol=nrow(coord)) #+ diag(1e-6,nrow(coord))       
+chol(cov.mat)
 nu = 10
 par1 <- list(nu=nu,sigma=cov.mat)
 
@@ -18,9 +20,9 @@ hist(exp(-1/Z[,1]),50,prob=TRUE)
 hist(Z[,1],500,prob=TRUE)
 
 # Simulate a log-skew normal based max-stable process
-alpha = rep(0.5,d)
-par2 <- list(alpha=alpha,sigma=Sigma)
-Z = simu_logskew(m=10000,par=par2,parallel=TRUE,ncores=10)
-hist(pgev(Z[,1],loc=0,scale=1,shape=1),50,prob=TRUE)
-
+alpha = rep(0,nrow(coord))
+par2 <- list(alpha=alpha,sigma=cov.mat)
+system.time(Z <- simu_logskew(m=10000,par=par2,parallel=TRUE,ncores=10))
+hist(exp(-1/Z[,1]),50,prob=TRUE)
+hist(Z[,4],500,prob=TRUE)
 

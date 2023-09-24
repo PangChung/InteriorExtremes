@@ -56,82 +56,52 @@ simu_truncT <- function(m,par,parallel=FALSE,ncores=NULL){
     return(Z)
 }
 
+
+
+
 # Simulate a log-skew normal based max-stable process
 # @m : number of replicates
 # @par : parameters of the model
-    # @par[[1]] : nu: degrees of freedom
+    # @par[[1]] : alpha: slant parameter of the skew normal distribution
     # @par[[2]] : sigma: correlation matrix
-simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){    
+simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){  
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
-    chol.sigma = chol(sigma)
-    inv.sigma = chol2inv(chol.sigma)
-    logdet.sigma = sum(log(diag(chol.sigma)))*2
+    sigma.bar.chol = chol(sigma.bar)
     delta = c(sigma.bar %*% alpha)/c(1+ t(alpha) %*% sigma.bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    sum.inv.sigma = sum(inv.sigma)
-    ones = rep(1,n)
-    
-    b = c(t(alpha) %*% omega.inv %*% ones)
-    alpha.hat = c(t(alpha) %*% omega.inv %*% omega * (1 + b^2)^(-1/2))
-    alpha.0.hat = (1+b^2)^(-1/2) * b * (sum.inv.sigma)^(-1/2)
-    tau.hat = alpha.0.hat * (1 + t(alpha.hat) %*% sigma.bar %*% alpha.hat)^(-1/2)
 
-    func_paras <- function(idx){
-        sigma.11 = sigma[idx,idx]
-        mu.2.1 = sigma[-idx,idx]/sigma.11 * a[idx]
-        sigma.2.1 = sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% sigma[idx,-idx,drop=F]/sigma.11
-        omega.2.1 = diag(sqrt(diag(sigma.2.1)))
-        omega.2.1.inv = diag(diag(omega.2.1)^(-1))
-        sigma.2.1.bar.true = omega.2.1.inv %*% sigma.2.1 %*% omega.2.1.inv
-        alpha.2.1 = omega.2.1 %*% omega.inv[-idx,-idx] %*% alpha.hat[-idx]
-        sigma.2.1.bar = sigma.bar[-idx,-idx,drop=F] - sigma.bar[-idx,idx,drop=F] %*% sigma.bar[idx,-idx,drop=F]
-        alpha.1.2 = c((1 + alpha.hat[-idx] %*% sigma.2.1.bar %*% alpha.hat[-idx])^(-1/2) * (alpha.hat[idx] + sigma.bar[idx,-idx] %*% alpha.hat[-idx]))
-        tau.2.1 = c(tau.hat * (1 + alpha.1.2^2)^(1/2) + alpha.1.2 * omega.inv[idx,idx]*a[idx])
-        
-        delta.2.1 = c(c(1 + t(alpha.2.1) %*% sigma.2.1.bar.true %*% alpha.2.1)^(-1/2) * sigma.2.1.bar.true %*% alpha.2.1)
-        Psi = sigma.2.1.bar.true - delta.2.1 %*% t(delta.2.1)
-        Psi.chol = chol(Psi)
-        return(list(psi.chol = Psi.chol,delta = delta.2.1,omega = omega.2.1,tau = tau.2.1,mu = mu.2.1))
-    }
-    
-    if(parallel){
-        paras.list = mclapply(1:n,func_paras,mc.cores=ncores)
-        
-    }else{
-       paras.list = lapply(1:n,func_paras)
-    }
+    tau.new = delta * diag(omega)
 
+    sigma.star = rbind(cbind(sigma.bar, delta), c(delta, 1))
+    sigma.star.chol = chol(sigma.star)
+    
     # Simulate the max-stable process
     func <- function(idx){
-        r = rexp(1)
-        z = rep(1,n)
-        u0 = rnorm(1)
-        while(u0 <= paras.list[[1]]$tau){
-            u0 = rnorm(1)
-        }
-        r.hat = 1/r
-        u1 = paras.list[[1]]$omega %*% (paras.list[[1]]$psi.chol %*% rnorm(n-1) + paras.list[[1]]$delta * u0) + paras.list[[1]]$mu
-        z[-1] = exp(u1-a[-1])
-        z = z / r
+        r <- rexp(1)
+        r.hat <- 1/r
+        x <- t(sigma.star.chol) %*% rnorm(n+1)
+        while(x[n+1] + tau.new[1] < 0){ x <- t(sigma.star.chol) %*% rnorm(n+1)}
+        x0 = omega %*% x[1:n] + sigma[,1]
+        z <- exp(x0-a);z <- z/z[1]
+        z <- z * r.hat
         for(j in 2:n){
-            r = rexp(1)
-            while(1/r > z[j]){
-                z_temp = rep(1,n)
-                u0 = rnorm(1)
-                while(u0 <= paras.list[[j]]$tau){
-                    u0 = rnorm(1)
-                }
-                u1 = paras.list[[j]]$omega %*% (paras.list[[j]]$psi.chol %*% rnorm(n-1) + paras.list[[j]]$delta * u0) + paras.list[[j]]$mu
-                z_temp[-j] = exp(u1-a[-j])
-                z_temp = z_temp / r
+            r <- rexp(1)
+            r.hat <- 1/r
+            while(r.hat > z[j]){
+                x <- t(sigma.star.chol) %*% rnorm(n+1)
+                while(x[n+1] + tau.new[j] < 0){ x <- t(sigma.star.chol) %*% rnorm(n+1)}
+                x0 <- omega %*% x[1:n] + sigma[,j]
+                z_temp <- exp(x0-a);z_temp <- z_temp/z_temp[j]
+                z_temp <- z_temp * r.hat
                 if(!any(z_temp[1:(j-1)] > z[1:(j-1)])){
-                    z = pmax(z,z_temp)
+                    z <- pmax(z,z_temp)
                 }
-                r = r + rexp(1)
+                r <- r + rexp(1)
+                r.hat <- 1/r
             }
         }
         return(z)
