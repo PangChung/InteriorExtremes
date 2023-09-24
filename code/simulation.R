@@ -78,7 +78,7 @@ simu_logskew <- function(m,par,parallel=FALSE,ncores=NULL){
 
     sigma.star = rbind(cbind(sigma.bar, delta), c(delta, 1))
     sigma.star.chol = chol(sigma.star)
-    
+    message("normalizing constants computed")
     # Simulate the max-stable process
     func <- function(idx){
         r <- rexp(1)
