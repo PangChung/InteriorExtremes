@@ -15,11 +15,11 @@ par1 <- list(nu=nu,sigma=cov.mat)
 
 # Simulate a truncated extremal-t max-stable process
 system.time(Z <- simu_truncT(m=1000,par=par1,ncores=10))
-hist(pgev(Z[,1],1,1,1),50,prob=TRUE)
+#hist(pgev(Z[,1],1,1,1),50,prob=TRUE)
 
 # Simulate a log-skew normal based max-stable process
 alpha = rep(0,nrow(coord))
 par2 <- list(alpha=alpha,sigma=cov.mat)
-system.time(Z <- simu_logskew(m=1000,par=par2,ncores=2))
-hist(pgev(Z[,1],1,1,1),50,prob=TRUE)
+system.time(Z <- simu_logskew(m=1000,par=par2,ncores=10))
+#hist(pgev(Z[,1],1,1,1),50,prob=TRUE)
 

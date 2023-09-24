@@ -107,7 +107,7 @@ simu_logskew <- function(m,par,ncores=NULL){
         return(z)
     }
 
-    if(!is.null(ncores)) Z = mclapply(1:m,simu,mc.cores=ncores) else Z = lapply(1:m,simu)
+    if(!is.null(ncores)){Z = mclapply(1:m,simu,mc.cores=ncores)} else{Z = lapply(1:m,simu)}
     Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
     return(Z)
 }
