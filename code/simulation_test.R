@@ -20,6 +20,6 @@ hist(pgev(Z[,1],1,1,1),50,prob=TRUE)
 # Simulate a log-skew normal based max-stable process
 alpha = rep(0,nrow(coord))
 par2 <- list(alpha=alpha,sigma=cov.mat)
-system.time(Z <- simu_logskew(m=1000,par=par2,parallel=T,ncores=2))
+system.time(Z <- simu_logskew(m=1000,par=par2,ncores=2))
 hist(pgev(Z[,1],1,1,1),50,prob=TRUE)
 

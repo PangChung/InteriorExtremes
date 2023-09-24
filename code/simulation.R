@@ -83,18 +83,18 @@ simu_logskew <- function(m,par,ncores=NULL){
     simu <- function(idx){
         r <- rexp(1)
         r.hat <- 1/r
-        x <- t(sigma.star.chol) %*% rnorm(n+1)
-        while(x[n+1] + tau.new[1] < 0){ x <- t(sigma.star.chol) %*% rnorm(n+1)}
-        x0 = omega %*% x[1:n] + sigma[,1]
+        x <- c(t(sigma.star.chol) %*% rnorm(n+1))
+        while(x[n+1] + tau.new[1] < 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+        x0 = c(omega %*% x[1:n] + sigma[,1])
         z <- exp(x0-a);z <- z/z[1]
         z <- z * r.hat
         for(j in 2:n){
             r <- rexp(1)
             r.hat <- 1/r
             while(r.hat > z[j]){
-                x <- t(sigma.star.chol) %*% rnorm(n+1)
-                while(x[n+1] + tau.new[j] < 0){ x <- t(sigma.star.chol) %*% rnorm(n+1)}
-                x0 <- omega %*% x[1:n] + sigma[,j]
+                x <- c(t(sigma.star.chol) %*% rnorm(n+1))
+                while(x[n+1] + tau.new[j] < 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+                x0 <- c(omega %*% x[1:n] + sigma[,j])
                 z_temp <- exp(x0-a);z_temp <- z_temp/z_temp[j]
                 z_temp <- z_temp * r.hat
                 if(!any(z_temp[1:(j-1)] > z[1:(j-1)])){
@@ -106,7 +106,8 @@ simu_logskew <- function(m,par,ncores=NULL){
         }
         return(z)
     }
-    if(!is.null(ncores))  Z = mclapply(1:m,simu,mc.cores=ncores) else Z = lapply(1:m,simu)
+
+    if(!is.null(ncores)) Z = mclapply(1:m,simu,mc.cores=ncores) else Z = lapply(1:m,simu)
     Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
     return(Z)
 }
