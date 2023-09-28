@@ -14,7 +14,6 @@ simu_truncT <- function(m,par,ncores=NULL){
     gamma_1 = log(gamma((nu+1)/2))
     a_fun <- function(j,upper){
         sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
-        #sigma.j = (sigma - sigma[, j,drop=F] %*% sigma[j,,drop=F]) 
         val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[1]
         return(list(log(val),sigma.1.j))
     }

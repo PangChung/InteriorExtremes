@@ -92,8 +92,8 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma_j)
         return(val)
     }
-    T_j = unlist(lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
-    a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^{-1/2}
+    T_j = unlist(lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1)))
+    a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
 
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     
@@ -141,7 +141,7 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(omega_inv)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-    b = (t(alpha) %*% omega_inv %*% rep(1,n))^2/sum_inv_sigma)
+    b = c((t(alpha) %*% omega_inv %*% rep(1,n))^2/sum_inv_sigma)
     beta =  t(alpha) %*% omega %*% (diag(rep(1,n)) + rep(1,n) %*% t(colSums(inv.sigma))) * (1+b)^(-1/2)
     A = inv.sigma %*% rep(1,n) %*% t(rep(1,n)) %*% inv.sigma/sum.inv.sigma - inv.sigma
     delta.hat = (1+b)^(-1/2)*sqrt(b)
@@ -184,7 +184,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
         A.j = t(cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)]))
-        sigma.j = t(A.j) %*% sigma A.j
+        sigma.j = t(A.j) %*% sigma %*% A.j
         sigma.j.chol = chol(sigma.j)
         sigma.j.inv = chol2inv(sigma.j.chol)
         omega.j = sqrt(diag(diag(sigma.j)))
@@ -195,7 +195,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
         u.j = t(A.j) %*% sigma %*% I.mat1[,j]
         b1 = t(alpha.hat) %*% sigma.j.bar %*% alpha.hat
         b2 = t(alpha) %*% omega_inv %*% sigma %*% I.mat1[,j] (1+b.j)^(-1/2)
-        b3 = -(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
+        b3 = -(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat
         sigma_circ = cbind(rbind(sigma.j.bar,b3),rbind(b3,1))
         func_temp <- function(i){
             xi = x[,i]
@@ -256,7 +256,7 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     delta = sigma_bar %*% alpha/(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
 
-    b = (t(alpha) %*% omega.inv %*% ones)^2/sum.sigma.inv)
+    b = c((t(alpha) %*% omega.inv %*% ones)^2/sum.sigma.inv)
     alpha.tilde =  t(alpha) %*% omega %*% (diag(ones) + ones %*% t(colSums(sigma.inv))) * (1+b)^(-1/2)
     delta.hat = (1+b)^(-1/2)*sqrt(b)
 
@@ -276,8 +276,8 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     b2 = (1+ b1)^(-1/2) * sigma.tilde.2.1.bar.true %*% alpha2.1
     func <- function(i){
         xi = x[,i]
-        tau2.1 = tau.tilde * (1 + t(alpha1.2) %*% sigma.tilde.11.bar %*% alpha1.2 + alpha1.2 %*% omega.tilde.inv[idx,idx] %*% (log(xi[idx]) + a[idx] - mu.tilde[idx])
-        mu.2.1 = mu.tilde[-idx] - sigma.tilde[-idx,idx,drop=F] %*% sigma.tilde.11.inv %*% (log(x[idx]) + a[idx] - mu.tilde[idx])) 
+        tau2.1 = tau.tilde * (1 + t(alpha1.2) %*% sigma.tilde.11.bar %*% alpha1.2) + alpha1.2 %*% omega.tilde.inv[idx,idx] %*% (log(xi[idx]) + a[idx] - mu.tilde[idx])
+        mu.2.1 = c(mu.tilde[-idx] - sigma.tilde[-idx,idx,drop=F] %*% sigma.tilde.11.inv %*% (log(x[idx]) + a[idx] - mu.tilde[idx]) ) 
         mu.val = rbind(omega2.1.inv %*% (log(xi[-idx]) + a[-idx] - mu.2.1),tau2.1 * (1+b1)^(-1/2))
         scale.val = cbind(rbind(sigma.2.1.bar, b2),rbind(b2,1))
         phi = pnorm(b2)
@@ -292,7 +292,8 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         val = unlist(lapply(1:ncol(x),func))
     }
     if(log){
-        return(log(val)}
+        return(log(val))
+    }
     else{
         return(val)
     } 
