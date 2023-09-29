@@ -19,19 +19,24 @@ par1 <- list(nu=nu,sigma=cov.mat)
 # Simulate a truncated extremal-t max-stable process
 system.time(Z.trunc <- simu_truncT(m=10000,par=par1,ncores=10))
 hist(pgev(Z.trunc[,1],1,1,1),50,prob=TRUE)
+image(1:10,1:10,z=matrix(log(Z.trunc[2,]),nrow=10),col=rev(heat.colors(10)) )
 
 # Simulate a log-skew normal based max-stable process
-alpha = rep(0,nrow(coord))
+alpha = rep(0.5,nrow(coord))
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=10000,par=par2,ncores=10))
 hist(pgev(Z.logskew[,1],1,1,1),50,prob=TRUE)
+image(1:10,1:10,z=matrix(log(Z.logskew[2,]),nrow=10),col=rev(heat.colors(10)) )
 
+# calculate empirical extremal coefficients
 empirical_extcoef <- function(p,data){
     return(min(2,max(1,1/mean(1/pmax(data[,p[1]],data[,p[2]])))))
 }
 all.pairs <- combn(1:ncol(Z.trunc),2)
 ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
-ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
-extcoef.trunc <- V_trunc()
-
 plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5)
+ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
+plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5)
+
+
+
