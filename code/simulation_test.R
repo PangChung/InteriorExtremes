@@ -32,11 +32,38 @@ image(1:10,1:10,z=matrix(log(Z.logskew[2,]),nrow=10),col=rev(heat.colors(10)) )
 empirical_extcoef <- function(p,data){
     return(min(2,max(1,1/mean(1/pmax(data[,p[1]],data[,p[2]])))))
 }
+
+truc_extcoef <- function(idx,par,model="logskew1"){
+    if(model=="logskew1"){
+        alpha = par[[1]];sigma = par[[2]]
+        n = nrow(sigma)
+        omega = diag(sqrt(diag(sigma)))
+        omega.inv = diag(diag(omega)^(-1))
+        sigma.bar = omega.inv %*% sigma %*% omega.inv
+        sigma.bar.11 = sigma.bar[idx,idx]
+        sigma.bar.11.chol = chol(sigma.bar.11)
+        sigma.bar.11.inv = chol2inv(sigma.bar.11.chol)
+        sigma.22.1 = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx]
+        alpha.new = c(c(1 + t(alpha[-idx]) %*% sigma.22.1 %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.bar.11.inv %*% sigma.bar[idx,-idx] %*% alpha[-idx]))
+        sigma.new = sigma[idx,idx]
+        val = V_logskew(rep(1,length(idx)),list(alpha=alpha.new,sigma=sigma.new),parallel=FALSE)
+    }
+
+    if(model == "logskew2"){
+        alpha = par[[1]];sigma = par[[2]]
+        val = V_logskew(rep(1,length(idx)),list(alpha=alpha[idx],sigma=sigma[idx,idx]),parallel=FALSE)
+    }
+    return(val)
+}
+
 all.pairs <- combn(1:ncol(Z.trunc),2)
 ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5)
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
-plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5)
-
-
+tc.logskew1 <- apply(all.pairs,2,truc_extcoef,par=par2,model="logskew1")
+tc.logskew2 <- apply(all.pairs,2,truc_extcoef,par=par2,model="logskew2")
+plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="red",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="blue",pch=20)
+abline(h=c(1,2),col="grey",lty=2)
 

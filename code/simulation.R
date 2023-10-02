@@ -12,17 +12,17 @@ simu_truncT <- function(m,par,ncores=NULL){
     n = nrow(sigma)
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
     gamma_1 = log(gamma((nu+1)/2))
-    # a_fun <- function(j,upper){
-    #     sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
-    #     val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[1]
-    #     return(list(log(val),sigma.1.j))
-    # }
     a_fun <- function(j,upper){
-        sigma.2.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F]) 
-        sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])
+        sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
         val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[1]
-        return(list(log(val),sigma.2.j))
+        return(list(log(val),sigma.1.j))
     }
+    # a_fun <- function(j,upper){
+    #     sigma.2.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F]) 
+    #     sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])
+    #     val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[1]
+    #     return(list(log(val),sigma.2.j))
+    # }
     if(!is.null(ncores)) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])
@@ -38,10 +38,10 @@ simu_truncT <- function(m,par,ncores=NULL){
         z[1] = 1
         k = nrow(sigma.list[[1]])
         
-        #z[-1] = tmvtsim(n=1,k=k, means=sigma[-1,1], sigma=sigma.list[[1]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
-        # z[-1] = z[-1]^nu * a[1]/a[-1]
-        z = tmvtsim(n=1,k=k, means=sigma[,1], sigma=sigma.list[[1]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
-        z = z^nu * a[1]/a
+        z[-1] = tmvtsim(n=1,k=k, means=sigma[-1,1], sigma=sigma.list[[1]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
+        z[-1] = z[-1]^nu * a[1]/a[-1]
+        # z = tmvtsim(n=1,k=k, means=sigma[,1], sigma=sigma.list[[1]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
+        # z = z^nu * a[1]/a
 
         z = z * r.hat
         for(j in 2:n){
@@ -50,11 +50,11 @@ simu_truncT <- function(m,par,ncores=NULL){
             while(r.hat > z[j]){
                 z_temp = rep(NA,n);z_temp[j] = 1
 
-                # z_temp[-j] = tmvtsim(n=1,k=k, means=sigma[-j,j], sigma=sigma.list[[j]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
-                # z_temp[-j] = z_temp[-j]^nu * a[j]/a[-j]
+                z_temp[-j] = tmvtsim(n=1,k=k, means=sigma[-j,j], sigma=sigma.list[[j]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
+                z_temp[-j] = z_temp[-j]^nu * a[j]/a[-j]
 
-                z_temp = tmvtsim(n=1,k=k, means=sigma[,j], sigma=sigma.list[[j]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
-                z_temp = z_temp^nu * a[j]/a
+                # z_temp = tmvtsim(n=1,k=k, means=sigma[,j], sigma=sigma.list[[j]]/(nu+1), lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
+                # z_temp = z_temp^nu * a[j]/a
 
                 z_temp = z_temp * r.hat
                 if(!any( z_temp[1:(j-1)] > z[1:(j-1)])){
