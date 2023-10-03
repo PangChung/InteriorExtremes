@@ -38,13 +38,14 @@ tc.truncT2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par1,model=
 plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",pch=20)
 points(x=diff.mat[t(all.pairs)],y=tc.truncT1,type="p",cex=0.5,col="red",pch=20)
 points(x=diff.mat[t(all.pairs)],y=tc.truncT2,type="p",cex=0.5,col="blue",pch=20)
+abline(h=c(1,2),col="grey",lty=2)
 
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
 tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew1"),mc.cores=10)
 tc.logskew2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew2"),mc.cores=10)
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",pch=20)
 points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="red",pch=20)
-points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="blue",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="#7eb3d8f2",pch=20)
 abline(h=c(1,2),col="grey",lty=2)
 
 

@@ -327,7 +327,6 @@ true_extcoef <- function(idx,par,model="logskew1"){
         x = matrix(Inf,nrow=nrow(par[[2]]),ncol=ncol(idx))
         all.pairs.new = cbind(c(idx),rep(1:ncol(idx),each=nrow(idx)))
         x[all.pairs.new] = 1
-        browser()
         val = V_truncT(x,par,parallel=TRUE,ncores=parallel::detectCores())
     }
 
