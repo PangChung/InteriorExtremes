@@ -298,3 +298,44 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         return(val)
     } 
 }
+
+# calculate empirical extremal coefficients
+empirical_extcoef <- function(p,data){
+    return(min(2,max(1,1/mean(1/pmax(data[,p[1]],data[,p[2]])))))
+}
+
+true_extcoef <- function(idx,par,model="logskew1"){
+    if(model=="logskew1"){
+        alpha = par[[1]];sigma = par[[2]]
+        n = nrow(sigma)
+        omega = diag(sqrt(diag(sigma)))
+        omega.inv = diag(diag(omega)^(-1))
+        sigma.bar = omega.inv %*% sigma %*% omega.inv
+        sigma.bar.11 = sigma.bar[idx,idx]
+        sigma.bar.11.chol = chol(sigma.bar.11)
+        sigma.bar.11.inv = chol2inv(sigma.bar.11.chol)
+        sigma.22.1 = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx]
+        alpha.new = c(c(1 + t(alpha[-idx]) %*% sigma.22.1 %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.bar.11.inv %*% sigma.bar[idx,-idx] %*% alpha[-idx]))
+        sigma.new = sigma[idx,idx]
+        val = V_logskew(rep(1,length(idx)),list(alpha=alpha.new,sigma=sigma.new),parallel=FALSE)
+    }
+
+    if(model == "logskew2"){
+        alpha = par[[1]];sigma = par[[2]]
+        val = V_logskew(rep(1,length(idx)),list(alpha=alpha[idx],sigma=sigma[idx,idx]),parallel=FALSE)
+    }
+    
+    if(model == "truncT1"){
+        x = matrix(Inf,nrow=nrow(par[[2]]),ncol=ncol(all.pairs))
+        all.pairs.new = cbind(c(all.pairs),rep(1:ncol(all.pairs),each=nrow(all.pairs)))
+        x[all.pairs.new] = 1
+        val = V_truncT(x,par,parallel=TRUE,ncores=parallel::detectCores())
+    }
+
+    if(model == "truncT2"){
+        x = rep(1,length(idx))
+        val = V_truncT(x,list(nu = par[[1]],sigma=par[[2]][idx,idx]),parallel=FALSE)
+    }
+    return(val)
+
+}
