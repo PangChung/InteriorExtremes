@@ -1,7 +1,8 @@
 library(tmvnsim)
 library(parallel)
 library(evd)
-library(doParallel)
+library(gridExtra)
+library(ggplot2)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 ### testing the simulator ###
@@ -42,7 +43,7 @@ plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Dist
 points(x=diff.mat[t(all.pairs)],y=tc.truncT1,type="p",cex=0.5,col="red",pch=20)
 points(x=diff.mat[t(all.pairs)],y=tc.truncT2,type="p",cex=0.5,col="#0000ff72",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
-legend("topleft",legend=c("Emperical","Method 1","Method 2"),col=c("black","red","#0000ff72"),
+legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("black","red","#0000ff72"),
     bty="n",pch=20,cex=1)
 dev.off()
 
@@ -57,11 +58,76 @@ plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Di
 points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="#ff0000a8",pch=20)
 points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="#7eb3d8f2",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
-legend("topleft",legend=c("Emperical","Method 1","Method 2"),col=c("black","#ff0000a8","#7eb3d8f2"),
+legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("black","#ff0000a8","#7eb3d8f2"),
     bty="n", pch=20,cex=1)
 dev.off()
 
+## plot the bivariate extremal coefficients map with respect to the central point ##
+idx.min = which.min(apply(diff.mat,2,sum))
+idx.ind.1 = which(all.pairs[1,]==idx.min)
+idx.ind.2 = which(all.pairs[2,]==idx.min)
+idx.ind = c(idx.ind.1,idx.ind.2)
+pairs.select = c(all.pairs[2,idx.ind.1],all.pairs[1,idx.ind.2])
+dat <- data.frame(x=coord[pairs.select,1],y=coord[pairs.select,2],ec.truncT=ec.trunc[idx.ind],
+    ec.logskew=ec.logskew[idx.ind],tc.logskew1=tc.logskew1[idx.ind],tc.logskew2=tc.logskew2[idx.ind],
+    tc.truncT1=tc.truncT1[idx.ind],tc.truncT2=tc.truncT2[idx.ind])
+dat[nrow(dat)+1,c("x","y")] <- coord[idx.min,]
+p1 <- ggplot(dat) + geom_tile(aes(x=x,y=y,fill=ec.truncT)) + scale_fill_gradient(low="blue",high="red",limits=c(1,2),name="Empirical") +
+        ggtitle("Truncated extremal t processes") + theme(axis.text = element_text(size=10), 
+        axis.title.x = element_text(size=14), 
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(hjust = 0.5),
+        panel.border = element_rect(fill = "transparent", 
+                                    color = "transparent", 
+                                    linewidth = 0.5))
+    
+p2 <- ggplot(dat) + geom_tile(aes(x=x,y=y,fill=tc.truncT1)) + scale_fill_gradient(low="blue",high="red",limits=c(1,2),name="Method 1") +
+        ggtitle("Truncated extremal t processes") + theme(axis.text = element_text(size=10), 
+        axis.title.x = element_text(size=14), 
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(hjust = 0.5),
+        panel.border = element_rect(fill = "transparent", 
+                                    color = "transparent", 
+                                    linewidth = 0.5))
+
+p3 <- ggplot(dat) + geom_tile(aes(x=x,y=y,fill=tc.truncT2)) + scale_fill_gradient(low="blue",high="red",limits=c(1,2),name="Method 2") +
+        ggtitle("Truncated extremal t processes") + theme(axis.text = element_text(size=10), 
+        axis.title.x = element_text(size=14), 
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(hjust = 0.5),
+        panel.border = element_rect(fill = "transparent", 
+                                    color = "transparent", 
+                                    linewidth = 0.5))
+
+p4 <- ggplot(dat) + geom_tile(aes(x=x,y=y,fill=ec.logskew)) + scale_fill_gradient(low="blue",high="red",limits=c(1,2),name="Empirical") +
+        ggtitle("Log-skew based max-stable processes") + theme(axis.text = element_text(size=10), 
+        axis.title.x = element_text(size=14), 
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(hjust = 0.5),
+        panel.border = element_rect(fill = "transparent", 
+                                    color = "transparent", 
+                                    linewidth = 0.5))
 
 
+p5 <- ggplot(dat) + geom_tile(aes(x=x,y=y,fill=tc.logskew1)) + scale_fill_gradient(low="blue",high="red",limits=c(1,2),name="Method 1") +
+        ggtitle("Log-skew based max-stable processes") + theme(axis.text = element_text(size=10), 
+        axis.title.x = element_text(size=14), 
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(hjust = 0.5),
+        panel.border = element_rect(fill = "transparent", 
+                                    color = "transparent", 
+                                    linewidth = 0.5))
 
+p6 <- ggplot(dat) + geom_tile(aes(x=x,y=y,fill=tc.logskew2)) + scale_fill_gradient(low="blue",high="red",limits=c(1,2),name="Method 2") +
+        ggtitle("Log-skew based max-stable processes") + theme(axis.text = element_text(size=10), 
+        axis.title.x = element_text(size=14), 
+        axis.title.y = element_text(size=14),
+        plot.title = element_text(hjust = 0.5),
+        panel.border = element_rect(fill = "transparent", 
+                                    color = "transparent", 
+                                    linewidth = 0.5))
+
+pdf("figures/extcoef_map.pdf",width=12,height=8)
+grid.arrange(p1, p2, p3, p4, p5, p6, ncol=3, nrow=2, widths=c(1,1,1), heights=c(1,1))
+dev.off()
 
