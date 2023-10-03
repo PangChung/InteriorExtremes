@@ -14,8 +14,8 @@ intensty_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     gamma_1 = log(gamma((nu+1)/2))
     gamma_n = log(gamma((nu+d)/2))
     a_fun <- function(j,upper){
-        sigma.11_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) * (nu + 1)
-        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.11_j,df=nu+1)[1]
+        sigma.11_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
+        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.11_j,df=nu+1)[1]
         return(log(val))
     }
     T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
@@ -49,7 +49,7 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
     }
     a_fun <- function(j,upper,sigma_j){
-        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma_j)[[1]]
+        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
         return(val)
     }
     sigma_j = lapply(1:n,sigma_fun)
@@ -85,8 +85,8 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     gamma_1 = gamma((nu+1)/2)
     gamma_k = gamma((k+nu)/2)
     a_fun <- function(j,upper){
-        sigma_j = (sigma[-j,-j] - sigma[-j,j] %*% sigma[j,-j]) * (nu + 1)
-        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma_j)[[1]]
+        sigma_j = (sigma[-j,-j] - sigma[-j,j] %*% sigma[j,-j])/(nu + 1)
+        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
         return(val)
     }
     T_j = unlist(lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1)))
@@ -102,7 +102,7 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
             k/2*log(pi) - 1/2*logdet.sigma -(k+nu)*log(Q_sigma)+log(gamma_k)
         upper = (x_j[-idx])^(1/nu)*sqrt(k+nu)/Q_sigma
         loc = sigma[-idx,idx] %*% inv.sigma.11 %*% x_j[idx]^(1/nu)*sqrt(k+nu)/Q_sigma
-        val = val + log(mvtnorm::pmvt(lower=rep(0,n-k),upper=upper,delta=loc,sigma=sigma_T,df=k+nu))[[1]]
+        val = val + log(mvtnorm::pmvt(lower=rep(0,n-k)-loc,upper=upper-loc,sigma=sigma_T,df=k+nu))[[1]]
         return(val)
     }
     if(parallel){
@@ -327,6 +327,7 @@ true_extcoef <- function(idx,par,model="logskew1"){
         x = matrix(Inf,nrow=nrow(par[[2]]),ncol=ncol(idx))
         all.pairs.new = cbind(c(idx),rep(1:ncol(idx),each=nrow(idx)))
         x[all.pairs.new] = 1
+        browser()
         val = V_truncT(x,par,parallel=TRUE,ncores=parallel::detectCores())
     }
 

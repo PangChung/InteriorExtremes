@@ -13,7 +13,7 @@ diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(
 corr <- function(x,r=0.5,v=1) exp(- (sum(x^2)/r)^v)                          
 cov.mat <- matrix(apply(diff.vector, 1, corr), ncol=nrow(coord)) + diag(1e-6,nrow(coord))       
 chol(cov.mat)
-nu = 3
+nu = 2
 par1 <- list(nu=nu,sigma=cov.mat)
 
 # Simulate a truncated extremal-t max-stable process
