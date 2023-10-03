@@ -5,7 +5,7 @@ library(doParallel)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 ### testing the simulator ###
-d <- 2
+d <- 10
 coord = as.matrix(expand.grid(1:d,1:d)/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
@@ -46,5 +46,9 @@ plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Di
 points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="red",pch=20)
 points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="blue",pch=20)
 abline(h=c(1,2),col="grey",lty=2)
+
+
+
+
 
 
