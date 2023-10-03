@@ -10,11 +10,11 @@
 simu_truncT <- function(m,par,ncores=NULL){    
     nu = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
-    logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
+    logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]])
     gamma_1 = log(gamma((nu+1)/2))
     a_fun <- function(j,upper){
         sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
-        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[1]
+        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[[1]]
         return(list(log(val),sigma.1.j))
     }
     # a_fun <- function(j,upper){
@@ -29,7 +29,6 @@ simu_truncT <- function(m,par,ncores=NULL){
     a_j = T_j_val-logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
     a = exp(a_j)
     message("normalizing constants computed")
-    
     # Simulate the max-stable process
     simu <- function(idx){
         r = rexp(1)
