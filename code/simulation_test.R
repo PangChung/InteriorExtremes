@@ -5,7 +5,7 @@ library(doParallel)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 ### testing the simulator ###
-d <- 10
+d <- 2
 coord = as.matrix(expand.grid(1:d,1:d)/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
@@ -32,7 +32,7 @@ all.pairs <- combn(1:ncol(Z.trunc),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 
-tc.truncT1 <- true_extcoef(all.pairs[,1:2],par=par1,model="truncT1")
+tc.truncT1 <- true_extcoef(all.pairs,par=par1,model="truncT1")
 tc.truncT2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par1,model="truncT2"),mc.cores=10)
 
 plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",pch=20)

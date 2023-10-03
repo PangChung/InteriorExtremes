@@ -43,13 +43,13 @@ intensty_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
 V_truncT <- function(x,par,parallel=TRUE,ncores=2){
     sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
-    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)
+    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
     sigma_fun <- function(j){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
     }
     a_fun <- function(j,upper,sigma_j){
-        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma_j)
+        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma_j)[[1]]
         return(val)
     }
     sigma_j = lapply(1:n,sigma_fun)
@@ -65,20 +65,18 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
     }
     if(parallel){
         val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
-    }
-    else{
+    }else{
         val = unlist(lapply(1:ncol(x),func))
     }
     return(val)
 }
-
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
-    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)
+    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     chol.sigma.11 = chol(sigma[idx,idx])
     inv.sigma.11 = chol2inv(chol.sigma)
     logdet.sigma.11 = sum(log(diag(chol.sigma)))*2
@@ -88,7 +86,7 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     gamma_k = gamma((k+nu)/2)
     a_fun <- function(j,upper){
         sigma_j = (sigma[-j,-j] - sigma[-j,j] %*% sigma[j,-j]) * (nu + 1)
-        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma_j)
+        val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma_j)[[1]]
         return(val)
     }
     T_j = unlist(lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1)))
@@ -104,7 +102,7 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
             k/2*log(pi) - 1/2*logdet.sigma -(k+nu)*log(Q_sigma)+log(gamma_k)
         upper = (x_j[-idx])^(1/nu)*sqrt(k+nu)/Q_sigma
         loc = sigma[-idx,idx] %*% inv.sigma.11 %*% x_j[idx]^(1/nu)*sqrt(k+nu)/Q_sigma
-        val = val + log(mvtnorm::pmvt(lower=rep(0,n-k),upper=upper,delta=loc,sigma=sigma_T,df=k+nu))
+        val = val + log(mvtnorm::pmvt(lower=rep(0,n-k),upper=upper,delta=loc,sigma=sigma_T,df=k+nu))[[1]]
         return(val)
     }
     if(parallel){
@@ -200,7 +198,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
         func_temp <- function(i){
             xi = x[,i]
             mu = c(rbind(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),b2))
-            val = pnorm(b2)^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[1]
+            val = pnorm(b2)^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[[1]]
             return(val)
         }
         val = unlist(lapply(1:ncol(x),func_temp))
@@ -282,7 +280,7 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         scale.val = cbind(rbind(sigma.2.1.bar, b2),rbind(b2,1))
         phi = pnorm(b2)
         intensity.marginal = intensity_logskew(xi[idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),parallel=FALSE,log=FALSE)
-        val = intensity.marginal * phi^(-1) * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[1] 
+        val = intensity.marginal * phi^(-1) * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[[1]]
         return(val)
     }
     if(parallel){
@@ -326,8 +324,8 @@ true_extcoef <- function(idx,par,model="logskew1"){
     }
     
     if(model == "truncT1"){
-        x = matrix(Inf,nrow=nrow(par[[2]]),ncol=ncol(all.pairs))
-        all.pairs.new = cbind(c(all.pairs),rep(1:ncol(all.pairs),each=nrow(all.pairs)))
+        x = matrix(Inf,nrow=nrow(par[[2]]),ncol=ncol(idx))
+        all.pairs.new = cbind(c(idx),rep(1:ncol(idx),each=nrow(idx)))
         x[all.pairs.new] = 1
         val = V_truncT(x,par,parallel=TRUE,ncores=parallel::detectCores())
     }
