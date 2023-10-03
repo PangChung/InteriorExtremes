@@ -53,12 +53,29 @@ truc_extcoef <- function(idx,par,model="logskew1"){
         alpha = par[[1]];sigma = par[[2]]
         val = V_logskew(rep(1,length(idx)),list(alpha=alpha[idx],sigma=sigma[idx,idx]),parallel=FALSE)
     }
+    
+    if(model == "truncT1"){
+        x = rep(Inf,nrow(par[[2]]))
+        x[idx] = 1
+        val = V_truncT(x,par,parallel=FALSE)
+    }
+
+    if(model == "truncT2"){
+        x = rep(1,length(idx))
+        val = V_truncT(x,list(nu = par[[1]],sigma=par[[2]][idx,idx]),parallel=FALSE)
+    }
     return(val)
+
 }
 
 all.pairs <- combn(1:ncol(Z.trunc),2)
 ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
-plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5)
+plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",pch=20)
+tc.truncT1 <- apply(all.pairs,2,truc_extcoef,par=par1,model="truncT1")
+tc.truncT2 <- apply(all.pairs,2,truc_extcoef,par=par1,model="truncT2")
+points(x=diff.mat[t(all.pairs)],y=tc.truncT1,type="p",cex=0.5,col="red",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.truncT2,type="p",cex=0.5,col="blue",pch=20)
+
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
 tc.logskew1 <- apply(all.pairs,2,truc_extcoef,par=par2,model="logskew1")
 tc.logskew2 <- apply(all.pairs,2,truc_extcoef,par=par2,model="logskew2")
@@ -66,4 +83,5 @@ plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Di
 points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="red",pch=20)
 points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="blue",pch=20)
 abline(h=c(1,2),col="grey",lty=2)
+
 

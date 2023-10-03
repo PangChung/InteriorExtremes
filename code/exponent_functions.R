@@ -5,7 +5,7 @@
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
 intensty_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
-    sigma = par[[1]];nu = par[[2]]
+    sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
@@ -41,34 +41,33 @@ intensty_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
 V_truncT <- function(x,par,parallel=TRUE,ncores=2){
-    sigma = par[[1]];nu = par[[2]]
+    sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)
     gamma_1 = gamma((nu+1)/2)
-
     sigma_fun <- function(j){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
     }
-
     a_fun <- function(j,upper,sigma_j){
         val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma_j)
         return(val)
     }
     sigma_j = lapply(1:n,sigma_fun)
-    T_j = mapply(FUN=a_fun,sigma_j=sigma_j,j=1:n,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
-    a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^{-1/2}
+    T_j = mapply(a_fun,sigma_j=sigma_j,j=1:n,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
+    a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
+
     func <- function(idx){
         x_j = x[,idx] * a_j
-        x_upper = lapply(1:n,function(i){(x_j[i]/x_j)^{1/nu}})
+        x_upper = lapply(1:n,function(i){ if(is.finite(x_j[i])) (x_j[-i]/x_j[i])^{1/nu} else rep(0,length(x_j[-i])) })
         V_j = mapply(a_fun,j=1:n,upper=x_upper,sigma_j = sigma_j,SIMPLIFY = TRUE)
         val = sum(V_j/T_j/x[,idx])
     }
     if(parallel){
-        val = unlist(parallel::mclapply(1:n,func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
     }
     else{
-        val = unlist(lapply(1:n,func))
+        val = unlist(lapply(1:ncol(x),func))
     }
     return(val)
 }
@@ -77,7 +76,7 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
-    sigma = par[[1]];nu = par[[2]]
+    sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)
     chol.sigma.11 = chol(sigma[idx,idx])
