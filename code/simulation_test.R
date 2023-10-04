@@ -39,11 +39,11 @@ tc.truncT2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par1,model=
 pdf("figures/extcoef_truncT.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main="Truncated extremal t processes",pch=20)
-points(x=diff.mat[t(all.pairs)],y=tc.truncT1,type="p",cex=0.5,col="red",pch=20)
-points(x=diff.mat[t(all.pairs)],y=tc.truncT2,type="p",cex=0.5,col="#0000ff72",pch=20)
+    main="Truncated extremal t processes",pch=20,col="#0000001A")
+points(x=diff.mat[t(all.pairs)],y=tc.truncT1,type="p",cex=0.5,col="#ff00001A",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.truncT2,type="p",cex=0.5,col="#7eb3d81A",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
-legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("black","red","#0000ff72"),
+legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#0000001A","#ff00001A","#7eb3d81A"),
     bty="n",pch=20,cex=1)
 dev.off()
 
@@ -54,11 +54,11 @@ tc.logskew2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model
 pdf("figures/extcoef_logskew.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main = "Log-skew normal based max-stable processes",pch=20)
-points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="#ff0000a8",pch=20)
-points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="#7eb3d8f2",pch=20)
+    main = "Log-skew normal based max-stable processes",pch=20,col="#0000001A")
+points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="#ff00001A",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="#0f83d61A",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
-legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("black","#ff0000a8","#7eb3d8f2"),
+legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#0000001A","#ff00001A","#7eb3d81A"),
     bty="n", pch=20,cex=1)
 dev.off()
 
