@@ -56,11 +56,13 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
     T_j = mapply(a_fun,sigma_j=sigma_j,j=1:n,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
     a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-
+    
     func <- function(idx){
         x_j = x[,idx] * a_j
         x_upper = lapply(1:n,function(i){ if(is.finite(x_j[i])) (x_j[-i]/x_j[i])^{1/nu} else rep(0,length(x_j[-i])) })
-        V_j = mapply(a_fun,j=1:n,upper=x_upper,sigma_j = sigma_j,SIMPLIFY = TRUE)
+        is.finite.ind = which(is.finite(x_j))
+        V_j = rep(0,n)
+        V_j[is.finite.ind] = mapply(a_fun,j=is.finite.ind,upper=x_upper[is.finite.ind],sigma_j = sigma_j[is.finite.ind],SIMPLIFY = TRUE)
         val = sum(V_j/T_j/x[,idx])
     }
     if(parallel){
@@ -302,6 +304,7 @@ empirical_extcoef <- function(p,data){
     return(min(2,max(1,1/mean(1/pmax(data[,p[1]],data[,p[2]])))))
 }
 
+# calculate true extremal coefficients
 true_extcoef <- function(idx,par,model="logskew1"){
     if(model=="logskew1"){
         alpha = par[[1]];sigma = par[[2]]
@@ -336,4 +339,9 @@ true_extcoef <- function(idx,par,model="logskew1"){
     }
     return(val)
 
+}
+
+## inference for simulated data ##  
+fit.model <- function(data,init,model="truncT",maxit=1000,paralle=TRUE,ncores=NULL){
+        
 }
