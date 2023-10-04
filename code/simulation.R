@@ -17,12 +17,6 @@ simu_truncT <- function(m,par,ncores=NULL){
         val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[[1]]
         return(list(log(val),sigma.1.j))
     }
-    # a_fun <- function(j,upper){
-    #     sigma.2.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F]) 
-    #     sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])
-    #     val = mvtnorm::pmvt(lower=rep(0,n-1),upper=upper,delta=sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[1]
-    #     return(list(log(val),sigma.2.j))
-    # }
     if(!is.null(ncores)) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])

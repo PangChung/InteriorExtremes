@@ -4,7 +4,7 @@
 
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
-intensty_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
+intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
     chol.sigma = chol(sigma)
@@ -53,17 +53,20 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
         return(val)
     }
     sigma_j = lapply(1:n,sigma_fun)
-    T_j = mapply(a_fun,sigma_j=sigma_j,j=1:n,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
-    a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-    
+    idx.finite <- which(apply(x,1,function(xi){any(is.finite(xi))}))
+    T_j = rep(1,n)
+    T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
+    a_j = rep(1,n)
+    a_j[idx.finite] = T_j[idx.finite]/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
+
     func <- function(idx){
         x_j = x[,idx] * a_j
         x_upper = lapply(1:n,function(i){ if(is.finite(x_j[i])) (x_j[-i]/x_j[i])^{1/nu} else rep(0,length(x_j[-i])) })
         is.finite.ind = which(is.finite(x_j))
         V_j = rep(0,n)
         V_j[is.finite.ind] = mapply(a_fun,j=is.finite.ind,upper=x_upper[is.finite.ind],sigma_j = sigma_j[is.finite.ind],SIMPLIFY = TRUE)
-        val = sum(V_j/T_j/x[,idx])
+        val = sum(V_j[is.finite.ind]/T_j[is.finite.ind]/x[is.finite.ind,idx])
     }
     if(parallel){
         val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
@@ -299,9 +302,9 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     } 
 }
 
-# calculate empirical extremal coefficients
-empirical_extcoef <- function(p,data){
-    return(min(2,max(1,1/mean(1/pmax(data[,p[1]],data[,p[2]])))))
+# calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
+empirical_extcoef <- function(idx,data){
+    return(min(2,max(1,1/mean(1/pmax(data[,idx[1]],data[,idx[2]])))))
 }
 
 # calculate true extremal coefficients
@@ -342,6 +345,18 @@ true_extcoef <- function(idx,par,model="logskew1"){
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,init,model="truncT",maxit=1000,paralle=TRUE,ncores=NULL){
-        
+fit.model <- function(data,init,thres = 0.90,model="truncT",maxit=1000,paralle=TRUE,ncores=NULL){
+        data.sum = apply(data,2,sum)
+        idx.thres = which(data.sum>quantile(data.sum,thres))
+        data = data[,idx.thres]
+
+        object.func <- function(par){
+            #TODO the covariance function
+            #TODO the semiparametic function for the slant parameter
+            para.temp = list(nu=par[1],sigma=diag(par[-1]))
+            intensity_truncT(data,par=list(nu=init[[1]],sigma=diag(rep(1,ncol(data)))),parallel=FALSE)
+        }
+
+
+
 }
