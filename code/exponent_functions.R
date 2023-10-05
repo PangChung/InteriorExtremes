@@ -366,12 +366,15 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = data[,idx.thres]/data.sum[idx.thres]
+    init[1] = log(init[1])
+    init[2] = log(init[2]/(2-init[2])
     browser()
     if(model == "logskew1"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
-            par.1 = exp(par[1:2]);par.2 = par[3:5]
-            par.1[2] = par.1[2]/(1+par.1[2])*2
+            par2 = init; par2[!fixed] = par
+            par.1 = par2[1:2];par.2 = par2[3:5]
+            par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
             print(par)
@@ -384,8 +387,8 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
     ## 3 parameters: 2 for the covariance function; 1 for the df parameter
         object.func <- function(par){
             par2 = init; par2[!fixed] = par
-            par.1 = exp(par2[1:2]);nu = par2[3]
-            par.1[2] = par.1[2]/(1+par.1[2])*2
+            par.1 = par2[1:2];nu = par2[3]
+            par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             print(par)
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
@@ -395,6 +398,8 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
     }
     opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
     par2 = init; par2[!fixed] = opt.result$par
+    par2[1] = exp(par2[1])
+    par2[2] = log(par2[2]/(2-par2[2]))
     opt.result$par = par2
     return(opt.result)
 }

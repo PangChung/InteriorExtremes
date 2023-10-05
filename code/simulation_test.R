@@ -137,4 +137,4 @@ dev.off()
 
 ## fit the model 
 # fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(log(c(0.5,1)),2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=5,maxit=500) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=5,maxit=500) )
