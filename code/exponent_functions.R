@@ -141,7 +141,7 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     logdet.sigma = sum(log(diag(chol.sigma)))*2
     delta = c(sigma_bar %*% alpha)/c(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    sum.inv.sigma = sum(omega_inv)
+    sum.inv.sigma = sum(inv.sigma)
     
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     b = c((t(alpha) %*% omega_inv %*% rep(1,n))^2/sum.inv.sigma)
@@ -182,7 +182,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
     delta = c(sigma_bar %*% alpha)/c(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-    b = t(alpha) %*% omega_inv %*% sigma
+    b = c(t(alpha) %*% omega_inv %*% sigma)
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
