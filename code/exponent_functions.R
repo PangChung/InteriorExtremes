@@ -131,7 +131,6 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
 ## this function computes the intensity function 
 ## for the log skew-normal based max-stable processes
 intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
-    browser()
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
@@ -405,3 +404,4 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
     opt.result$par = par2
     return(opt.result)
 }
+
