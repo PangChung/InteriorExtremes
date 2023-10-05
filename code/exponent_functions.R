@@ -344,19 +344,36 @@ true_extcoef <- function(idx,par,model="logskew1"){
 
 }
 
+
+cov.func <- function(loc,par){
+    r = par[1];v = par[2]
+    n = nrow(loc)
+    diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
+        as.vector(outer(loc[,2],loc[,2],'-')))
+    cov.mat <- matrix(exp(-((diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) + diag(1e-6,n) 
+    return(cov.mat)
+}
+
+alpha.func <- function(loc,par){
+    
+
+}
+
 ## inference for simulated data ##  
-fit.model <- function(data,init,thres = 0.90,model="truncT",maxit=1000,paralle=TRUE,ncores=NULL){
+fit.model <- function(data,loc,init,thres = 0.90,model="truncT",maxit=1000,paralle=TRUE,ncores=NULL){
         data.sum = apply(data,2,sum)
         idx.thres = which(data.sum>quantile(data.sum,thres))
         data = data[,idx.thres]
-
+    if(model == "logskew1"){
         object.func <- function(par){
-            #TODO the covariance function
+            
             #TODO the semiparametic function for the slant parameter
             para.temp = list(nu=par[1],sigma=diag(par[-1]))
             intensity_truncT(data,par=list(nu=init[[1]],sigma=diag(rep(1,ncol(data)))),parallel=FALSE)
         }
-
-
-
+    }
+    if(model == "truncT"){
+    
+    
+    }
 }
