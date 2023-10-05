@@ -19,20 +19,20 @@ par1 <- list(nu=nu,sigma=cov.mat)
 
 # Simulate a truncated extremal-t max-stable process
 system.time(Z.trunc <- simu_truncT(m=10000,par=par1,ncores=10))
-hist(pgev(Z.trunc[,1],1,1,1),50,prob=TRUE)
-image(1:10,1:10,z=matrix(log(Z.trunc[1,]),nrow=10),col=rev(heat.colors(10)))
+hist(pgev(Z.trunc[1,],1,1,1),50,prob=TRUE)
+image(1:10,1:10,z=matrix(log(Z.trunc[,1]),nrow=10),col=rev(heat.colors(10)))
 
 # Simulate a log-skew normal based max-stable process
 alpha = alpha.func(coord,c(0.1,-0.5,0.5))
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=10000,par=par2,ncores=10))
-hist(pgev(Z.logskew[,1],1,1,1),50,prob=TRUE)
-image(1:10,1:10,z=matrix(log(Z.logskew[2,]),nrow=10),col=rev(heat.colors(10)) )
+hist(pgev(Z.logskew[1,],1,1,1),50,prob=TRUE)
+image(1:10,1:10,z=matrix(log(Z.logskew[,1]),nrow=10),col=rev(heat.colors(10)) )
 
-all.pairs <- combn(1:ncol(Z.trunc),2)
+all.pairs <- combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 
+ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 tc.truncT1 <- true_extcoef(all.pairs,par=par1,model="truncT1")
 tc.truncT2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par1,model="truncT2"),mc.cores=10)
 
@@ -134,3 +134,7 @@ pdf(paste0("figures/extcoef_map_",idx.min,".pdf"),width=12,height=8)
 grid.arrange(p1, p2, p3, p4, p5, p6, ncol=3, nrow=2, widths=c(1,1,1), heights=c(1,1))
 dev.off()
 }
+
+## fit the model 
+# fit the truncated extremal t model
+system.time(fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(log(c(0.5,1)),log(2)),thres=0.9,model="truncT",ncores=5,maxit=500) )

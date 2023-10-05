@@ -18,14 +18,14 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.11_j,df=nu+1)[1]
         return(log(val))
     }
-    T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
+    if(parallel) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
     a_j = T_j-logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
     if(!is.matrix(x)){ x = matrix(x,nrow=n,byrow=FALSE)} 
     func <- function(idx){
         log_x = log(x[,idx])
         x_j = (log_x + a_j) * 1/nu
         x_circ = exp(x_j)
-        val = -log(phi) + 1/nu*sum(x_j) + log(nu) +  log(t(x_circ) %*% inv.sigma %*% x_circ) * 
+        val = -logphi + 1/nu*sum(x_j) + log(nu) +  log(t(x_circ) %*% inv.sigma %*% x_circ) * 
             (-nu-d)/2 + gamma_n
         return(val)
     }
@@ -56,7 +56,8 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     idx.finite <- which(apply(x,1,function(xi){any(is.finite(xi))}))
     T_j = rep(1,n)
-    T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
+    if(parallel) T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
+    else T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
     a_j = rep(1,n)
     a_j[idx.finite] = T_j[idx.finite]/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
 
@@ -94,9 +95,8 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
         return(val)
     }
-    T_j = unlist(lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1)))
+    if(parallel) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
     a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
-
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     
     func <- function(idx_j){
@@ -304,7 +304,7 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
 
 # calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
 empirical_extcoef <- function(idx,data){
-    return(min(2,max(1,1/mean(1/pmax(data[,idx[1]],data[,idx[2]])))))
+    return(min(2,max(1,1/mean(1/pmax(data[idx[1],],data[idx[2],])))))
 }
 
 # calculate true extremal coefficients
@@ -361,31 +361,31 @@ alpha.func <- function(loc,par){
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,loc,init,thres = 0.90,model="truncT",maxit=1000,paralle=TRUE,ncores=NULL){
+fit.model <- function(data,loc,init,thres = 0.90,model="truncT",maxit=1000,parallel=TRUE,ncores=2){
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = data[,idx.thres]/data.sum[idx.thres]
     if(model == "logskew1"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
-            par.1 = par[1:2];par.2 = par[3:5]
+            par.1 = exp(par[1:2]);par.2 = par[3:5]
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
             para.temp = list(alpha=alpha,sigma=cov.mat)
-            val = sum(intensity_logskew(data,par=para.temp,parallel=TRUE,log=TRUE,ncores=parallel::detectCores()))
+            val = sum(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(val)
         }
     }
     if(model == "truncT"){
     ## 3 parameters: 2 for the covariance function; 1 for the df parameter
         object.func <- function(par){
-            par.1 = par[1:2];nu = par[3]
+            par.1 = exp(par[1:2]);nu = exp(par[3])
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
-            val = sum(intensity_truncT(data,par=para.temp,parallel=TRUE,log=TRUE,ncores=parallel::detectCores()))
+            val = sum(intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(val)
         }
     }
-    opt.result = optim(init,object.func,method="Nelder-Mead",control=list(maxit=maxit))
+    opt.result = optim(init,object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
     return(opt.result)
 }
