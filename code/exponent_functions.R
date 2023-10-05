@@ -367,7 +367,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = data[,idx.thres]/data.sum[idx.thres]
     init[1] = log(init[1])
-    init[2] = log(init[2]/(2-init[2])
+    init[2] = log(init[2]/(2-init[2]))
     browser()
     if(model == "logskew1"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
@@ -377,7 +377,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
             par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
-            print(par)
+            print(c(par.1,par.2))
             para.temp = list(alpha=alpha,sigma=cov.mat)
             val = sum(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(-val)
@@ -389,7 +389,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
             par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
-            print(par)
+            print(par.1)
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
             val = sum(intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))

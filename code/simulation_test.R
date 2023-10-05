@@ -11,8 +11,8 @@ coord = as.matrix(expand.grid(1:d,1:d)/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-corr <- function(x,r=0.5,v=1) exp(- (sum(x^2)/r)^v)                          
-cov.mat <- matrix(apply(diff.vector, 1, corr), ncol=nrow(coord)) + diag(1e-6,nrow(coord))       
+corr <- function(x,r=0.5,v=1) exp(- (sqrt(sum(x^2))/r)^v)                          
+cov.mat <- matrix(apply(diff.vector, 1, corr), ncol=nrow(coord)) 
 chol(cov.mat)
 nu = 2
 par1 <- list(nu=nu,sigma=cov.mat)
@@ -137,4 +137,5 @@ dev.off()
 
 ## fit the model 
 # fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=5,maxit=500) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=10,maxit=500) )
+system.time( fit.truncT <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,2,0.1,-0.5,0.5),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=10,maxit=500) )
