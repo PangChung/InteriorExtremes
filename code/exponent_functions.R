@@ -146,14 +146,14 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     b = c((t(alpha) %*% omega_inv %*% rep(1,n))^2/sum.inv.sigma)
     beta =  c(t(alpha) %*% omega %*% (diag(rep(1,n)) + rep(1,n) %*% t(colSums(inv.sigma))) * (1+b)^(-1/2))
-    A = inv.sigma %*% rep(1,n) %*% t(rep(1,n)) %*% inv.sigma/sum.inv.sigma - inv.sigma
+    A = inv.sigma %*% (rep(1,n) %*% t(rep(1,n))) %*% inv.sigma/sum.inv.sigma - inv.sigma
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     func <- function(idx){
         x_log = log(x[,idx])
         x_circ = x_log + a
         val = (-n-3)/2 * log(2) - (d-1)/2*log(pi) + pnorm(t(beta) %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
-        val = val - 1/2 * t(x_circ) %*% A %*% x_circ - (t(rep(1,n)) %*% inv.sigma %*% x_circ - 1)/2/sum.inv.sigma
+        val = val - 1/2 * t(x_circ) %*% A %*% x_circ - (c(rep(1,n) %*% inv.sigma %*% x_circ) - 1)/2/sum.inv.sigma
         return(val)
     }
     if(parallel){
