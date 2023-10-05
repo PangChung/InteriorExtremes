@@ -13,13 +13,14 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
     gamma_1 = log(gamma((nu+1)/2))
     gamma_n = log(gamma((nu+d)/2))
+    browser()
     a_fun <- function(j,upper){
         sigma.11_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.11_j,df=nu+1)[1]
         return(log(val))
     }
     if(parallel) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
-    a_j = T_j-logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
+    a_j = T_j - logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
     if(!is.matrix(x)){ x = matrix(x,nrow=n,byrow=FALSE)} 
     func <- function(idx){
         log_x = log(x[,idx])
@@ -350,7 +351,7 @@ cov.func <- function(loc,par){
     n = nrow(loc)
     diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
         as.vector(outer(loc[,2],loc[,2],'-')))
-    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^(v)), ncol=n) + diag(1e-8,n) 
+    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^(v)), ncol=n) #+ diag(1e-6,n) 
     return(cov.mat)
 }
 
@@ -361,16 +362,19 @@ alpha.func <- function(loc,par){
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,loc,init,thres = 0.90,model="truncT",maxit=1000,parallel=TRUE,ncores=2){
+fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000,parallel=TRUE,ncores=2){
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = data[,idx.thres]/data.sum[idx.thres]
+    browser()
     if(model == "logskew1"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
             par.1 = exp(par[1:2]);par.2 = par[3:5]
+            par.1[2] = par.1[2]/(1+par.1[2])*2
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
+            print(par)
             para.temp = list(alpha=alpha,sigma=cov.mat)
             val = sum(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(val)
@@ -379,13 +383,18 @@ fit.model <- function(data,loc,init,thres = 0.90,model="truncT",maxit=1000,paral
     if(model == "truncT"){
     ## 3 parameters: 2 for the covariance function; 1 for the df parameter
         object.func <- function(par){
-            par.1 = exp(par[1:2]);nu = exp(par[3])
+            par2 = init; par2[!fixed] = par
+            par.1 = exp(par2[1:2]);nu = par2[3]
+            par.1[2] = par.1[2]/(1+par.1[2])*2
+            print(par)
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
             val = sum(intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(val)
         }
     }
-    opt.result = optim(init,object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
+    opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
+    par2 = init; par2[!fixed] = opt.result$par
+    opt.result$par = par2
     return(opt.result)
 }
