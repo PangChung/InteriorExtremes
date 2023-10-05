@@ -398,8 +398,8 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
     }
     opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
     par2 = init; par2[!fixed] = opt.result$par
-    par2[1] = exp(par2[1])
-    par2[2] = log(par2[2]/(2-par2[2]))
+    par2[1:2] = exp(par2[1:2])
+    par2[2] = par2[2]/(1+par2[2])*2 
     opt.result$par = par2
     return(opt.result)
 }
