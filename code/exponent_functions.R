@@ -142,11 +142,10 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     delta = c(sigma_bar %*% alpha)/c(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(inv.sigma)
-    
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     b = c((t(alpha) %*% omega_inv %*% rep(1,n))^2/sum.inv.sigma)
     beta =  c(t(alpha) %*% omega %*% (diag(rep(1,n)) + rep(1,n) %*% t(colSums(inv.sigma))) * (1+b)^(-1/2))
-    A = inv.sigma %*% (rep(1,n) %*% t(rep(1,n))) %*% inv.sigma/sum.inv.sigma - inv.sigma
+    A = inv.sigma - inv.sigma %*% (rep(1,n) %*% t(rep(1,n))) %*% inv.sigma/sum.inv.sigma 
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     func <- function(idx){
         x_log = log(x[,idx])
@@ -378,7 +377,6 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
             alpha = alpha.func(loc,par.2)
             print(c(par.1,par.2))
             para.temp = list(alpha=alpha,sigma=cov.mat)
-            
             val = sum(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(-val)
         }
@@ -396,7 +394,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
             return(-val)
         }
     }
-    opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=FALSE))
+    opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
     par2 = init; par2[!fixed] = opt.result$par
     par2[1:2] = exp(par2[1:2])
     par2[2] = par2[2]/(1+par2[2])*2 
