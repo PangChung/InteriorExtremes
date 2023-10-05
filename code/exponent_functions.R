@@ -368,7 +368,6 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
     data = data[,idx.thres]/data.sum[idx.thres]
     init[1] = log(init[1])
     init[2] = log(init[2]/(2-init[2]))
-    browser()
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
