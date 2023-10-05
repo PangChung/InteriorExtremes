@@ -350,30 +350,42 @@ cov.func <- function(loc,par){
     n = nrow(loc)
     diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
         as.vector(outer(loc[,2],loc[,2],'-')))
-    cov.mat <- matrix(exp(-((diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) + diag(1e-6,n) 
+    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^(v)), ncol=n) + diag(1e-8,n) 
     return(cov.mat)
 }
 
 alpha.func <- function(loc,par){
-    
-
+    beta.1 = par[1];beta.2 = par[2];beta.3 = par[3]
+    alpha = beta.1 + loc[,1] * beta.2 + loc[,2] * beta.3
+    return(alpha)
 }
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,thres = 0.90,model="truncT",maxit=1000,paralle=TRUE,ncores=NULL){
-        data.sum = apply(data,2,sum)
-        idx.thres = which(data.sum>quantile(data.sum,thres))
-        data = data[,idx.thres]
+    data.sum = apply(data,2,sum)
+    idx.thres = which(data.sum>quantile(data.sum,thres))
+    data = data[,idx.thres]/data.sum[idx.thres]
     if(model == "logskew1"){
+    ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
-            
-            #TODO the semiparametic function for the slant parameter
-            para.temp = list(nu=par[1],sigma=diag(par[-1]))
-            intensity_truncT(data,par=list(nu=init[[1]],sigma=diag(rep(1,ncol(data)))),parallel=FALSE)
+            par.1 = par[1:2];par.2 = par[3:5]
+            cov.mat = cov.func(loc,par.1)
+            alpha = alpha.func(loc,par.2)
+            para.temp = list(alpha=alpha,sigma=cov.mat)
+            val = intensity_logskew(data,par=para.temp,parallel=TRUE,ncores=parallel::detectCores())
+            return(val)
         }
     }
     if(model == "truncT"){
-    
-    
+    ## 3 parameters: 2 for the covariance function; 1 for the df parameter
+        object.func <- function(par){
+            par.1 = par[1:2];nu = par[3]
+            cov.mat = cov.func(loc,par.1)
+            para.temp = list(nu=nu,sigma=cov.mat)
+            val = intensity_truncT(data,par=para.temp,parallel=TRUE,ncores=parallel::detectCores())
+            return(val)
+        }
     }
+    opt.result = optim(init,object.func,method="Nelder-Mead",control=list(maxit=maxit))
+    return(opt.result)
 }
