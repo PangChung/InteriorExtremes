@@ -377,7 +377,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
             print(par)
             para.temp = list(alpha=alpha,sigma=cov.mat)
             val = sum(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
-            return(val)
+            return(-val)
         }
     }
     if(model == "truncT"){
@@ -390,7 +390,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
             val = sum(intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
-            return(val)
+            return(-val)
         }
     }
     opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
