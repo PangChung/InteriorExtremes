@@ -23,7 +23,7 @@ hist(pgev(Z.trunc[,1],1,1,1),50,prob=TRUE)
 image(1:10,1:10,z=matrix(log(Z.trunc[1,]),nrow=10),col=rev(heat.colors(10)))
 
 # Simulate a log-skew normal based max-stable process
-alpha = rep(0.5,nrow(coord))
+alpha = alpha.func(coord,c(0.1,-0.5,0.5))
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=10000,par=par2,ncores=10))
 hist(pgev(Z.logskew[,1],1,1,1),50,prob=TRUE)
@@ -36,6 +36,10 @@ ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 tc.truncT1 <- true_extcoef(all.pairs,par=par1,model="truncT1")
 tc.truncT2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par1,model="truncT2"),mc.cores=10)
 
+ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
+tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew1"),mc.cores=10)
+tc.logskew2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew2"),mc.cores=10)
+
 pdf("figures/extcoef_truncT.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
@@ -47,9 +51,6 @@ legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#0000001A","
     bty="n",pch=20,cex=1)
 dev.off()
 
-ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
-tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew1"),mc.cores=10)
-tc.logskew2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew2"),mc.cores=10)
 
 pdf("figures/extcoef_logskew.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
@@ -63,7 +64,9 @@ legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#0000001A","
 dev.off()
 
 ## plot the bivariate extremal coefficients map with respect to the central point ##
-idx.min = which.min(apply(diff.mat,2,sum))
+#idx.min = which.min(apply(diff.mat,2,sum))
+for(idx.min in 1:100){
+#idx.min = 35
 idx.ind.1 = which(all.pairs[1,]==idx.min)
 idx.ind.2 = which(all.pairs[2,]==idx.min)
 idx.ind = c(idx.ind.1,idx.ind.2)
@@ -127,7 +130,7 @@ p6 <- ggplot(dat) + geom_tile(aes(x=x,y=y,fill=tc.logskew2)) + scale_fill_gradie
                                     color = "transparent", 
                                     linewidth = 0.5))
 
-pdf("figures/extcoef_map.pdf",width=12,height=8)
+pdf(paste0("figures/extcoef_map_",idx.min,".pdf"),width=12,height=8)
 grid.arrange(p1, p2, p3, p4, p5, p6, ncol=3, nrow=2, widths=c(1,1,1), heights=c(1,1))
 dev.off()
-
+}

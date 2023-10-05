@@ -372,7 +372,7 @@ fit.model <- function(data,loc,init,thres = 0.90,model="truncT",maxit=1000,paral
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
             para.temp = list(alpha=alpha,sigma=cov.mat)
-            val = intensity_logskew(data,par=para.temp,parallel=TRUE,ncores=parallel::detectCores())
+            val = sum(intensity_logskew(data,par=para.temp,parallel=TRUE,log=TRUE,ncores=parallel::detectCores()))
             return(val)
         }
     }
@@ -382,7 +382,7 @@ fit.model <- function(data,loc,init,thres = 0.90,model="truncT",maxit=1000,paral
             par.1 = par[1:2];nu = par[3]
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
-            val = intensity_truncT(data,par=para.temp,parallel=TRUE,ncores=parallel::detectCores())
+            val = sum(intensity_truncT(data,par=para.temp,parallel=TRUE,log=TRUE,ncores=parallel::detectCores()))
             return(val)
         }
     }
