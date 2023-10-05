@@ -13,7 +13,6 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
     gamma_1 = log(gamma((nu+1)/2))
     gamma_n = log(gamma((nu+d)/2))
-    browser()
     a_fun <- function(j,upper){
         sigma.11_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.11_j,df=nu+1)[1]
@@ -132,6 +131,7 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
 ## this function computes the intensity function 
 ## for the log skew-normal based max-stable processes
 intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
+    browser()
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
@@ -140,12 +140,13 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    delta = sigma_bar %*% alpha/(1+t(alpha) %*% sigma_bar %*% alpha)
+    delta = c(sigma_bar %*% alpha)/c(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(omega_inv)
+    
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-    b = c((t(alpha) %*% omega_inv %*% rep(1,n))^2/sum_inv_sigma)
-    beta =  t(alpha) %*% omega %*% (diag(rep(1,n)) + rep(1,n) %*% t(colSums(inv.sigma))) * (1+b)^(-1/2)
+    b = c((t(alpha) %*% omega_inv %*% rep(1,n))^2/sum.inv.sigma)
+    beta =  c(t(alpha) %*% omega %*% (diag(rep(1,n)) + rep(1,n) %*% t(colSums(inv.sigma))) * (1+b)^(-1/2))
     A = inv.sigma %*% rep(1,n) %*% t(rep(1,n)) %*% inv.sigma/sum.inv.sigma - inv.sigma
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     func <- function(idx){
@@ -179,7 +180,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    delta = c(sigma_bar %*% alpha/c(1+t(alpha) %*% sigma_bar %*% alpha))
+    delta = c(sigma_bar %*% alpha)/c(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     b = t(alpha) %*% omega_inv %*% sigma
@@ -369,7 +370,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
     init[1] = log(init[1])
     init[2] = log(init[2]/(2-init[2]))
     browser()
-    if(model == "logskew1"){
+    if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
             par2 = init; par2[!fixed] = par
@@ -379,6 +380,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
             alpha = alpha.func(loc,par.2)
             print(c(par.1,par.2))
             para.temp = list(alpha=alpha,sigma=cov.mat)
+            
             val = sum(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(-val)
         }
@@ -396,7 +398,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000
             return(-val)
         }
     }
-    opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
+    opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=FALSE))
     par2 = init; par2[!fixed] = opt.result$par
     par2[1:2] = exp(par2[1:2])
     par2[2] = par2[2]/(1+par2[2])*2 

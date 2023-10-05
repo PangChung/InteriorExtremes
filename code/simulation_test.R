@@ -23,7 +23,7 @@ hist(pgev(Z.trunc[1,],1,1,1),50,prob=TRUE)
 image(1:10,1:10,z=matrix(log(Z.trunc[,1]),nrow=10),col=rev(heat.colors(10)))
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,c(0.1,-0.5,0.5))
+alpha = alpha.func(coord,c(0,0.5,-0.5))
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=10000,par=par2,ncores=10))
 hist(pgev(Z.logskew[1,],1,1,1),50,prob=TRUE)
@@ -43,11 +43,11 @@ tc.logskew2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model
 pdf("figures/extcoef_truncT.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main="Truncated extremal t processes",pch=20,col="#0000001A")
-points(x=diff.mat[t(all.pairs)],y=tc.truncT1,type="p",cex=0.5,col="#ff00001A",pch=20)
-points(x=diff.mat[t(all.pairs)],y=tc.truncT2,type="p",cex=0.5,col="#7eb3d81A",pch=20)
+    main="Truncated extremal t processes",pch=20,col="#00000033")
+points(x=diff.mat[t(all.pairs)],y=tc.truncT1,type="p",cex=0.5,col="#ff000033",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.truncT2,type="p",cex=0.5,col="#7eb3d833",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
-legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#0000001A","#ff00001A","#7eb3d81A"),
+legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#00000033","#ff000033","#7eb3d833"),
     bty="n",pch=20,cex=1)
 dev.off()
 
@@ -55,11 +55,11 @@ dev.off()
 pdf("figures/extcoef_logskew.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main = "Log-skew normal based max-stable processes",pch=20,col="#0000001A")
-points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="#ff00001A",pch=20)
-points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="#0f83d61A",pch=20)
+    main = "Log-skew normal based max-stable processes",pch=20,col="#00000033")
+points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="#ff000033",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=0.5,col="#7eb3d833",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
-legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#0000001A","#ff00001A","#7eb3d81A"),
+legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#00000033","#ff000033","#7eb3d833"),
     bty="n", pch=20,cex=1)
 dev.off()
 
@@ -137,5 +137,6 @@ dev.off()
 
 ## fit the model 
 # fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=10,maxit=500) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,T,T),thres=0.9,model="truncT",ncores=10,maxit=500) )
 system.time( fit.truncT <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,2,0.1,-0.5,0.5),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=10,maxit=500) )
+
