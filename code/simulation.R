@@ -73,7 +73,7 @@ simu_logskew <- function(m,par,ncores=NULL){
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
     sigma.bar.chol = chol(sigma.bar)
-    delta = c(sigma.bar %*% alpha)/c(1+ t(alpha) %*% sigma.bar %*% alpha)^(-1/2)
+    delta = c(sigma.bar %*% alpha)/sqrt(c(1+ t(alpha) %*% sigma.bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
 
     tau.new = delta * diag(omega)
