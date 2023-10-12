@@ -34,6 +34,7 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 
 #alpha = - 1 - coord[,2] + exp(sin(5*coord[,2]))
 alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
+alpha = pmax(pmin(alpha,2),-2)
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- bi.simu(m=10000,par=par2,ncores=10, model="logskew"))
 ec.logskew <- unlist(lapply(Z.logskew$val,empirical_extcoef,idx=1:2))
@@ -45,6 +46,7 @@ plot(x=diff.mat[t(pairs)],y=ec.logskew,type="l",cex=0.5,ylim=c(1,2),xlab="Distan
     main="Log-skew normal based max-stable processes",col="black")
 lines(x=diff.mat[t(pairs)],y=tc.logskew2,cex=0.5,col="red")
 abline(h=c(1,2),col="grey",lty=2,cex=2)
+#lines(x=diff.mat[t(pairs)],y=alpha[-1]/4+1.5,col="blue")
 legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
     bty="n",lwd=1,cex=1)
 #dev.off()

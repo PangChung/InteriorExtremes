@@ -185,8 +185,11 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
-        if(j<n) A.j = t(cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)])) 
-        else A.j = t(cbind(I.mat2[,0:(j-1)],rep(-1,n-1))) 
+        if(j<n){
+        A.j = t(cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)]))
+        }else{
+        A.j = t(cbind(I.mat2[,0:(j-1)],rep(-1,n-1)))
+        }
         sigma.j = t(A.j) %*% sigma %*% A.j
         sigma.j.chol = chol(sigma.j)
         sigma.j.inv = chol2inv(sigma.j.chol)
@@ -203,7 +206,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
         func_temp <- function(i){
             xi = x[,i]
             mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),b2)
-            val = pnorm(b2)^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[[1]]
+            val = pnorm(b2)^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ,algorithm = "TVPACK")[[1]]
             return(val)
         }
         val = unlist(lapply(1:ncol(x),func_temp))
