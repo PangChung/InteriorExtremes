@@ -202,7 +202,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
         sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),rbind(b3,1)))
         func_temp <- function(i){
             xi = x[,i]
-            mu = c(rbind(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),b2))
+            mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),b2)
             val = pnorm(b2)^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[[1]]
             return(val)
         }
