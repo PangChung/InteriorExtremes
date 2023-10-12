@@ -139,7 +139,7 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    delta = c(sigma_bar %*% alpha)/c(1+t(alpha) %*% sigma_bar %*% alpha)
+    delta = c(sigma_bar %*% alpha)/sqrt(c(1+t(alpha) %*% sigma_bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(inv.sigma)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
@@ -178,7 +178,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    delta = c(sigma_bar %*% alpha)/c(1+t(alpha) %*% sigma_bar %*% alpha)
+    delta = c(sigma_bar %*% alpha)/sqrt(c(1+t(alpha) %*% sigma_bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     b = c(t(alpha) %*% omega_inv %*% sigma)
@@ -256,7 +256,7 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
     sigma.tilde.2.1.bar.true = omega.tilde.2.1.inv %*% sigma.tilde.2.1.bar %*% omega.tilde.2.1.inv
     mu.tilde = sigma.tilde.inv %*% sigma.inv %*% ones /sum.sigma.inv/2
     
-    delta = sigma_bar %*% alpha/(1+t(alpha) %*% sigma_bar %*% alpha)
+    delta = sigma_bar %*% alpha/sqrt(1+t(alpha) %*% sigma_bar %*% alpha)
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
 
     b = c((t(alpha) %*% omega.inv %*% ones)^2/sum.sigma.inv)
@@ -350,7 +350,7 @@ cov.func <- function(loc,par){
     n = nrow(loc)
     diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
         as.vector(outer(loc[,2],loc[,2],'-')))
-    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^(v)), ncol=n) #+ diag(1e-6,n) 
+    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) + diag(1e-6,n) 
     return(cov.mat)
 }
 
@@ -361,7 +361,7 @@ alpha.func <- function(loc,par){
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=1000,parallel=TRUE,ncores=2){
+fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,parallel=TRUE,ncores=2){
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = data[,idx.thres]/data.sum[idx.thres]

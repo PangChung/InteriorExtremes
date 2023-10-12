@@ -7,7 +7,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 ### testing the simulator ###
 d <- 10
-coord = as.matrix(expand.grid(1:d,1:d)/d)
+coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
@@ -15,18 +15,39 @@ corr <- function(x,r=0.5,v=1) exp(- (sqrt(sum(x^2))/r)^v)
 cov.mat <- matrix(apply(diff.vector, 1, corr), ncol=nrow(coord)) 
 chol(cov.mat)
 nu = 2
-par1 <- list(nu=nu,sigma=cov.mat)
 
-# Simulate a truncated extremal-t max-stable process
+par1 <- list(nu=nu,sigma=cov.mat)
 system.time(Z.trunc <- simu_truncT(m=10000,par=par1,ncores=10))
-hist(pgev(Z.trunc[1,],1,1,1),50,prob=TRUE)
+png("figures/marginal_qqplot_truncT.png",width=d*1200,height=d*1200,res=300)
+par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
+for(idx in 1:nrow(Z.trunc)){
+z.order = order(Z.trunc[idx,],decreasing=FALSE)
+x = pgev(Z.trunc[idx,z.order],1,1,1);y=sort(runif(length(x)))
+p.value = ks.test(x,y)$p.value
+qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data",ylab="Theoretical")
+abline(0,1,col="red")
+}
+dev.off()
+
 image(1:10,1:10,z=matrix(log(Z.trunc[,1]),nrow=10),col=rev(heat.colors(10)))
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,c(0,0.5,-0.5))
+alpha = alpha.func(coord,c(1,0,0))
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=10000,par=par2,ncores=10))
-hist(pgev(Z.logskew[1,],1,1,1),50,prob=TRUE)
+
+
+png("figures/marginal_qqplot_logskew.png",width=d*1200,height=d*1200,res=300)
+par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
+for(idx in 1:nrow(Z.logskew)){
+z.order = order(Z.logskew[idx,],decreasing=FALSE)
+x = pgev(Z.logskew[idx,z.order],1,1,1);y=sort(runif(length(x)))
+p.value = ks.test(x,y)$p.value
+qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data",ylab="Theoretical")
+abline(0,1,col="red")
+}
+dev.off()
+
 image(1:10,1:10,z=matrix(log(Z.logskew[,1]),nrow=10),col=rev(heat.colors(10)) )
 
 all.pairs <- combn(1:nrow(coord),2)
@@ -64,8 +85,8 @@ legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#00000033","
 dev.off()
 
 ## plot the bivariate extremal coefficients map with respect to the central point ##
-#idx.min = which.min(apply(diff.mat,2,sum))
 for(idx.min in 1:100){
+#idx.min = which.min(apply(diff.mat,2,sum))
 #idx.min = 35
 idx.ind.1 = which(all.pairs[1,]==idx.min)
 idx.ind.2 = which(all.pairs[2,]==idx.min)
@@ -137,7 +158,15 @@ dev.off()
 
 ## fit the model 
 # fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,T,T),thres=0.9,model="truncT",ncores=10,maxit=500) )
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,-0.5,0.5),fixed=c(F,F,T,T,T),thres=0.9,model="logskew",ncores=10,maxit=500) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.95,model="truncT",ncores=10,maxit=500) )
+# fit the log-skew based model
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,-0.5,0.5),fixed=c(F,F,T,T,T),thres=0.95,model="logskew",ncores=10,maxit=10000) )
+#system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=fit.logskew$par,fixed=c(F,F,F,F,F),thres=0.95,model="logskew",ncores=10,maxit=1000) )
 
+cov.mat = cov.func(coord,fit.logskew$par[1:2])
+alpha = alpha.func(coord,fit.logskew$par[3:5])
+fitted.extcoef.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew2"),mc.cores=10)
+plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
+    main = "Log-skew normal based max-stable processes",pch=20,col="#00000033")
+points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1,type="p",cex=0.5,col="#ff000033",pch=20)
 
