@@ -16,13 +16,17 @@ chol(cov.mat)
 nu = 2
 
 par1 <- list(nu=nu,sigma=cov.mat)
-system.time(Z.trunc <- bi.simu(m=10000,par=par1,ncores=10,model="truncT"))
-ks.test(pgev(Z.trunc$val[[2]][2,],1,1,1),sort(runif(10000)))$p.value
+system.time(Z.trunc <- bi.simu(m=1000,par=par1,ncores=10,model="truncT"))
+ks.test.values <- apply(do.call(rbind,Z.trunc$val),1,function(x) ks.test(pgev(x,1,1,1),runif(length(x)))$p.value)
+boxplot(ks.test.values)
+abline(h=0.025,col="red")
+sum(ks.test.values < 0.025)/length(ks.test.values)
+
 ec.trunc <- unlist(lapply(Z.trunc$val,empirical_extcoef,idx=c(1,2)))
 pairs <- rbind(1,2:d);pairs.list = split(pairs,col(pairs))
 tc.truncT2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par1,model="truncT2"),mc.cores=10)
 
-#pdf("figures/extcoef_truncT_bi.pdf",width=6,height=4)
+pdf("figures/extcoef_truncT_bi.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(pairs)],y=ec.trunc,type="l",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main="Truncated extremal t processes",col="black")
@@ -30,7 +34,7 @@ lines(x=diff.mat[t(pairs)],y=tc.truncT2,cex=0.5,col="red")
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
     bty="n",lwd=1,cex=1)
-#dev.off()
+dev.off()
 
 alpha = - 1 - coord[,2] + exp(sin(5*coord[,2]))
 alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*2-1
@@ -44,6 +48,7 @@ ec.logskew.1 <- unlist(lapply(Z.logskew.1$val,empirical_extcoef,idx=1:2))
 ec.logskew.2 <- unlist(lapply(Z.logskew.2$val,empirical_extcoef,idx=1:2))
 tc.logskew.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.1,model="logskew2"),mc.cores=10)
 tc.logskew.2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.2,model="logskew2"),mc.cores=10)
+
 pdf("figures/extcoef_logskew_bi.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(pairs)],y=ec.logskew.1,type="p",cex=0.2,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
