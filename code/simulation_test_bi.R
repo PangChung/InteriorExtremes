@@ -53,20 +53,19 @@ ec.logskew.2 <- unlist(lapply(Z.logskew.2$val,empirical_extcoef,idx=1:2))
 tc.logskew.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.1,model="logskew2"),mc.cores=10)
 tc.logskew.2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.2,model="logskew2"),mc.cores=10)
 
-#pdf("figures/extcoef_logskew_bi.pdf",width=6,height=4)
+pdf("figures/extcoef_logskew_bi.pdf",width=8,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(pairs)],y=ec.logskew.1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main="Log-skew normal based max-stable processes",col="black",pch=20)
 points(x=diff.mat[t(pairs)],y=ec.logskew.2,cex=0.5,ylim=c(1,2),col="grey",pch=20)
 lines(x=diff.mat[t(pairs)],y=tc.logskew.1,cex=1,col="red",lty=1)
 lines(x=diff.mat[t(pairs)],y=tc.logskew.2,cex=1,col="pink",lty=1)
-
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 legend("topleft",legend=c("Empirical alpha 1","Empirical alpha 2"),col=c("black","grey"),
     bty="n",pch=20,cex=1)
 legend("topright",legend=c("Theoretical alpha 1","Theoretical alpha 2"),col=c("red","pink"),
     bty="n",lwd=1,lty=1,cex=1)
-#dev.off()
+dev.off()
 
 plot(x=(1:1000)/1001,y=par2.1$alpha,type="l",ylim=c(-alpha.range,alpha.range),xlab="x",ylab="alpha",col="grey",lwd=2)
 lines(x=c(1:1000)/1001,y=par2.2$alpha,type="l",col="red")
