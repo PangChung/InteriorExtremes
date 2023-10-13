@@ -67,6 +67,7 @@ legend("topright",legend=c("Theoretical alpha 1","Theoretical alpha 2"),col=c("r
     bty="n",lwd=1,lty=1,cex=1)
 dev.off()
 
+
 plot(x=(1:1000)/1001,y=par2.1$alpha,type="l",ylim=c(-alpha.range,alpha.range),xlab="x",ylab="alpha",col="grey",lwd=2)
 lines(x=c(1:1000)/1001,y=par2.2$alpha,type="l",col="red")
 
