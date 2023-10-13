@@ -178,35 +178,34 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    delta = c(sigma_bar %*% alpha)/sqrt(c(1+t(alpha) %*% sigma_bar %*% alpha))
+    b = c(t(alpha) %*% sigma_bar %*% alpha)
+    delta = c(sigma_bar %*% alpha)/sqrt(c(1+b))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-    b = c(t(alpha) %*% omega_inv %*% sigma)
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
         if(j<n){
-        A.j = t(cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)]))
+        A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)])
         }else{
-        A.j = t(cbind(I.mat2[,0:(j-1)],rep(-1,n-1)))
+        A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1))
         }
-        sigma.j = t(A.j) %*% sigma %*% A.j
+        sigma.j = A.j %*% sigma %*% t(A.j)
         sigma.j.chol = chol(sigma.j)
         sigma.j.inv = chol2inv(sigma.j.chol)
-        omega.j = sqrt(diag(diag(sigma.j),nrow=ncol(A.j)))
-        omega.j.inv = diag(diag(omega.j)^(-1),nrow=ncol(A.j))
+        omega.j = sqrt(diag(diag(sigma.j),nrow=n-1))
+        omega.j.inv = diag(diag(omega.j)^(-1),nrow=n-1)
         sigma.j.bar = omega.j.inv %*% sigma.j %*% omega.j.inv
-        alpha.hat = (1 - t(delta) %*% omega %*% A.j %*% sigma.j.inv %*% t(A.j) %*% omega %*% delta)^(-1/2) %*% omega.j %*% 
-            sigma.j.inv %*% t(A.j) %*% omega %*% delta   
-        u.j = t(A.j) %*% sigma %*% I.mat1[,j]
+        alpha.hat = (1 - t(delta) %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) %*% omega.j %*% 
+            sigma.j.inv %*% A.j %*% omega %*% delta   
+        u.j = A.j %*% sigma %*% I.mat1[,j]
         b1 = c(t(alpha.hat) %*% sigma.j.bar %*% alpha.hat)
-        b2 = c(t(alpha) %*% omega_inv %*% sigma %*% I.mat1[,j]*(1+b1)^(-1/2))
         b3 = c(-(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
         sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),rbind(b3,1)))
         func_temp <- function(i){
             xi = x[,i]
-            mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),b2)
-            val = pnorm(b2)^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ,algorithm = "TVPACK")[[1]]
+            mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),delta[j]*omega[j,j])
+            val = pnorm(delta[j]*omega[j,j])^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ,algorithm = "TVPACK")[[1]]
             return(val)
         }
         val = unlist(lapply(1:ncol(x),func_temp))

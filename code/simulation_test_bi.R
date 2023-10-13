@@ -19,7 +19,10 @@ par1 <- list(nu=nu,sigma=cov.mat)
 system.time(Z.trunc <- bi.simu(m=1000,par=par1,ncores=10,model="truncT"))
 ks.test.values <- apply(do.call(rbind,Z.trunc$val),1,function(x) ks.test(pgev(x,1,1,1),runif(length(x)))$p.value)
 boxplot(ks.test.values)
+hist(ks.test.values,20)
 abline(h=0.025,col="red")
+qqplot(sort(ks.test.values),sort(runif(length(ks.test.values))))
+abline(a=0,b=1,col="red")
 sum(ks.test.values < 0.025)/length(ks.test.values)
 
 ec.trunc <- unlist(lapply(Z.trunc$val,empirical_extcoef,idx=c(1,2)))
@@ -28,19 +31,20 @@ tc.truncT2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par1,model="tru
 
 pdf("figures/extcoef_truncT_bi.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
-plot(x=diff.mat[t(pairs)],y=ec.trunc,type="l",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main="Truncated extremal t processes",col="black")
+plot(x=diff.mat[t(pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
+    main="Truncated extremal t processes",col="black",pch=20)
 lines(x=diff.mat[t(pairs)],y=tc.truncT2,cex=0.5,col="red")
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
     bty="n",lwd=1,cex=1)
 dev.off()
 
+alpha.range = 5
 alpha = - 1 - coord[,2] + exp(sin(5*coord[,2]))
-alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*2-1
+alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-0.5
 par2.1 <- list(alpha=alpha,sigma=cov.mat)
 alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
-alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*2-1
+alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-0.5
 par2.2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew.1 <- bi.simu(m=10000,par=par2.1,ncores=10, model="logskew"))
 system.time(Z.logskew.2 <- bi.simu(m=10000,par=par2.2,ncores=10, model="logskew"))
@@ -49,18 +53,22 @@ ec.logskew.2 <- unlist(lapply(Z.logskew.2$val,empirical_extcoef,idx=1:2))
 tc.logskew.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.1,model="logskew2"),mc.cores=10)
 tc.logskew.2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.2,model="logskew2"),mc.cores=10)
 
-pdf("figures/extcoef_logskew_bi.pdf",width=6,height=4)
+#pdf("figures/extcoef_logskew_bi.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(pairs)],y=ec.logskew.1,type="p",cex=0.2,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main="Log-skew normal based max-stable processes",col="black",pch=20)
 points(x=diff.mat[t(pairs)],y=ec.logskew.2,cex=0.2,ylim=c(1,2),col="grey",pch=20)
 lines(x=diff.mat[t(pairs)],y=tc.logskew.1,cex=0.5,col="red",lty=1)
 lines(x=diff.mat[t(pairs)],y=tc.logskew.2,cex=0.5,col="pink",lty=1)
+
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 legend("topleft",legend=c("Empirical alpha 1","Empirical alpha 2"),col=c("black","grey"),
     bty="n",pch=20,cex=1)
 legend("topright",legend=c("Theoretical alpha 1","Theoretical alpha 2"),col=c("red","pink"),
     bty="n",lwd=1,lty=1,cex=1)
-dev.off()
+#dev.off()
+
+plot(x=(1:1000)/1001,y=par2.1$alpha,type="l",ylim=c(-1,alpha.range),xlab="x",ylab="alpha",col="grey",lwd=2)
+lines(x=c(1:1000)/1001,y=par2.2$alpha,type="l",col="red")
 
 save.image("data/bi_simulation.RData")
