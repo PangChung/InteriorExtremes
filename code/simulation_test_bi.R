@@ -39,35 +39,57 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
     bty="n",lwd=1,cex=1)
 dev.off()
 
+## log-skew normal based max-stable processes ##
 alpha.range = 10
 alpha = - 1 - coord[,2] + exp(sin(5*coord[,2]))
 alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
 par2.1 <- list(alpha=alpha,sigma=cov.mat)
+
 alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
 alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
 par2.2 <- list(alpha=alpha,sigma=cov.mat)
+
+alpha = 2.25 * sin(9*coord[,2])*cos(9*coord[,2])
+alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
+par2.3 <- list(alpha = alpha,sigma=cov.mat)
+
+plot(x=(1:d)/(d+1),y=par2.1$alpha,type="l",ylim=c(-alpha.range,alpha.range),xlab="x",ylab="alpha",col="black",lwd=2)
+lines(x=(1:d)/(d+1),y=par2.2$alpha,type="l",col="red",lwd=2)
+lines(x=(1:d)/(d+1),y=par2.3$alpha,type="l",col="blue",lwd=2)
+legend("topleft",legend=c("Alpha 1","Alpha 2","Alpha 3"),col=c("black","red","blue"),
+    bty="n",lwd=2,cex=1)
+
 system.time(Z.logskew.1 <- bi.simu(m=10000,par=par2.1,ncores=10, model="logskew"))
 system.time(Z.logskew.2 <- bi.simu(m=10000,par=par2.2,ncores=10, model="logskew"))
+system.time(Z.logskew.3 <- bi.simu(m=10000,par=par2.3,ncores=10, model="logskew"))
 ec.logskew.1 <- unlist(lapply(Z.logskew.1$val,empirical_extcoef,idx=1:2))
 ec.logskew.2 <- unlist(lapply(Z.logskew.2$val,empirical_extcoef,idx=1:2))
+ec.logskew.3 <- unlist(lapply(Z.logskew.3$val,empirical_extcoef,idx=1:2))
 tc.logskew.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.1,model="logskew2"),mc.cores=10)
 tc.logskew.2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.2,model="logskew2"),mc.cores=10)
+tc.logskew.3 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.3,model="logskew2"),mc.cores=10)
 
-pdf("figures/extcoef_logskew_bi.pdf",width=8,height=4)
-par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
-plot(x=diff.mat[t(pairs)],y=ec.logskew.1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main="Log-skew normal based max-stable processes",col="black",pch=20)
-points(x=diff.mat[t(pairs)],y=ec.logskew.2,cex=0.5,ylim=c(1,2),col="grey",pch=20)
-lines(x=diff.mat[t(pairs)],y=tc.logskew.1,cex=1,col="red",lty=1)
-lines(x=diff.mat[t(pairs)],y=tc.logskew.2,cex=1,col="pink",lty=1)
+pdf("figures/extcoef_logskew_bi.pdf",width=10*3,height=8)
+
+par(mfrow=c(1,3),mar=c(4,4,1,1),cex.main=1.5,cex.lab=2,cex=2,mgp=c(2.2,1,0))
+plot(x=diff.mat[t(pairs)],y=ec.logskew.1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal coefficient",
+    main="",col="black",pch=20)
+lines(x=diff.mat[t(pairs)],y=tc.logskew.1,cex=1,lwd=2,col="red",lty=1)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
-legend("topleft",legend=c("Empirical alpha 1","Empirical alpha 2"),col=c("black","grey"),
-    bty="n",pch=20,cex=1)
-legend("topright",legend=c("Theoretical alpha 1","Theoretical alpha 2"),col=c("red","pink"),
-    bty="n",lwd=1,lty=1,cex=1)
+
+plot(x=diff.mat[t(pairs)],y=ec.logskew.2,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal coefficient",
+    main="",col="black",pch=20)
+lines(x=diff.mat[t(pairs)],y=tc.logskew.2,cex=1,lwd=2,col="red",lty=1)
+abline(h=c(1,2),col="grey",lty=2,cex=2)
+
+plot(x=diff.mat[t(pairs)],y=ec.logskew.3,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal coefficient",
+    main="",col="black",pch=20)
+lines(x=diff.mat[t(pairs)],y=tc.logskew.3,cex=1,lwd=2,col="red",lty=1)
+abline(h=c(1,2),col="grey",lty=2,cex=2)
+
 dev.off()
 
-plot(x=(1:1000)/1001,y=par2.1$alpha,type="l",ylim=c(-alpha.range,alpha.range),xlab="x",ylab="alpha",col="grey",lwd=2)
-lines(x=c(1:1000)/1001,y=par2.2$alpha,type="l",col="red")
 
-save.image("data/bi_simulation.RData")
+save(ec.logskew.1,ec.logskew.2,ec.logskew.3,tc.logskew.1,tc.logskew.2,tc.logskew.3,par2.1,par2.2,par2.3,nu,par1,ec.trunc,tc.truncT2,pairs,diff.mat,Z.trunc,file="data/bi_simulation.RData")
+
+
