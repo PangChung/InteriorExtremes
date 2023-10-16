@@ -28,7 +28,6 @@ simu_truncT <- function(m,par,ncores=NULL){
         r = rexp(1)
         r.hat = 1/r
         z = rep(NA,n)
-        z[1] = 1
         k = nrow(sigma.list[[1]])
         z = tmvtsim(n=1,k=k, means=sigma[,1],sigma=sigma.list[[1]],lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
         z = z^nu * a[1]/a
@@ -38,11 +37,9 @@ simu_truncT <- function(m,par,ncores=NULL){
             r = rexp(1)
             r.hat = 1/r
             while(r.hat > z[j]){
-                z_temp = rep(NA,n);z_temp[j] = 1
-
+                z_temp = rep(NA,n)
                 z_temp = tmvtsim(n=1,k=k, means=sigma[,j], sigma=sigma.list[[j]],lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
                 z_temp = (z_temp)^nu * a[j]/a
-
                 z_temp = z_temp * r.hat
                 if(!any(z_temp[1:(j-1)] > z[1:(j-1)])){
                     z = pmax(z,z_temp)
@@ -53,7 +50,7 @@ simu_truncT <- function(m,par,ncores=NULL){
         }
         return(z)
     }
-    if(!is.null(ncores)) Z = mclapply(1:m,simu,mc.cores=ncores) else Z = lapply(1:m,simu)
+    if(!is.null(ncores)) Z = mclapply(1:m,simu,mc.cores=ncores,mc.set.seed = TRUE) else Z = lapply(1:m,simu)
     Z = matrix(unlist(Z),byrow=FALSE, ncol=m)
     return(Z)
 }
@@ -95,7 +92,7 @@ simu_logskew <- function(m,par,ncores=NULL){
             r.hat <- 1/r
             while(r.hat > z[j]){
                 x <- c(t(sigma.star.chol) %*% rnorm(n+1))
-                while(x[n+1] + tau.new[j] < 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+                while(x[n+1] + tau.new[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
                 x0 <- c(omega %*% x[1:n] + sigma[,j])
                 z_temp <- exp(x0-a);z_temp <- z_temp/z_temp[j]
                 z_temp <- z_temp * r.hat
@@ -108,33 +105,48 @@ simu_logskew <- function(m,par,ncores=NULL){
         }
         return(z)
     }
-
     if(!is.null(ncores)){ 
-        Z = mclapply(1:m,simu,mc.cores=ncores)
+        Z = mclapply(1:m,simu,mc.cores=ncores,mc.set.seed = TRUE)
     }else Z = lapply(1:m,simu)
-    
     Z = matrix(unlist(Z),byrow=FALSE, ncol=m)
     return(Z)
 }
 
 # Simulate a truncated extremal-t max-stable process
-bi.simu <- function(m,par,ncores=10,model="truncT"){
+bi.simu <- function(m,par,ncores=10,model="truncT",random.seed=34234){
+    set.seed(random.seed)
     if(model == "truncT"){
         par.func <- function(idx){
             new.par <- list(par[[1]],par[[2]][c(1,idx),c(1,idx)])
         }
         new.par.list <- lapply(2:nrow(par[[2]]),par.func)
-        val.list<- mclapply(new.par.list,simu_truncT,m=m,ncores=NULL,mc.cores=ncores)
+        val.list<- mclapply(new.par.list,simu_truncT,m=m,ncores=NULL,mc.cores=10,mc.set.seed = TRUE)
     }
     if(model == "logskew"){
         par.func <- function(idx){
             new.par <- list(par[[1]][c(1,idx)],par[[2]][c(1,idx),c(1,idx)])
         }
         new.par.list <- lapply(2:nrow(par[[2]]),par.func)
-        val.list<- mclapply(new.par.list,simu_logskew,m=m,ncores=NULL,mc.cores=ncores) 
+        val.list<- mclapply(new.par.list,simu_logskew,m=m,ncores=NULL,mc.cores=10,mc.set.seed = TRUE) 
     }
     return(list(val=val.list,par=new.par.list))
 }
 
 
+ks.test.new <- function(x,n=1000){
+    y = runif(length(x))
+    ks.test.boot <- function(x,y){
+        func <- function(idx){
+            ind.sample.x <- sample(1:length(x),n,replace=FALSE)
+            ind.sample.y <- sample(1:length(y),n,replace=FALSE)
+            val = ks.test(x[ind.sample.x],y[ind.sample.y])$statistic
+            return(val)
+        }
+        val = unlist(lapply(1:1000,func))
+        return(val)
+    }
+    stat.cut.thres <- min(quantile(ks.test.boot(x,x),0.95),quantile(ks.test.boot(y,y),0.95))
+    val = median(ks.test.boot(x,y))
+    return(val < stat.cut.thres)
+}
 
