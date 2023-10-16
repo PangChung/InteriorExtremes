@@ -50,7 +50,7 @@ simu_truncT <- function(m,par,ncores=NULL){
         }
         return(z)
     }
-    if(!is.null(ncores)) Z = mclapply(1:m,simu,mc.cores=ncores,mc.set.seed = TRUE) else Z = lapply(1:m,simu)
+    if(!is.null(ncores)) Z = mclapply(1:m,simu,mc.cores=ncores) else Z = lapply(1:m,simu)
     Z = matrix(unlist(Z),byrow=FALSE, ncol=m)
     return(Z)
 }
@@ -106,7 +106,7 @@ simu_logskew <- function(m,par,ncores=NULL){
         return(z)
     }
     if(!is.null(ncores)){ 
-        Z = mclapply(1:m,simu,mc.cores=ncores,mc.set.seed = TRUE)
+        Z = mclapply(1:m,simu,mc.cores=ncores)
     }else Z = lapply(1:m,simu)
     Z = matrix(unlist(Z),byrow=FALSE, ncol=m)
     return(Z)
@@ -120,14 +120,14 @@ bi.simu <- function(m,par,ncores=10,model="truncT",random.seed=34234){
             new.par <- list(par[[1]],par[[2]][c(1,idx),c(1,idx)])
         }
         new.par.list <- lapply(2:nrow(par[[2]]),par.func)
-        val.list<- mclapply(new.par.list,simu_truncT,m=m,ncores=NULL,mc.cores=10,mc.set.seed = TRUE)
+        val.list<- mclapply(new.par.list,simu_truncT,m=m,ncores=NULL,mc.cores=10,mc.preschedule = TRUE)
     }
     if(model == "logskew"){
         par.func <- function(idx){
             new.par <- list(par[[1]][c(1,idx)],par[[2]][c(1,idx),c(1,idx)])
         }
         new.par.list <- lapply(2:nrow(par[[2]]),par.func)
-        val.list<- mclapply(new.par.list,simu_logskew,m=m,ncores=NULL,mc.cores=10,mc.set.seed = TRUE) 
+        val.list<- mclapply(new.par.list,simu_logskew,m=m,ncores=NULL,mc.cores=10,mc.preschedule = TRUE) 
     }
     return(list(val=val.list,par=new.par.list))
 }

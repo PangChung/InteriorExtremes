@@ -19,9 +19,10 @@ chol(cov.mat)
 nu = 2
 m = 10000
 random.seed = 34234
+set.seed(random.seed)
 ## the truncatd extremal-t max-stable processes ##
 par1 <- list(nu=nu,sigma=cov.mat)
-set.seed(random.seed)
+
 system.time(Z.trunc <- bi.simu(m=m,par=par1,ncores=10,model="truncT",random.seed = random.seed))
 Z.trunc.val <- do.call(rbind,Z.trunc$val)
 which(apply(Z.trunc.val,1,anyDuplicated)>0)
@@ -73,7 +74,6 @@ lines(x=(1:d)/(d+1),y=par2.3$alpha,type="l",col="blue",lwd=2)
 legend("topleft",legend=c("Alpha 1","Alpha 2","Alpha 3"),col=c("black","red","blue"),
     bty="n",lwd=2,cex=1)
 dev.off()
-
 
 set.seed(random.seed)
 system.time(Z.logskew.1 <- bi.simu(m=m ,par=par2.1,ncores=10, model="logskew",random.seed = random.seed))
