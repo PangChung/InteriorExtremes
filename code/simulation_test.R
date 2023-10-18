@@ -166,8 +166,7 @@ dev.off()
 # fit the truncated extremal t model
 system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.95,model="truncT",ncores=10,maxit=500) )
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,0,0),fixed=c(F,F,T,T,T),thres=0.95,model="logskew",ncores=10,maxit=10000) )
-#system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=fit.logskew$par,fixed=c(F,F,F,F,F),thres=0.95,model="logskew",ncores=10,maxit=1000) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,0,0),fixed=c(F,T,T,T,T),thres=0.95,model="logskew",ncores=10,maxit=10000) )
 
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,fit.logskew$par[3:5])
