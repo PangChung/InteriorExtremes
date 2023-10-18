@@ -396,9 +396,10 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
         object.func <- function(par){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
-            par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
+            #par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             print(par.1)
             cov.mat = cov.func(loc,par.1)
+            if(!par.check(par.1)){return(Inf)}
             para.temp = list(nu=nu,sigma=cov.mat)
             val = mean(intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(-val)
