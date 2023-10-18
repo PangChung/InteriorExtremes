@@ -37,7 +37,7 @@ dev.off()
 image(1:10,1:10,z=matrix(log(Z.trunc[,1]),nrow=10),col=rev(heat.colors(10)))
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,c(0,0,0))
+alpha = alpha.func(coord,c(0,-10,10))
 #alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(alpha=alpha,sigma=cov.mat)
@@ -79,7 +79,6 @@ abline(h=c(1,2),col="grey",lty=2,cex=2)
 legend("topleft",legend=c("Empirical","Method 1","Method 2"),col=c("#00000033","#ff000033","#7eb3d833"),
     bty="n",pch=20,cex=1)
 dev.off()
-
 
 pdf("figures/extcoef_logskew.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
@@ -169,7 +168,7 @@ dev.off()
 # fit the truncated extremal t model
 system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.95,model="truncT",ncores=10,maxit=500) )
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,0,0),fixed=c(F,F,T,T,T),thres=0.80,model="logskew",ncores=10,maxit=10000) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,1.5,-1,1),fixed=c(F,F,F,F,F),thres=0.80,model="logskew",ncores=10,maxit=10000) )
 fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
 
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
