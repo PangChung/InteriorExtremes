@@ -1,10 +1,13 @@
 library(tmvnsim)
 library(parallel)
+library(mvtnorm)
 library(evd)
 library(gridExtra)
+library(partitions)
 library(ggplot2)
 source("code/simulation.R")
 source("code/exponent_functions.R")
+source("code/MLE_BrownResnick.R")
 ### testing the simulator ###
 d <- 10
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
@@ -166,7 +169,8 @@ dev.off()
 # fit the truncated extremal t model
 system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.95,model="truncT",ncores=10,maxit=500) )
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,0,0),fixed=c(F,T,T,T,T),thres=0.95,model="logskew",ncores=10,maxit=10000) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,0,0),fixed=c(F,F,T,T,T),thres=0.80,model="logskew",ncores=10,maxit=10000) )
+fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
 
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,fit.logskew$par[3:5])

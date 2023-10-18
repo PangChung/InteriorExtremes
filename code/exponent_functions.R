@@ -152,9 +152,9 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     func <- function(idx){
         x_log = log(x[,idx])
         x_circ = x_log + a
-        val = (-n-3)/2 * log(2) - (d-1)/2*log(pi) + pnorm(t(beta) %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
+        val = -(n-3)/2 * log(2) - (d-1)/2*log(pi) + pnorm(t(beta) %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
-        val = val - 1/2 * c(t(x_circ) %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
+        val = val - 1/2 * c(t(x_circ) %*% A %*% x_circ) - c(t(one.vec) %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
         return(val)
     }
     if(parallel){
@@ -370,13 +370,13 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = data[,idx.thres]/data.sum[idx.thres]
     init[1] = log(init[1])
-    init[2] = log(init[2]/(2-init[2]))
+    init[2] = log(init[2])#log((init[2]-0.5)/(-init[2]))
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[3:5]
-            par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
+            par.1 = exp(par.1)#;par.1[2] = par.1[2]/(1+par.1[2])*2 
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
             print(c(par.1,par.2))
