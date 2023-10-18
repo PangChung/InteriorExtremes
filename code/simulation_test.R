@@ -11,8 +11,7 @@ coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-corr <- function(x,r=0.5,v=1) exp(- (sqrt(sum(x^2))/r)^v)                          
-cov.mat <- matrix(apply(diff.vector, 1, corr), ncol=nrow(coord)) 
+cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
 m = 10000
@@ -35,9 +34,9 @@ dev.off()
 image(1:10,1:10,z=matrix(log(Z.trunc[,1]),nrow=10),col=rev(heat.colors(10)))
 
 # Simulate a log-skew normal based max-stable process
-#alpha = alpha.func(coord,c(1,0,0))
-alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
-alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
+alpha = alpha.func(coord,c(0,0,0))
+#alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
+#alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=10000,par=par2,ncores=10))
 
@@ -66,6 +65,7 @@ tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model
 tc.logskew2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew2"),mc.cores=10)
 
 idx.pairs = which(all.pairs[1,]==1 | all.pairs[2,]==1)
+
 pdf("figures/extcoef_truncT.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)][idx.pairs],y=ec.trunc[idx.pairs],type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
@@ -166,7 +166,7 @@ dev.off()
 # fit the truncated extremal t model
 system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.95,model="truncT",ncores=10,maxit=500) )
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,-0.5,0.5),fixed=c(F,F,T,T,T),thres=0.95,model="logskew",ncores=10,maxit=10000) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,0,0),fixed=c(F,F,T,T,T),thres=0.95,model="logskew",ncores=10,maxit=10000) )
 #system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=fit.logskew$par,fixed=c(F,F,F,F,F),thres=0.95,model="logskew",ncores=10,maxit=1000) )
 
 cov.mat = cov.func(coord,fit.logskew$par[1:2])

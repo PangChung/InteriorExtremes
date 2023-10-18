@@ -142,17 +142,19 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     delta = c(sigma_bar %*% alpha)/sqrt(c(1+t(alpha) %*% sigma_bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(inv.sigma)
+    one.mat = matrix(1,n,n)
+    one.vec = rep(1,n)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-    b = c((t(alpha) %*% omega_inv %*% rep(1,n))^2/sum.inv.sigma)
-    beta =  c(t(alpha) %*% omega %*% (diag(rep(1,n)) + rep(1,n) %*% t(colSums(inv.sigma))) * (1+b)^(-1/2))
-    A = inv.sigma - inv.sigma %*% (rep(1,n) %*% t(rep(1,n))) %*% inv.sigma/sum.inv.sigma 
+    b = c((t(alpha) %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
+    beta =  c(t(alpha) %*% omega_inv %*% (diag(one.vec) + one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
+    A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     func <- function(idx){
         x_log = log(x[,idx])
         x_circ = x_log + a
         val = (-n-3)/2 * log(2) - (d-1)/2*log(pi) + pnorm(t(beta) %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
-        val = val - 1/2 * t(x_circ) %*% A %*% x_circ - (c(rep(1,n) %*% inv.sigma %*% x_circ) - 1)/2/sum.inv.sigma
+        val = val - 1/2 * c(t(x_circ) %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
         return(val)
     }
     if(parallel){

@@ -12,8 +12,7 @@ coord = as.matrix(expand.grid(0,0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-corr <- function(x,r=1.5,v=0.3) exp(- (sqrt(sum(x^2))/r)^v)                          
-cov.mat <- matrix(apply(diff.vector, 1, corr), ncol=nrow(coord)) 
+cov.mat <- cov.func(c(0.5,1),coord)
 pairs <- rbind(1,2:d);pairs.list = split(pairs,col(pairs))
 chol(cov.mat)
 nu = 2
@@ -22,7 +21,6 @@ random.seed = 34234
 set.seed(random.seed)
 ## the truncatd extremal-t max-stable processes ##
 par1 <- list(nu=nu,sigma=cov.mat)
-
 system.time(Z.trunc <- bi.simu(m=m,par=par1,ncores=10,model="truncT",random.seed = random.seed))
 Z.trunc.val <- do.call(rbind,Z.trunc$val)
 which(apply(Z.trunc.val,1,anyDuplicated)>0)
