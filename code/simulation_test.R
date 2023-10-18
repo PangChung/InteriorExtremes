@@ -9,7 +9,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/MLE_BrownResnick.R")
 ### testing the simulator ###
-d <- 10
+d <- 5
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
@@ -166,10 +166,10 @@ dev.off()
 
 ## fit the model 
 # fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.95,model="truncT",ncores=10,maxit=500) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.8,model="truncT",ncores=10,maxit=500) )
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,1.5,-1,1),fixed=c(F,F,F,F,F),thres=0.80,model="logskew",ncores=10,maxit=10000) )
-fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,-10,10),fixed=c(F,F,T,T,F),thres=0.80,model="logskew",ncores=10,maxit=10000) )
+#fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
 
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,fit.logskew$par[3:5])
