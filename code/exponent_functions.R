@@ -152,7 +152,7 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     func <- function(idx){
         x_log = log(x[,idx])
         x_circ = x_log + a
-        val = -(n-3)/2 * log(2) - (d-1)/2*log(pi) + pnorm(t(beta) %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
+        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(t(beta) %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
         val = val - 1/2 * c(t(x_circ) %*% A %*% x_circ) - c(t(one.vec) %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
         return(val)
@@ -364,24 +364,30 @@ alpha.func <- function(loc,par){
     return(alpha)
 }
 
+par.check <- function(par){
+    return((par[1] > 0 & par[2] < 2 & par[2] > 0))
+}
+
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,parallel=TRUE,ncores=2){
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
-    data = data[,idx.thres]/data.sum[idx.thres]
-    init[1] = log(init[1])
-    init[2] = log(init[2])#log((init[2]-0.5)/(-init[2]))
+    data = sweep(data[,idx.thres],2,data.sum[idx.thres],"/")
+    #init[1] = init[1]
+    #init[2] = log((init[2])/(2-init[2]))
+    #browser()
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[3:5]
-            par.1 = exp(par.1)#;par.1[2] = par.1[2]/(1+par.1[2])*2 
+        #      par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
             print(c(par.1,par.2))
+            if(!par.check(par.1)){return(Inf)}
             para.temp = list(alpha=alpha,sigma=cov.mat)
-            val = sum(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
+            val = mean(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(-val)
         }
     }
