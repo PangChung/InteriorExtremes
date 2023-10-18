@@ -400,7 +400,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             print(par.1)
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
-            val = sum(intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
+            val = mean(intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
             return(-val)
         }
     }
