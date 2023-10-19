@@ -11,6 +11,7 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
+    browser()
     gamma_1 = log(gamma((nu+1)/2))
     gamma_n = log(gamma((nu+d)/2))
     a_fun <- function(j,upper){
@@ -25,8 +26,8 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
         log_x = log(x[,idx])
         x_j = (log_x + a_j) * 1/nu
         x_circ = exp(x_j)
-        val = -logphi + 1/nu*sum(x_j) + log(nu) +  log(t(x_circ) %*% inv.sigma %*% x_circ) * 
-            (-nu-d)/2 + gamma_n
+        val = -logphi + sum(x_j) - sum(log_x) - (n-1)*log(nu) - logdet.sigma/2 - n/2 * log(2*pi) +  log(t(x_circ) %*% inv.sigma %*% x_circ) * 
+            (-nu-n)/2 + gamma_n
         return(val)
     }
     if(parallel){
