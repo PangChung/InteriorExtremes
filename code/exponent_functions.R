@@ -5,7 +5,7 @@
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
 intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
-    sigma = par[[2]];nu = par[[1]]
+    nu = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
