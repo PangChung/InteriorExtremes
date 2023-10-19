@@ -9,7 +9,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/MLE_BrownResnick.R")
 ### testing the simulator ###
-d <- 10
+d <- 4
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
