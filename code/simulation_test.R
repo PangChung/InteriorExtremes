@@ -9,7 +9,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/MLE_BrownResnick.R")
 ### testing the simulator ###
-d <- 4
+d <- 10
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
@@ -174,7 +174,13 @@ system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,-1
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,fit.logskew$par[3:5])
 fitted.extcoef.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
+
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="#00000033")
 points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1,type="p",cex=0.5,col="#ff000033",pch=20)
 
+plot(x=diff.mat[t(all.pairs)][idx.pairs],y=ec.logskew[idx.pairs],type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
+    main = "Log-skew normal based max-stable processes",pch=20,col="black")
+points(x=diff.mat[t(all.pairs)][idx.pairs],y=fitted.extcoef.logskew1[idx.pairs],type="p",cex=0.5,col="red",pch=20)
+
+save.image("data/simulation_test.RData")

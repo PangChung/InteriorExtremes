@@ -11,7 +11,6 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
-    browser()
     gamma_1 = log(gamma((nu+1)/2))
     gamma_n = log(gamma((nu+d)/2))
     a_fun <- function(j,upper){
