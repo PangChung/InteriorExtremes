@@ -171,13 +171,30 @@ system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixe
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,-10,10),fixed=c(F,F,T,T,F),thres=0.80,model="logskew",ncores=10,maxit=10000) )
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
 
+idx.pairs <- which(all.pairs[1,]==45 | all.pairs[2,]==45)
+cov.mat = cov.func(coord,fit.logskew$par[1:2])
+alpha = alpha.func(coord,c(0,-10,-10))
+fitted.extcoef.logskew1.1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
+plot(x=diff.mat[t(all.pairs)][idx.pairs],y=ec.logskew[idx.pairs],type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
+    main = "Log-skew normal based max-stable processes",pch=20,col="#00000033")
+points(x=diff.mat[t(all.pairs)][idx.pairs],y=fitted.extcoef.logskew1.1[idx.pairs],type="p",cex=0.5,col="#ff000033",pch=20)
+mean((fitted.extcoef.logskew1.1[idx.pairs] - ec.logskew[idx.pairs] )^2)
+
+cov.mat = cov.func(coord,fit.logskew$par[1:2])
+alpha = alpha.func(coord,fit.logskew$par[3:5])
+fitted.extcoef.logskew1.2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
+plot(x=diff.mat[t(all.pairs)][idx.pairs],y=ec.logskew[idx.pairs],type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
+    main = "Log-skew normal based max-stable processes",pch=20,col="#00000033")
+points(x=diff.mat[t(all.pairs)][idx.pairs],y=fitted.extcoef.logskew1.2[idx.pairs],type="p",cex=0.5,col="#ff000033",pch=20)
+mean((fitted.extcoef.logskew1.2[idx.pairs] - ec.logskew[idx.pairs] )^2)
+
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,c(0,-10,10))
-fitted.extcoef.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
-
-plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
+fitted.extcoef.logskew1.3 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
+plot(x=diff.mat[t(all.pairs)][idx.pairs],y=ec.logskew[idx.pairs],type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="#00000033")
-points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1,type="p",cex=0.5,col="#ff000033",pch=20)
+points(x=diff.mat[t(all.pairs)][idx.pairs],y=fitted.extcoef.logskew1.3[idx.pairs],type="p",cex=0.5,col="#ff000033",pch=20)
+mean((fitted.extcoef.logskew1.3[idx.pairs] - ec.logskew[idx.pairs] )^2)
 
 plot(x=diff.mat[t(all.pairs)][idx.pairs],y=ec.logskew[idx.pairs],type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="black")
