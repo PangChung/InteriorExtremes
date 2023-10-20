@@ -172,7 +172,7 @@ system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,0,-1
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
 
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
-alpha = alpha.func(coord,fit.logskew$par[3:5])
+alpha = alpha.func(coord,c(0,-10,10))
 fitted.extcoef.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
 
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
