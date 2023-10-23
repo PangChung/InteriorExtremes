@@ -14,31 +14,32 @@ simu_truncT <- function(m,par,ncores=NULL){
     gamma_1 = log(gamma((nu+1)/2))
     a_fun <- function(j,upper){
         sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
-        sigma.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F])/(nu+1)
+        sigma.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F] + diag(1e-5,n))/(nu+1) #causing numerical problems
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[[1]]
         return(list(val,sigma.j))
     }
     if(!is.null(ncores)) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])
+    sigma.chol = lapply(sigma.list,chol)
     a = T_j_val/phi*2^((nu-2)/2)*gamma_1*(pi^(-1/2))
-    #message("normalizing constants computed")
+    #browser()
     # Simulate the max-stable process
     simu <- function(idx){
         r = rexp(1)
         r.hat = 1/r
         z = rep(NA,n)
-        k = nrow(sigma.list[[1]])
-        z = tmvtsim(n=1,k=k, means=sigma[,1],sigma=sigma.list[[1]],lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
+        z = tmvtsim(n=1,k=n, means=sigma[,1],sigma=sigma.list[[1]],
+                  lower=rep(0,n),upper=rep(Inf,n),df=nu+1)[[1]]
         z = z^nu * a[1]/a
-
         z = z * r.hat
         for(j in 2:n){
             r = rexp(1)
             r.hat = 1/r
             while(r.hat > z[j]){
-                z_temp = rep(NA,n)
-                z_temp = tmvtsim(n=1,k=k, means=sigma[,j], sigma=sigma.list[[j]],lower=rep(0,k),upper=rep(Inf,k),df=nu+1)[[1]]
+                z_temp = rep(NA,n);#z_temp[j] = 1
+                z_temp = tmvtsim(n=1,k=n, means=sigma[,j],sigma=sigma.list[[j]],
+                    lower=rep(0,n),upper=rep(Inf,n),df=nu+1)[[1]]
                 z_temp = (z_temp)^nu * a[j]/a
                 z_temp = z_temp * r.hat
                 if(!any(z_temp[1:(j-1)] > z[1:(j-1)])){

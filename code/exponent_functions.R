@@ -31,6 +31,7 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
     }
     if(parallel){
         val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
+
     }else{
         val = unlist(lapply(1:ncol(x),func))
     }
@@ -364,6 +365,10 @@ alpha.func <- function(loc,par){
     return(alpha)
 }
 
+alpha.func <- function(coord,par=10){
+    alpha = 1 + 1.5*coord[,2] - par * exp(2*sin(2*coord[,2]))
+}
+
 par.check <- function(par){
     return((par[1] > 0 & par[2] < 2 & par[2] > 0))
 }
@@ -380,7 +385,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par){
             par2 = init; par2[!fixed] = par
-            par.1 = par2[1:2];par.2 = par2[3:5]
+            par.1 = par2[1:2];par.2 = par2[-c(1:2)]
         #      par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
