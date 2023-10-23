@@ -374,7 +374,8 @@ par.check <- function(par){
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,parallel=TRUE,ncores=2){
+fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
+                        parallel=TRUE,ncores=2,method="L-BFGS-B",hessian=FALSE,lb=NULL,ub=NULL){
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[,idx.thres],2,data.sum[idx.thres],"/")
@@ -410,7 +411,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             return(-val)
         }
     }
-    opt.result = optim(init[!fixed],object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE))
+    opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian,lower=lb,upper=ub)
     par2 = init; par2[!fixed] = opt.result$par
     opt.result$par = par2
     return(opt.result)
