@@ -412,6 +412,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
         }
     }
     opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian,lower=lb,upper=ub)
+    
     par2 = init; par2[!fixed] = opt.result$par
     opt.result$par = par2
     return(opt.result)
