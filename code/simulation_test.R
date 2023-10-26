@@ -78,7 +78,7 @@ ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 tc.truncT1 <- true_extcoef(all.pairs,par=par1,model="truncT1")
 
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
-tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew1"),mc.cores=10)
+tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew1"),mc.cores=ncores)
 
 idx = which.min(apply(diff.mat,2,sum))
 idx.pairs = which(all.pairs[1,] == idx | all.pairs[2,] == idx)
