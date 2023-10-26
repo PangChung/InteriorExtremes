@@ -390,7 +390,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
         #      par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
-            print(c(par.1,par.2))
+            #print(c(par.1,par.2))
             if(!par.check(par.1)){return(Inf)}
             para.temp = list(alpha=alpha,sigma=cov.mat)
             val = -intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores)
@@ -404,7 +404,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             par.1 = par2[1:2];nu = par2[3]
             #par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             if(!par.check(par.1)){return(Inf)}
-            print(par.1)
+            #print(par.1)
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
             val = -intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores)
