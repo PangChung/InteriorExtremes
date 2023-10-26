@@ -160,9 +160,12 @@ dev.off()
 
 ## fit the model 
 # fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=10,maxit=500,method="L-BFGS-B",lb=c(0.01,0.01),ub=c(10,1.9)))
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=10,maxit=500,method="L-BFGS-B",lb=c(0.01,0.01),ub=c(10,1.9),bootstrap=TRUE) )
+
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="logskew",method="L-BFGS-B",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),ncores=10,maxit=10000) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="logskew",method="L-BFGS-B",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=TRUE,ncores=10,maxit=10000))
+
+system("say \'your program has finished\'")
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
 #idx.pairs <- which(all.pairs[1,]==45 | all.pairs[2,]==45)
 cov.mat = cov.func(coord,fit.logskew$par[1:2])

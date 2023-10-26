@@ -4,7 +4,7 @@
 
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
-intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
+intensity_truncT <- function(x,par,ncores=2,log=TRUE){
     nu = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     chol.sigma = chol(sigma)
@@ -18,7 +18,7 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.11_j,df=nu+1)[1]
         return(log(val))
     }
-    if(parallel) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
+    if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
     a_j = T_j - logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
     if(!is.matrix(x)){ x = matrix(x,nrow=n,byrow=FALSE)} 
     func <- function(idx){
@@ -29,7 +29,7 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
             (-nu-n)/2 + gamma_n
         return(val)
     }
-    if(parallel){
+    if(!is.null(ncores)){
         val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
 
     }else{
@@ -41,7 +41,7 @@ intensity_truncT <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
 
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
-V_truncT <- function(x,par,parallel=TRUE,ncores=2){
+V_truncT <- function(x,par,ncores=2){
     sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
@@ -57,7 +57,7 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     idx.finite <- which(apply(x,1,function(xi){any(is.finite(xi))}))
     T_j = rep(1,n)
-    if(parallel) T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
+    if(!is.null(ncores)) T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
     else T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
     a_j = rep(1,n)
     a_j[idx.finite] = T_j[idx.finite]/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
@@ -70,7 +70,7 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
         V_j[is.finite.ind] = mapply(a_fun,j=is.finite.ind,upper=x_upper[is.finite.ind],sigma_j = sigma_j[is.finite.ind],SIMPLIFY = TRUE)
         val = sum(V_j[is.finite.ind]/T_j[is.finite.ind]/x[is.finite.ind,idx])
     }
-    if(parallel){
+    if(!is.null(ncores)){
         val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
     }else{
         val = unlist(lapply(1:ncol(x),func))
@@ -80,7 +80,7 @@ V_truncT <- function(x,par,parallel=TRUE,ncores=2){
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
-partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
+partialV_truncT <- function(x,idx,par,ncores=2,log=TRUE){
     sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
@@ -96,7 +96,7 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
         return(val)
     }
-    if(parallel) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
+    if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
     a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
     if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
     
@@ -111,7 +111,7 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         val = val + log(mvtnorm::pmvt(lower=rep(0,n-k)-loc,upper=upper-loc,sigma=sigma_T,df=k+nu))[[1]]
         return(val)
     }
-    if(parallel){
+    if(!is.null(ncores)){
         val = unlist(parallel::mclapply(1:n,func,mc.cores = ncores))
     }
     else{
@@ -131,7 +131,7 @@ partialV_truncT <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
 
 ## this function computes the intensity function 
 ## for the log skew-normal based max-stable processes
-intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
+intensity_logskew <- function(x,par,ncores=2,log=TRUE){
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
@@ -158,7 +158,7 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
         val = val - 1/2 * c(t(x_circ) %*% A %*% x_circ) - c(t(one.vec) %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
         return(val)
     }
-    if(parallel){
+    if(!is.null(ncores)){
         val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
     }
     else{
@@ -172,7 +172,7 @@ intensity_logskew <- function(x,par,parallel=TRUE,ncores=2,log=TRUE){
 
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
-V_logskew <- function(x,par,parallel=TRUE,ncores=2){
+V_logskew <- function(x,par,ncores=2){
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
@@ -214,7 +214,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
         val = unlist(lapply(1:ncol(x),func_temp))
         return(val)
     }
-    if(parallel){
+    if(!is.null(ncores)){
         val = parallel::mclapply(1:n,func,mc.cores = ncores)
         val = matrix(unlist(val),nrow=n,byrow=TRUE)
         val = apply(val,2,sum)
@@ -230,7 +230,7 @@ V_logskew <- function(x,par,parallel=TRUE,ncores=2){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 #TODO: equation 46, 50 and page 130 eqaution 5.28
-partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
+partialV_logskew <- function(x,idx,par,ncores=2,log=TRUE){
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     sigma.chol = chol(sigma)
@@ -289,11 +289,11 @@ partialV_logskew <- function(x,idx,par,parallel=TRUE,ncores=2,log=TRUE){
         mu.val = rbind(omega2.1.inv %*% (log(xi[-idx]) + a[-idx] - mu.2.1),tau2.1 * (1+b1)^(-1/2))
         scale.val = cbind(rbind(sigma.2.1.bar, b2),rbind(b2,1))
         phi = pnorm(b2)
-        intensity.marginal = intensity_logskew(xi[idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),parallel=FALSE,log=FALSE)
+        intensity.marginal = intensity_logskew(xi[idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),ncores=NULL,log=FALSE)
         val = intensity.marginal * phi^(-1) * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[[1]]
         return(val)
     }
-    if(parallel){
+    if(!is.null(ncores)){
         val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
     }
     else{
@@ -326,24 +326,24 @@ true_extcoef <- function(idx,par,model="logskew1"){
         sigma.22.1 = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx]
         alpha.new = c(c(1 + t(alpha[-idx]) %*% sigma.22.1 %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.bar.11.inv %*% sigma.bar[idx,-idx] %*% alpha[-idx]))
         sigma.new = sigma[idx,idx]
-        val = V_logskew(rep(1,length(idx)),list(alpha=alpha.new,sigma=sigma.new),parallel=FALSE)
+        val = V_logskew(rep(1,length(idx)),list(alpha=alpha.new,sigma=sigma.new),ncores=NULL)
     }
 
     if(model == "logskew2"){
         alpha = par[[1]];sigma = par[[2]]
-        val = V_logskew(rep(1,length(idx)),list(alpha=alpha[idx],sigma=sigma[idx,idx]),parallel=FALSE)
+        val = V_logskew(rep(1,length(idx)),list(alpha=alpha[idx],sigma=sigma[idx,idx]),ncores=NULL)
     }
     
     if(model == "truncT1"){
         x = matrix(Inf,nrow=nrow(par[[2]]),ncol=ncol(idx))
         all.pairs.new = cbind(c(idx),rep(1:ncol(idx),each=nrow(idx)))
         x[all.pairs.new] = 1
-        val = V_truncT(x,par,parallel=TRUE,ncores=parallel::detectCores())
+        val = V_truncT(x,par,ncores=parallel::detectCores())
     }
 
     if(model == "truncT2"){
         x = rep(1,length(idx))
-        val = V_truncT(x,list(nu = par[[1]],sigma=par[[2]][idx,idx]),parallel=FALSE)
+        val = V_truncT(x,list(nu = par[[1]],sigma=par[[2]][idx,idx]),ncores=NULL)
     }
     return(val)
 
@@ -375,14 +375,14 @@ par.check <- function(par){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
-                        parallel=TRUE,ncores=2,method="L-BFGS-B",hessian=TRUE,lb=NULL,ub=NULL){
+                    ncores=2,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE){
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[,idx.thres],2,data.sum[idx.thres],"/")
     #browser()
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
-        object.func <- function(par,opt=TRUE){
+        object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
         #      par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
@@ -391,13 +391,13 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             #print(c(par.1,par.2))
             if(!par.check(par.1)){return(Inf)}
             para.temp = list(alpha=alpha,sigma=cov.mat)
-            val = -intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores)
+            val = -intensity_logskew(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
         }
     }
     if(model == "truncT"){
     ## 3 parameters: 2 for the covariance function; 1 for the df parameter
-        object.func <- function(par,opt=TRUE){
+        object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
             #par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
@@ -405,18 +405,31 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             #print(par.1)
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
-            val = -intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores)
+            val = -intensity_truncT(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
         }
     }
     opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian,lower=lb,upper=ub)
-    h = 1e-8
-    par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
-    val.object = object.func(opt.result$par,opt=FALSE)
-    val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
-    opt.result$K = var(val.object.grad)
-    opt.result$hessian.inv = solve(opt.result$hessian)
-    opt.result$sigma = opt.result$hessian.inv %*% opt.result$K %*% opt.result$hessian.inv
+    if(hessian){
+        h = 1e-4
+        par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
+        val.object = object.func(opt.result$par,opt=FALSE)
+        val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
+        opt.result$K = var(val.object.grad)
+        opt.result$hessian.inv = solve(opt.result$hessian)
+        opt.result$sigma = opt.result$hessian.inv %*% opt.result$K %*% opt.result$hessian.inv
+    }
+    if(bootstrap){
+        func <- function(id){
+            ind = sample(1:ncol(data),ncol(data),replace=TRUE)
+            data.boot = data[,ind]
+            opt.boot = optim(opt.result$par,object.func,dat=data.boot,ncore=NULL,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE,lower=lb,upper=ub)
+            val = opt.boot$par
+            return(val)
+        }
+        boot.results <- matrix(unlist(mclapply(1:300,func,mc.cores=ncores,mc.preschedule=TRUE)),nrow=300,byrow=TRUE)
+        opt.result$boot = boot.results
+    }
     par2 = init; par2[!fixed] = opt.result$par
     opt.result$par = par2
     return(opt.result)
