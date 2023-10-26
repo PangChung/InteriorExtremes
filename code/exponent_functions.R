@@ -379,8 +379,6 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[,idx.thres],2,data.sum[idx.thres],"/")
-    #init[1] = init[1]
-    #init[2] = log((init[2])/(2-init[2]))
     #browser()
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
@@ -412,7 +410,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
         }
     }
     opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian,lower=lb,upper=ub)
-    h = 1e-4
+    h = 1e-8
     par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
     val.object = object.func(opt.result$par,opt=FALSE)
     val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
