@@ -375,7 +375,7 @@ par.check <- function(par){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
-                        parallel=TRUE,ncores=2,method="L-BFGS-B",hessian=FALSE,lb=NULL,ub=NULL){
+                        parallel=TRUE,ncores=2,method="L-BFGS-B",hessian=TRUE,lb=NULL,ub=NULL){
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[,idx.thres],2,data.sum[idx.thres],"/")
@@ -384,7 +384,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     #browser()
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
-        object.func <- function(par){
+        object.func <- function(par,opt=TRUE){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
         #      par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
@@ -393,13 +393,13 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             print(c(par.1,par.2))
             if(!par.check(par.1)){return(Inf)}
             para.temp = list(alpha=alpha,sigma=cov.mat)
-            val = mean(intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
-            return(-val)
+            val = -intensity_logskew(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores)
+            if(opt) return(mean(val)) else return(val)
         }
     }
     if(model == "truncT"){
     ## 3 parameters: 2 for the covariance function; 1 for the df parameter
-        object.func <- function(par){
+        object.func <- function(par,opt=TRUE){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
             #par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
@@ -407,12 +407,18 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             print(par.1)
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
-            val = mean(intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores))
-            return(-val)
+            val = -intensity_truncT(data,par=para.temp,parallel=parallel,log=TRUE,ncores=ncores)
+            if(opt) return(mean(val)) else return(val)
         }
     }
     opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian,lower=lb,upper=ub)
-    
+    h = 1e-4
+    par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
+    val.object = object.func(opt.result$par,opt=FALSE)
+    val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
+    opt.result$K = var(val.object.grad)
+    opt.result$hessian.inv = solve(opt.result$hessian)
+    opt.result$sigma = opt.result$hessian.inv %*% opt.result$K %*% opt.result$hessian.inv
     par2 = init; par2[!fixed] = opt.result$par
     opt.result$par = par2
     return(opt.result)
