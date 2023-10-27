@@ -77,8 +77,6 @@ image(1:10,1:10,z=matrix(log(Z.logskew[,1]),nrow=10),col=rev(heat.colors(10)) )
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
 tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew1"),mc.cores=ncores)
 
-
-
 pdf("figures/extcoef_logskew.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
