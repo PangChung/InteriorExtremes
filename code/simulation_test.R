@@ -19,7 +19,8 @@ cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
 m = 1e+4
-ncores=20
+ncores=10
+
 ### simulate the truncated extremal-t model ###
 par1 <- list(nu=nu,sigma=cov.mat)
 
@@ -160,10 +161,10 @@ dev.off()
 
 ## fit the model 
 # fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=ncores,maxit=500,method="L-BFGS-B",lb=c(0.01,0.01),ub=c(10,1.9),bootstrap=TRUE,hessian=TRUE) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=ncores,maxit=500,method="Nelder-Mead",lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
 
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,2),fixed=c(F,F,T),thres=0.9,model="logskew",method="L-BFGS-B",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=TRUE,ncores=ncores,maxit=10000,hessian=TRUE))
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.1,0.5,3),fixed=c(F,F,F),thres=0.9,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE))
 
 #system("say \'your program has finished\'")
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
@@ -172,20 +173,20 @@ cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,2)
 
 fitted.extcoef.logskew1.1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
-plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
+plot(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="black")
 points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1.1,type="p",cex=0.5,col="red",pch=20)
-jitter(ec.logskew - fitted.extcoef.logskew1.1)
-mean((fitted.extcoef.logskew1.1[idx.pairs] - ec.logskew[idx.pairs] )^2)
+boxplot(ec.logskew - fitted.extcoef.logskew1.1)
+mean((fitted.extcoef.logskew1.1 - ec.logskew )^2)
 
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,fit.logskew$par[-c(1:2)])
 fitted.extcoef.logskew1.2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
-plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
+plot(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="black")
 points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1.2,type="p",cex=0.5,col="red",pch=20)
-boxplot(ec.logskew - fitted.extcoef.logskew1.2)
-mean((fitted.extcoef.logskew1.2[idx.pairs] - ec.logskew[idx.pairs] )^2)
+boxplot(tc.logskew1 - fitted.extcoef.logskew1.2)
+mean((fitted.extcoef.logskew1.2 - ec.logskew )^2)
 
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="black")

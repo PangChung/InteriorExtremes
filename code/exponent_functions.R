@@ -369,10 +369,6 @@ alpha.func <- function(coord,par=10){
     alpha = 1 + 1.5*coord[,2] - par * exp(2*sin(2*coord[,2]))
 }
 
-par.check <- function(par){
-    return((par[1] > 0 & par[2] < 2 & par[2] > 0))
-}
-
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
                     ncores=2,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE){
@@ -385,11 +381,9 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
         object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
-        #      par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
-            #print(c(par.1,par.2))
-            if(!par.check(par.1)){return(Inf)}
+            if(any(par < lb) | any(par > ub)){return(Inf)}
             para.temp = list(alpha=alpha,sigma=cov.mat)
             val = -intensity_logskew(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
@@ -400,16 +394,14 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
         object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
-            #par.1 = exp(par.1);par.1[2] = par.1[2]/(1+par.1[2])*2 
-            if(!par.check(par.1)){return(Inf)}
-            #print(par.1)
+            if(any(par < lb) | any(par > ub)){return(Inf)}
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
             val = -intensity_truncT(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
         }
     }
-    opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian,lower=lb,upper=ub)
+    opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
     if(hessian){
         h = 1e-4
         par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
@@ -423,7 +415,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
         func <- function(id){
             ind = sample(1:ncol(data),ncol(data),replace=TRUE)
             data.boot = data[,ind]
-            opt.boot = optim(opt.result$par,object.func,dat=data.boot,ncore=NULL,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE,lower=lb,upper=ub)
+            opt.boot = optim(opt.result$par,object.func,dat=data.boot,ncore=NULL,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE)
             val = opt.boot$par
             return(val)
         }
