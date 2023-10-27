@@ -366,7 +366,9 @@ alpha.func <- function(loc,par){
 }
 
 alpha.func <- function(coord,par=10){
-    alpha = 1 + 1.5*coord[,2] - par * exp(2*sin(2*coord[,2]))
+    #alpha = 1 + 1.5*coord[,2] - par * exp(2*sin(2*coord[,2]))
+    #alpha = par*exp(2*sin(2*coord[,2]))
+    alpha = rep(par,nrow(coord))
 }
 
 ## inference for simulated data ##  
