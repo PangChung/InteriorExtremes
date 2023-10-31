@@ -28,19 +28,19 @@ all.pairs.list = split(all.pairs,col(all.pairs))
 ### simulate the truncated extremal-t model ###
 par1 <- list(nu=nu,sigma=cov.mat)
 system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
-which(apply(Z.trunc,1,anyDuplicated)>0)
+which(apply(Z.trunc,2,anyDuplicated)>0)
 
 png("figures/marginal_qqplot_truncT.png",width=d*1200,height=d*1200,res=200)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
 y=(1:m)/(1+m)
-for(idx in 1:nrow(Z.trunc)){
-x = pgev(Z.trunc[idx,],1,1,1);
+for(idx in 1:ncol(Z.trunc)){
+x = pgev(Z.trunc[,idx],1,1,1);
 p.value = ks.test(x,y)$p.value
 qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data",ylab="Theoretical")
 abline(0,1,col="red")
 }
 dev.off()
-image(1:10,1:10,z=matrix(log(Z.trunc[,3]),nrow=10),col=rev(heat.colors(10)))
+image(1:10,1:10,z=matrix(log(Z.trunc[1,]),nrow=10),col=rev(heat.colors(10)))
 
 ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 tc.truncT1 <- true_extcoef(all.pairs,par=par1,model="truncT1")
@@ -65,15 +65,15 @@ which(apply(Z.logskew,1,anyDuplicated)>0)
 png("figures/marginal_qqplot_logskew.png",width=d*1200,height=d*1200,res=200)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
 for(idx in 1:nrow(Z.logskew)){
-z.order = order(Z.logskew[idx,],decreasing=FALSE)
-x = pgev(Z.logskew[idx,z.order],1,1,1);y=sort(runif(length(x)))
+z.order = order(Z.logskew[,idx],decreasing=FALSE)
+x = pgev(Z.logskew[z.order,idx],1,1,1);y=sort(runif(length(x)))
 p.value = ks.test(x,y)$p.value
 qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data",ylab="Theoretical")
 abline(0,1,col="red")
 }
 dev.off()
 
-image(1:10,1:10,z=matrix(log(Z.logskew[,1]),nrow=10),col=rev(heat.colors(10)) )
+image(1:10,1:10,z=matrix(log(Z.logskew[1,]),nrow=10),col=rev(heat.colors(10)) )
 
 
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
@@ -98,7 +98,7 @@ alpha = alpha.func(coord,-2)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
-which(apply(Z.logskew,1,anyDuplicated)>0)
+which(apply(Z.logskew,2,anyDuplicated)>0)
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,3),fixed=c(T,T,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
 
 #system("say \'your program has finished\'")

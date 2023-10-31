@@ -21,9 +21,9 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     }
     if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
     a_j = T_j - logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
-    if(!is.matrix(x)){ x = matrix(x,nrow=n,byrow=FALSE)} 
+    if(!is.matrix(x)){ x = matrix(x,ncol=n,byrow=TRUE)} 
     func <- function(idx){
-        log_x = log(x[,idx])
+        log_x = log(x[idx,])
         x_j = (log_x + a_j) * 1/nu
         x_circ = exp(x_j)
         val = -logphi + sum(x_j) - sum(log_x) - (n-1)*log(nu) - logdet.sigma/2 - n/2 * log(2*pi) +  log(t(x_circ) %*% inv.sigma %*% x_circ) * 
@@ -31,10 +31,10 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
         return(val)
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
 
     }else{
-        val = unlist(lapply(1:ncol(x),func))
+        val = unlist(lapply(1:nrow(x),func))
     }
     if(log) return(val)
     else return(exp(val))
@@ -55,8 +55,8 @@ V_truncT <- function(x,par,ncores=2){
         return(val)
     }
     sigma_j = lapply(1:n,sigma_fun)
-    if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-    idx.finite <- which(apply(x,1,function(xi){any(is.finite(xi))}))
+    if(!is.matrix(x)){x <- matrix(x,ncol=n,byrow=TRUE)}
+    idx.finite <- which(apply(x,2,function(xi){any(is.finite(xi))}))
     T_j = rep(1,n)
     if(!is.null(ncores)) T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
     else T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
@@ -64,17 +64,17 @@ V_truncT <- function(x,par,ncores=2){
     a_j[idx.finite] = T_j[idx.finite]/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
 
     func <- function(idx){
-        x_j = x[,idx] * a_j
+        x_j = x[idx,] * a_j
         x_upper = lapply(1:n,function(i){ if(is.finite(x_j[i])) (x_j[-i]/x_j[i])^{1/nu} else rep(0,length(x_j[-i])) })
         is.finite.ind = which(is.finite(x_j))
         V_j = rep(0,n)
         V_j[is.finite.ind] = mapply(a_fun,j=is.finite.ind,upper=x_upper[is.finite.ind],sigma_j = sigma_j[is.finite.ind],SIMPLIFY = TRUE)
-        val = sum(V_j[is.finite.ind]/T_j[is.finite.ind]/x[is.finite.ind,idx])
+        val = sum(V_j[is.finite.ind]/T_j[is.finite.ind]/x[idx,is.finite.ind])
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
     }else{
-        val = unlist(lapply(1:ncol(x),func))
+        val = unlist(lapply(1:nrow(x),func))
     }
     return(val)
 }
@@ -104,13 +104,12 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     }
     if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
     a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
-    if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
-    
+    if(!is.matrix(x)){x <- matrix(x,ncol=n,byrow=TRUE)}
     func <- function(idx_j){
-        x_j = x[,idx_j] * a_j
+        x_j = x[idx_j,] * a_j
         x_log = log(x_j)
         Q_sigma = (t(x_j) %*% inv.sigma %*% x_j)^(1/2)
-        val = 1/nu*sum(x_log[idx]-x[idx,idx_j,drop=F]) - phi + (nu-2)/2 * log(2) + (1-k)*log(nu) -
+        val = 1/nu*sum(x_log[idx]- log(x[idx_j,idx,drop=F])) - phi + (nu-2)/2 * log(2) + (1-k)*log(nu) -
             k/2*log(pi) - 1/2*logdet.sigma -(k+nu)*log(Q_sigma)+log(gamma_k)
         upper = (x_j[-idx])^(1/nu)*sqrt(k+nu)/Q_sigma
         loc = sigma[-idx,idx] %*% inv.sigma.11 %*% x_j[idx]^(1/nu)*sqrt(k+nu)/Q_sigma
@@ -118,10 +117,10 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
         return(val)
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
     }
     else{
-        val = unlist(lapply(1:ncol(x),func))
+        val = unlist(lapply(1:nrow(x),func))
     }
     if(log){
         return(val)
@@ -152,13 +151,13 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     sum.inv.sigma = sum(inv.sigma)
     one.mat = matrix(1,n,n)
     one.vec = rep(1,n)
-    if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
+    if(!is.matrix(x)){x <- matrix(x,ncol=n,byrow=TRUE)}
     b = c((t(alpha) %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
     beta =  c(t(alpha) %*% omega_inv %*% (diag(one.vec) + one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     func <- function(idx){
-        x_log = log(x[,idx])
+        x_log = log(x[idx,])
         x_circ = x_log + a
         val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(t(beta) %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
@@ -166,10 +165,10 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
         return(val)
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
     }
     else{
-        val = unlist(lapply(1:ncol(x),func))
+        val = unlist(lapply(1:nrow(x),func))
     }
     if(log)
         return(val)
@@ -192,7 +191,7 @@ V_logskew <- function(x,par,ncores=NULL){
     b = c(t(alpha) %*% sigma_bar %*% alpha)
     delta = c(sigma_bar %*% alpha)/sqrt(c(1+b))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    if(!is.matrix(x)){x <- matrix(x,nrow=n,byrow=FALSE)}
+    if(!is.matrix(x)){x <- matrix(x,ncol=n,byrow=TRUE)}
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
@@ -214,12 +213,12 @@ V_logskew <- function(x,par,ncores=NULL){
         b3 = c(-(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
         sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),rbind(b3,1)))
         func_temp <- function(i){
-            xi = x[,i]
+            xi = x[i,]
             mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),delta[j]*omega[j,j])
             val = pnorm(delta[j]*omega[j,j])^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ,algorithm = "TVPACK")[[1]]
             return(val)
         }
-        val = unlist(lapply(1:ncol(x),func_temp))
+        val = unlist(lapply(1:nrow(x),func_temp))
         return(val)
     }
     if(!is.null(ncores)){
@@ -296,9 +295,9 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
     b1 = t(alpha2.1) %*% sigma.tilde.2.1.bar.true %*% alpha2.1
     b2 = (1+ b1)^(-1/2) * sigma.tilde.2.1.bar.true %*% alpha2.1
     func <- function(i){
-        xi = x[,i]
+        xi = x[i,]
         tau2.1 = tau.tilde * (1 + t(alpha1.2) %*% sigma.tilde.11.bar %*% alpha1.2) + alpha1.2 %*% omega.tilde.inv[idx,idx] %*% (log(xi[idx]) + a[idx] - mu.tilde[idx])
-        mu.2.1 = c(mu.tilde[-idx] - sigma.tilde[-idx,idx,drop=F] %*% sigma.tilde.11.inv %*% (log(x[idx]) + a[idx] - mu.tilde[idx]) ) 
+        mu.2.1 = c(mu.tilde[-idx] - sigma.tilde[-idx,idx,drop=F] %*% sigma.tilde.11.inv %*% (log(xi[idx]) + a[idx] - mu.tilde[idx]) ) 
         mu.val = rbind(omega2.1.inv %*% (log(xi[-idx]) + a[-idx] - mu.2.1),tau2.1 * (1+b1)^(-1/2))
         scale.val = cbind(rbind(sigma.2.1.bar, b2),rbind(b2,1))
         phi = pnorm(b2)
@@ -307,10 +306,10 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
         return(val)
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
     }
     else{
-        val = unlist(lapply(1:ncol(x),func))
+        val = unlist(lapply(1:nrow(x),func))
     }
     if(log){
         return(log(val))
@@ -322,7 +321,7 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
 
 # calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
 empirical_extcoef <- function(idx,data){
-    return(min(2,max(1,1/mean(1/pmax(data[idx[1],],data[idx[2],])))))
+    return(min(2,max(1,1/mean(1/pmax(data[,idx[1]],data[,idx[2]])))))
 }
 
 # calculate true extremal coefficients
@@ -387,10 +386,9 @@ alpha.func <- function(coord,par=10){
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
                     ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE){
-    data.sum = apply(data,2,sum)
+    data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
-    data = sweep(data[,idx.thres],2,data.sum[idx.thres],"/")
-    browser()
+    data = sweep(data[,idx.thres],1,data.sum[idx.thres],"/")
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
@@ -430,7 +428,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     if(bootstrap){
         func <- function(id){
             ind = sample(1:ncol(data),ncol(data),replace=TRUE)
-            data.boot = data[,ind]
+            data.boot = data[ind,]
             opt.boot = optim(opt.result$par,object.func,dat=data.boot,ncore=NULL,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE)
             val = opt.boot$par
             return(val)
