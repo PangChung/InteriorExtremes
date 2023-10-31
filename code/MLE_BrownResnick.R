@@ -219,8 +219,6 @@ nloglik <- function(par,data,model="BR"){
 ### Negative log composite-likelihood function for max-stable models with unit Frechet margins
 # par: parameter vector (par[1]=range, par[2]=smoothness)
 # data: matrix of dimension nxD, containing n D-dimensional random vectors (each row = 1 vector) on the unit Frechet scale
-# loc: coordinates
-# FUN: function returns covariance matrix
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q))
 nlogcomplik <- function(par,data,index,ncores,model){
     nlogcomplik.contribution <- function(index){
@@ -229,8 +227,8 @@ nlogcomplik <- function(par,data,index,ncores,model){
       if(model == "logskew"){par.index$alpha = par.index$alpha[index]} 
       val <- nloglik(par=par.index,data[,index],model)
     }
-    if(!is.null(ncores)) res <- unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)) 
-    else res <- unlist(lapply(as.list(as.data.frame(index)),nlogcomplik.contribution))
+    if(!is.null(ncores)) res <- rowSums(matrix(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE) 
+    else res <- rowSums(matrix(unlist(lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE)
     return(res)
 }
 
@@ -239,7 +237,7 @@ nlogcomplik <- function(par,data,index,ncores,model){
 # init: initial parameter vector (init[1]=initial range, init[2]=initial smoothness)
 # fixed: vector of booleans indicating whether or not the parameters are fixed to initial values
 # loc: coordinates
-# FUN: function returns covariance matrix
+# sigmaFUN: function returns covariance matrix
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
 MCLE.BR <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",method="Nelder-Mead",hessian=FALSE,lb=-Inf,ub=Inf,...){
     t <- proc.time()
@@ -304,7 +302,7 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
     }
     return(contribution)
     }
-    res <- unlist(mclapply(1:length(vecchia.seq),FUN=logVecchialik.contribution,mc.cores=ncores,mc.set.seed = F))
+    res <- rowSums(matrix(unlist(mclapply(1:length(vecchia.seq),FUN=logVecchialik.contribution,mc.cores=ncores,mc.set.seed = F)),ncol=length(vecchia.seq),byrow=FALSE),na.rm=TRUE)
     return(res)
 }
 
@@ -313,10 +311,10 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
 # init: initial parameter vector (init[1]=initial range, init[2]=initial smoothness)
 # fixed: vector of booleans indicating whether or not the parameters are fixed to initial values
 # loc: coordinates
-# FUN: function returns covariance matrix
+# sigma.FUN: function returns covariance matrix
 # vecchia.seq: vector of length D (with integers from {1,...,D}), indicating the sequence of variables to be considered for the Vecchia approximation
 # neighbours: an q-by-D matrix with the corresponding the neighbors of each observation in the Vecchia sequence (where q is the number of neighbours, i.e., the size of the conditioning set)
-MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=100,method="Nelder-Mead",hessian=FALSE,...){
+MVLE <- function(data,init,fixed,loc,sigma.FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=1000,method="Nelder-Mead",hessian=FALSE,alpha.func=NULL,lb=-Inf,ub=Inf,...){
     t <- proc.time()
     nlogVecchialik <- function(par2,opt=TRUE){
         par <- init2
