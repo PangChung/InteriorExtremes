@@ -297,7 +297,7 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
         num <- nloglik(,data[,ind,drop=FALSE],model) #joint density of ith-variable and its conditioning set
         par.index$sigma = par$sigma[ind.neighbours,ind.neighbours]
         if(model == "logskew"){par.index$alpha = par.index$alpha[ind.neighbours]}  
-        denom <- nloglik(par.index,data[,ind.neighbours,drop=FALSE]),model) #joint density of conditioning set only
+        denom <- nloglik(par.index,data[,ind.neighbours,drop=FALSE],model) #joint density of conditioning set only
         contribution <- num-denom
     }
     return(contribution)
