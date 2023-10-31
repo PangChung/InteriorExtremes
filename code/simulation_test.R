@@ -21,7 +21,7 @@ cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
 m = 1e+4
-ncores=10
+ncores=20
 all.pairs <- combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 

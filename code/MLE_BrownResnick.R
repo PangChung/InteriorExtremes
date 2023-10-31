@@ -239,7 +239,7 @@ nlogcomplik <- function(par,data,index,ncores,model){
 # loc: coordinates
 # sigmaFUN: function returns covariance matrix
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
-MCLE.BR <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",method="Nelder-Mead",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,...){
+MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",method="Nelder-Mead",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,...){
     t <- proc.time()
     nlogcomplik <- function(par2,opt=TRUE){
         par <- init2
