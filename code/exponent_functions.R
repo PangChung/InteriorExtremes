@@ -42,9 +42,8 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
 
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
-V_truncT <- function(x,par,ncores=NULL){
+V_truncT <- function(x,par,ncores=2){
     sigma = par[[2]];nu = par[[1]]
-    if(!is.matrix(sigma)) return(1/x)
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
@@ -119,10 +118,10 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
         return(val)
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:n,func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:ncol(x),func,mc.cores = ncores))
     }
     else{
-        val = unlist(lapply(1:n,func))
+        val = unlist(lapply(1:ncol(x),func))
     }
     if(log){
         return(val)
@@ -354,7 +353,7 @@ true_extcoef <- function(idx,par,model="logskew1"){
         x[all.pairs.new] = 1
         val = V_truncT(x,par,ncores=parallel::detectCores())
     }
-
+    
     if(model == "truncT2"){
         x = rep(1,length(idx))
         val = V_truncT(x,list(nu = par[[1]],sigma=par[[2]][idx,idx]),ncores=NULL)
