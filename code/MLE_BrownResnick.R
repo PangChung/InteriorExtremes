@@ -3,16 +3,11 @@
 ## BROWN-RESNICK MAX-STABLE MODEL with General Variogram###
 ###########################################################
 ###########################################################
-
-######################
-## Full likelihood ###
-######################
-
 ###########################
 ## Variogram functions ####
 ###########################
-##input: values in R and need re-parametrization
-vario.func <- function(loc,par){ ##return a covariance matrix
+## semivariogram function but returns a covariance matrix
+vario.func <- function(loc,par){ 
   alpha = par[1];lambda = par[2];a = par[3]; theta = par[4]
   #Sigma <- matrix(c(par[3],-par[4],-par[4],1),2,2)
   A = matrix(c(cos(theta),sin(theta),-sin(theta),cos(theta)),2,2)
@@ -43,13 +38,6 @@ vario.func <- function(loc,par){ ##return a covariance matrix
   val.mat[idx[,c(2,1)]]<-val
   return(val.mat + .Machine$double.eps * diag(n))
 }
-
-# check the paramaters 
-par.check <- function(par){
-  #return( (par[1] > 0 & par[1] < 2 & par[2] > 0 & par[2] < 1000 & par[3] > 0) )
-   return((par[1] > 0 & par[1] < 100 & par[2] > 0 & par[2] < 2 ))
-}
-
 
 ### Exponent function V for the Brown-Resnick model
 # data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
@@ -150,7 +138,6 @@ nVI <- function(data,sigma,I){
 ### BIVARIATE Exponent function V for the Brown-Resnick model
 # data: matrix of dimension nx2, containing n 2-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
 # sigma: covariance matrix of dimension 2x2
-
 V.biv <- function(data,sigma){
   vario <- (sigma[1,1]+sigma[2,2]-2*sigma[1,2])
   a <- sqrt(vario)
@@ -189,114 +176,135 @@ nVI.biv <- function(data,sigma,I){
 ### Negative log likelihood function for Brown-Resnick data with unit Frechet margins
 # par: parameter vector
 # data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
-# distmat: matrix of dimension DxD, containing all pairwise distances between locations or Locations
+# loc: matrix of dimension DxD, containing all pairwise distances between locations or Locations
 # FUN: the variogram function that returns the covraiance matrix
-nloglik.BR <- function(par,data,distmat,FUN){
+nloglik <- function(par,data,model="BR"){
     #fix random seed (and save the current random seed to restore it at the end)
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
-    sigma <- FUN(distmat,par)
     D <- ncol(data)
-    all_combn <- lapply(1:D,FUN=combn,x=D,simplify=FALSE) ## not using package `Rfast' and return a list of lists
+    all_combn <- lapply(1:D,FUN=Rfast::comb_n,x=D,simplify=FALSE) 
     all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
-    tryCatch({
-    all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,nVI,FUN.VALUE = rep(0,nrow(data)),data=data,sigma=sigma)})
+    if(model == "BR"){
+        sigma = par$sigma
+        all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,nVI,FUN.VALUE = rep(0,nrow(data)),data=data,sigma=sigma)})
+        Vdata = V(data,sigma)
+    }
+    if(model == "Trunc"){
+        all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,partialV_truncT,FUN.VALUE = rep(0,nrow(data)),x=data,par=par,log=FALSE)})
+        Vdata = V_truncT(data,par)
+    }
+    if(model == "logskew"){
+        all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,partialV_logskew,FUN.VALUE = rep(0,nrow(data)),x=data,par=par,log=FALSE)})
+        Vdata = V_logskew(data,par)
+    }
     get.nVI <- function(I){
       nI <- length(I)
       return(all_nVI[[nI]][,which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
     }
-    parts <- listParts(length(c(1:D))) ## using package `partitions'
+    parts <- listParts(D) ## using package `partitions'
     contribution.partition <- function(partition){
-      return( apply(as.matrix(as.data.frame(lapply(partition,FUN=get.nVI))),1,prod) )
+      return( matrixStats::rowProds(as.matrix(as.data.frame(lapply(partition,FUN=get.nVI) ))))
     }
-    res <- log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition))))) - V(data,sigma)
+    res <- log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition))))) - Vdata
     res <- mean(res[is.finite(res)])
     #restore random seed to its previous value
     assign(".Random.seed", oldSeed, envir=globalenv())
-    return(-res)},
-    error=function(e){NA})
+    return(-res)
 }
 
 ###########################
 ## Composite likelihood ###
 ###########################
-
-### Negative log composite-likelihood function for Brown-Resnick data with unit Frechet margins
+### Negative log composite-likelihood function for max-stable models with unit Frechet margins
 # par: parameter vector (par[1]=range, par[2]=smoothness)
-# data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
-# distmat: coordinates
+# data: matrix of dimension nxD, containing n D-dimensional random vectors (each row = 1 vector) on the unit Frechet scale
+# loc: coordinates
 # FUN: function returns covariance matrix
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q))
-nlogcomplik.BR <- function(par,data,distmat,FUN,index,ncores){
-    nlogcomplik.contribution.BR <- function(index){
-      val <- nloglik.BR(par,data[,index],distmat[index,],FUN)
+nlogcomplik <- function(par,data,index,ncores,model){
+    nlogcomplik.contribution <- function(index){
+      par.index = par
+      par.index$sigma = par$sigma[index,index]
+      if(model == "logskew"){par.index$alpha = par.index$alpha[index]} 
+      val <- nloglik(par=par.index,data[,index],model)
     }
-    res <- mean(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution.BR,mc.cores = ncores,mc.set.seed = F)),na.rm = TRUE)
+    if(!is.null(ncores)) res <- unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)) 
+    else res <- unlist(lapply(as.list(as.data.frame(index)),nlogcomplik.contribution))
     return(res)
 }
-
 
 ### Function that returns the MCLE (maximum composite likelihood estimator) for the Brown-Resnick model with unit Frechet margins
 # data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
 # init: initial parameter vector (init[1]=initial range, init[2]=initial smoothness)
 # fixed: vector of booleans indicating whether or not the parameters are fixed to initial values
-# distmat: coordinates
+# loc: coordinates
 # FUN: function returns covariance matrix
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
-MCLE.BR <- function(data,init,fixed,distmat,FUN,index,ncores,maxit=100,method="Nelder-Mead",hessian=FALSE){
-  t <- proc.time()
-  nlogcomplik.BR2 <- function(par2){
-    par <- init2
-    par[!fixed] <- par2
-    if(!par.check(par)){return(Inf)}
-    return(nlogcomplik.BR(par,data,distmat,FUN,index,ncores))
-  }
-  fixed0 <- fixed
-  index0 <- index
-  init2 <- init
-  lower = c(0.5,50,0,-Inf)
-  upper = c(1.5,1000,Inf,Inf)
-  val_fn = c()
-  if(method=="Nelder-Mead"){
-    opt <- optim(par=init2[!fixed],fn=nlogcomplik.BR2,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+MCLE.BR <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",method="Nelder-Mead",hessian=FALSE,lb=-Inf,ub=Inf,...){
+    t <- proc.time()
+    nlogcomplik <- function(par2,opt=TRUE){
+        par <- init2
+        par[!fixed] <- par2
+        if( any(par < lb) | any( par > ub)  ){return(Inf)}
+        sigma = FUN(loc,par[1:2])
+        if(model=="BR"){par=list(sigma=sigma)}
+        if(model=="Trunc"){par=list(sigma=sigma,nu=par[-c(1:2)])}
+        if(model=="logskew"){par=list(sigma=sigma,alpha=alpha.func(loc,par[-c(1:2)]))}
+        val = nlogcomplik(par,data,index,ncores,model=model)
+        if(opt) return(mean(val,na.rm=TRUE)) else return(val)
+    }
+    init2 <- init
+    val_fn = c()
+    opt <- optim(par=init2[!fixed],fn=nlogcomplik,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    if(hessian){
+        h = 1e-4
+        par.mat.grad = matrix(opt$par,nrow=length(opt$par),ncol=length(opt$par),byrow=TRUE) + diag(h,length(opt$par))
+        val.object = object.func(opt$par,opt=FALSE)
+        val.object.grad = apply(par.mat.grad,1,function(x){(nlogcomplik(x,opt=FALSE) - val.object)/h})
+        opt$K = var(val.object.grad)
+        opt$hessian.inv = solve(opt$hessian)
+        opt$sigma = opt$hessian.inv %*% opt$K %*% opt$hessian.inv
+    }
     init2[!fixed] = opt$par
-  }
-  if(method!="Nelder-Mead"){
-    opt <- optim(par=init2[!fixed],fn=nlogcomplik.BR2,lower=lower[!fixed],upper=upper[!fixed],method="L-BFGS-B",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
-    init2[!fixed] <- opt$par 
-  }
-  time <- proc.time()-t
-  res <- opt
-  res$par = init2
-  res$time <- time[3]
-  return( res )
+    time <- proc.time()-t
+    opt$par = init2
+    opt$time <- time[3]
+  return(opt)
 }
 
 ##############################
 ## Vecchia's approximation ###
 ##############################
-
-### Negative log likelihood function for Brown-Resnick data with unit Frechet margins, based on Vecchia's approximation
+### Negative log likelihood function for Max-stable data with unit Frechet margins, based on Vecchia's approximation
 # par: parameter vector (par[1]=range, par[2]=smoothness)
-# data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
-# distmat: coordinates
+# data: matrix of dimension nxD, containing n D-dimensional random vectors (each row = 1 vector) on the unit Frechet scale
+# loc: coordinates
 # FUN: function returns covariance matrix
 # vecchia.seq: vector of length D (with integers from {1,...,D}), indicating the sequence of variables to be considered for the Vecchia approximation
 # neighbours: an q-by-D matrix with the corresponding the neighbors of each observation in the Vecchia sequence (where q is the number of neighbours, i.e., the size of the conditioning set)
-nlogVecchialik.BR <- function(par,data,distmat,FUN,vecchia.seq,neighbours,ncores){
-    logVecchialik.contribution.BR <- function(i){
-      if(i==1 & !any(!is.na(neighbours[,i]))){
-        contribution <- nloglik.BR(par,as.matrix(data[,vecchia.seq[1]]),distmat=matrix(distmat[vecchia.seq[1],],ncol=2),FUN) #density of 1st variable in the sequence (unit Fréchet)
-      } else{
+nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
+    logVecchialik.contribution <- function(i){
+        par.index = par
+        if(i==1 & !any(!is.na(neighbours[,i]))){
+            par.index$sigma = par$sigma[vecchia.seq[1],vecchia.seq[1]]
+            if(model == "logskew"){par.index$alpha = par.index$alpha[vecchia.seq[1]]}  
+            contribution <- nloglik(par.index,data[,vecchia.seq[1],drop=FALSE],model) #density of 1st variable in the sequence (unit Fréchet)
+        }else{
         ind.i <- vecchia.seq[i] #index of ith-variable in the Vecchia sequence
         ind.neighbours <- na.omit(neighbours[,i])
-        num <- nloglik.BR(par,as.matrix(data[,c(ind.i,ind.neighbours)]),matrix(distmat[c(ind.i,ind.neighbours),],ncol=2),FUN) #joint density of ith-variable and its conditioning set
-        denom <- nloglik.BR(par,as.matrix(data[,c(ind.neighbours)]),matrix(distmat[c(ind.neighbours),],ncol=2),FUN) #joint density of conditioning set only
+        ind <- c(ind.i,ind.neighbours)
+        par.index$sigma = par$sigma[ind,ind]
+        if(model == "logskew"){par.index$alpha = par.index$alpha[ind]}  
+        num <- nloglik(,data[,ind,drop=FALSE],model) #joint density of ith-variable and its conditioning set
+        par.index$sigma = par$sigma[ind.neighbours,ind.neighbours]
+        if(model == "logskew"){par.index$alpha = par.index$alpha[ind.neighbours]}  
+        denom <- nloglik(par.index,data[,ind.neighbours,drop=FALSE]),model) #joint density of conditioning set only
         contribution <- num-denom
-      }
-      return(contribution)
     }
-    res <- mean(unlist(mclapply(1:length(vecchia.seq),FUN=logVecchialik.contribution.BR,mc.cores=ncores,mc.set.seed = F)),na.rm=TRUE)
+    return(contribution)
+    }
+    res <- unlist(mclapply(1:length(vecchia.seq),FUN=logVecchialik.contribution,mc.cores=ncores,mc.set.seed = F))
     return(res)
 }
 
@@ -304,62 +312,51 @@ nlogVecchialik.BR <- function(par,data,distmat,FUN,vecchia.seq,neighbours,ncores
 # data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
 # init: initial parameter vector (init[1]=initial range, init[2]=initial smoothness)
 # fixed: vector of booleans indicating whether or not the parameters are fixed to initial values
-# distmat: coordinates
+# loc: coordinates
 # FUN: function returns covariance matrix
 # vecchia.seq: vector of length D (with integers from {1,...,D}), indicating the sequence of variables to be considered for the Vecchia approximation
 # neighbours: an q-by-D matrix with the corresponding the neighbors of each observation in the Vecchia sequence (where q is the number of neighbours, i.e., the size of the conditioning set)
-MVLE.BR <- function(data,init,fixed,distmat,FUN,vecchia.seq,neighbours,ncores,maxit=100,method="Nelder-Mead",hessian=FALSE){
-  t <- proc.time()
-  nlogVecchialik.BR2 <- function(par2){
-    par <- init2
-    par[!fixed] <- par2
-    if(!par.check(par)){return(Inf)}
-    return(nlogVecchialik.BR(par,data,distmat,FUN,vecchia.seq,neighbours,ncores))
-  }
-  fixed0 <- fixed
-  init2 <- init
-  lower = c(0.5,50,0,-Inf)
-  upper = c(1.5,1000,Inf,Inf)
-  val_fn = c()
-  if(method=="Nelder-Mead"){
-    opt <- optim(par=init2[!fixed],fn=nlogVecchialik.BR2,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=100,method="Nelder-Mead",hessian=FALSE,...){
+    t <- proc.time()
+    nlogVecchialik <- function(par2,opt=TRUE){
+        par <- init2
+        par[!fixed] <- par2
+        if( any(par < lb) | any( par > ub)  ){return(Inf)}
+        sigma = FUN(loc,par[1:2])
+        if(model=="BR"){par=list(sigma=sigma)}
+        if(model=="Trunc"){par=list(sigma=sigma,nu=par[-c(1:2)])}
+        if(model=="logskew"){par=list(sigma=sigma,alpha=alpha.func(loc,par[-c(1:2)]))}
+        val = nlogVecchialik(par,data,vecchia.seq,neighbours,ncores,model)
+        if(opt) return(mean(val,na.rm=TRUE)) else return(val)
+    }
+    init2 <- init
+    val_fn = c()
+    opt <- optim(par=init2[!fixed],fn=nlogVecchialik,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    if(hessian){
+        h = 1e-4
+        par.mat.grad = matrix(opt$par,nrow=length(opt$par),ncol=length(opt$par),byrow=TRUE) + diag(h,length(opt$par))
+        val.object = object.func(opt$par,opt=FALSE)
+        val.object.grad = apply(par.mat.grad,1,function(x){(nlogVecchialik(x,opt=FALSE) - val.object)/h})
+        opt$K = var(val.object.grad)
+        opt$hessian.inv = solve(opt$hessian)
+        opt$sigma = opt$hessian.inv %*% opt$K %*% opt$hessian.inv
+    }
     init2[!fixed] = opt$par
-  }
-  if(method!="Nelder-Mead"){
-      opt <- optim(par=init2[!fixed],fn=nlogVecchialik.BR2,lower=lower[!fixed],upper=upper[!fixed],method="L-BFGS-B",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
-      init2[!fixed] <- opt$par
-  }
-  time <- proc.time()-t
-  res = opt
-  res$par = init2
-  res$time <- time[3]
-  return( res )
+    time <- proc.time()-t
+    opt$par = init2
+    opt$time <- time[3]
+  return( opt )
 }
 
-neighbours <- function(ind,vecchia.seq,q,distmat){
+neighbours <- function(ind,vecchia.seq,q,loc){
     if(ind==1){
       ind.neighbours <- rep(NA,q)
     }
     if(ind>=2){
       ind.ind <- vecchia.seq[ind] #index of ith-variable in the Vecchia sequence
       ind.past <- vecchia.seq[1:(ind-1)] #index of the "past" observations in the Vecchia sequence  
-      d.past <- distmat[ind.past,vecchia.seq[ind]] #distance of the ith-variable to the "past" observations
+      d.past <- loc[ind.past,vecchia.seq[ind]] #distance of the ith-variable to the "past" observations
       ind.neighbours <- ind.past[order(d.past)[1:q]] #choose "neighbours" as the closest observations in the "past"  
     }
     return(ind.neighbours)
 }
-
-FitVecchia <- function(data,loc,init,fixed,vecchia.seq,q,vario=vario.func){
-	D = nrow(loc)
-
-	neighbours.mat <- sapply(1:D,FUN=neighbours,vecchia.seq=vecchia.seq,q=q)
-
-	if(q==1){ neighbours.mat <- matrix(neighbours.mat,nrow=1) }
-
-	fit.result <- MVLE.BR(data=data,init=init,fixed=fixed,
-	distmat=loc,FUN = vario,vecchia.seq=vecchia.seq,
-	neighbours=neighbours.mat,ncores,method="Nelder-Mead",maxit=1000,hessian=hessian)
-
-	return(fit.result)
-}
-

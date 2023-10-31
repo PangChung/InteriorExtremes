@@ -89,10 +89,15 @@ dev.off()
 
 ## fit the model 
 # fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=fit.truncT$par,fixed=c(F,F,T),thres=0.9,model="truncT",ncores=ncores,maxit=500,method="Nelder-Mead",lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=fit.truncT$par,fixed=c(F,F,T),thres=0.9,model="truncT",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
 
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.1,0.5,3),fixed=c(F,F,F),thres=0.9,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-10),ub=c(10,1.9,10),method="Nelder-Mead",bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE))
+alpha = alpha.func(coord,-2)
+#alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
+par2 <- list(alpha=alpha,sigma=cov.mat)
+system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
+which(apply(Z.logskew,1,anyDuplicated)>0)
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,3),fixed=c(T,T,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
 
 #system("say \'your program has finished\'")
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
@@ -121,3 +126,6 @@ plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Di
 points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1,type="p",cex=0.5,col="red",pch=20)
 
 save.image("data/simulation_test.RData")
+
+system.time(for(i in 1:10) {x = combn(200,3)})
+system.time(for(i in 1:10) {x = Rfast::comb_n(200,3)})

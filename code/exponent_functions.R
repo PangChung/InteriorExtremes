@@ -4,8 +4,9 @@
 
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
-intensity_truncT <- function(x,par,ncores=2,log=TRUE){
+intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     nu = par[[1]];sigma = par[[2]]
+    if(!is.matrix(sigma)) return(1/(x^2))
     n = nrow(sigma)
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
@@ -41,8 +42,9 @@ intensity_truncT <- function(x,par,ncores=2,log=TRUE){
 
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
-V_truncT <- function(x,par,ncores=2){
+V_truncT <- function(x,par,ncores=NULL){
     sigma = par[[2]];nu = par[[1]]
+    if(!is.matrix(sigma)) return(1/x)
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
@@ -80,7 +82,12 @@ V_truncT <- function(x,par,ncores=2){
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
-partialV_truncT <- function(x,idx,par,ncores=2,log=TRUE){
+partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
+    if(length(idx)==0){
+        val = V_truncT(x,par,ncores=ncores)
+        if(log) return(log(val))
+        else return(val)
+    }
     sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
@@ -131,8 +138,9 @@ partialV_truncT <- function(x,idx,par,ncores=2,log=TRUE){
 
 ## this function computes the intensity function 
 ## for the log skew-normal based max-stable processes
-intensity_logskew <- function(x,par,ncores=2,log=TRUE){
+intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     alpha = par[[1]];sigma = par[[2]]
+    if(!is.matrix(sigma)) return(1/(x^2))
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
     omega_inv = diag(diag(omega)^(-1))
@@ -172,8 +180,9 @@ intensity_logskew <- function(x,par,ncores=2,log=TRUE){
 
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
-V_logskew <- function(x,par,ncores=2){
+V_logskew <- function(x,par,ncores=NULL){
     alpha = par[[1]];sigma = par[[2]]
+    if(!is.matrix(sigma)) return(1/x)
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
     omega_inv = diag(diag(omega)^(-1))
@@ -230,7 +239,12 @@ V_logskew <- function(x,par,ncores=2){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 #TODO: equation 46, 50 and page 130 eqaution 5.28
-partialV_logskew <- function(x,idx,par,ncores=2,log=TRUE){
+partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
+    if(length(idx)==0){
+        val = V_logskew(x,par,ncores=ncores)
+        if(log) return(log(val))
+        else return(val)
+    }
     alpha = par[[1]];sigma = par[[2]]
     n = nrow(sigma)
     sigma.chol = chol(sigma)
@@ -355,7 +369,7 @@ cov.func <- function(loc,par){
     n = nrow(loc)
     diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
         as.vector(outer(loc[,2],loc[,2],'-')))
-    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) + diag(1e-6,n) 
+    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) #+ diag(1e-6,n) 
     return(cov.mat)
 }
 
@@ -373,11 +387,11 @@ alpha.func <- function(coord,par=10){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
-                    ncores=2,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE){
+                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE){
     data.sum = apply(data,2,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[,idx.thres],2,data.sum[idx.thres],"/")
-    #browser()
+    browser()
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
@@ -385,7 +399,8 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
-            if(any(par < lb) | any(par > ub)){return(Inf)}
+            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
+            print(par)
             para.temp = list(alpha=alpha,sigma=cov.mat)
             val = -intensity_logskew(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
@@ -396,7 +411,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
         object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
-            if(any(par < lb) | any(par > ub)){return(Inf)}
+            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             cov.mat = cov.func(loc,par.1)
             para.temp = list(nu=nu,sigma=cov.mat)
             val = -intensity_truncT(dat,par=para.temp,log=TRUE,ncores=ncore)
