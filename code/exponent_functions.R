@@ -87,13 +87,13 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
         if(log) return(log(val))
         else return(val)
     }
-    sigma = par[[2]];nu = par[[1]]
+    sigma = par[[1]];nu = par[[2]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     chol.sigma.11 = chol(sigma[idx,idx])
-    inv.sigma.11 = chol2inv(chol.sigma)
-    logdet.sigma.11 = sum(log(diag(chol.sigma)))*2
-    sigma_T = sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% inv.sigma %*% sigma[-idx,idx,drop=F] 
+    inv.sigma.11 = chol2inv(chol.sigma.11)
+    logdet.sigma.11 = sum(log(diag(chol.sigma.11)))*2
+    sigma_T = sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% inv.sigma.11 %*% sigma[-idx,idx,drop=F] 
     k = length(idx)
     gamma_1 = gamma((nu+1)/2)
     gamma_k = gamma((k+nu)/2)
@@ -110,9 +110,9 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
         x_log = log(x_j)
         Q_sigma = (t(x_j) %*% inv.sigma %*% x_j)^(1/2)
         val = 1/nu*sum(x_log[idx]- log(x[idx_j,idx,drop=F])) - phi + (nu-2)/2 * log(2) + (1-k)*log(nu) -
-            k/2*log(pi) - 1/2*logdet.sigma -(k+nu)*log(Q_sigma)+log(gamma_k)
-        upper = (x_j[-idx])^(1/nu)*sqrt(k+nu)/Q_sigma
-        loc = sigma[-idx,idx] %*% inv.sigma.11 %*% x_j[idx]^(1/nu)*sqrt(k+nu)/Q_sigma
+            k/2*log(pi) - 1/2*logdet.sigma.11 -(k+nu)*log(Q_sigma)+log(gamma_k)
+        upper = c((x_j[-idx])^(1/nu)*sqrt(k+nu)/Q_sigma)
+        loc = c(sigma[-idx,idx] %*% inv.sigma.11 %*% x_j[idx]^(1/nu)*sqrt(k+nu)/Q_sigma)
         val = val + log(mvtnorm::pmvt(lower=rep(0,n-k)-loc,upper=upper-loc,sigma=sigma_T,df=k+nu))[[1]]
         return(val)
     }

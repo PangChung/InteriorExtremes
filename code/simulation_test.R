@@ -90,16 +90,17 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
     bty="n", pch=20,cex=1)
 dev.off()
 
-## fit the model 
-# fit the truncated extremal t model
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=fit.truncT$par,fixed=c(F,F,T),thres=0.9,model="truncT",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
+#######################
+## fit the model #####
+#######################
+# fit the truncated extremal t model: the angular density approach
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
+# the composite likelihood approach : 
+fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.1,0.5,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="truncT",
+                lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
+
 
 # fit the log-skew based model
-alpha = alpha.func(coord,-2)
-#alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
-par2 <- list(alpha=alpha,sigma=cov.mat)
-system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
-which(apply(Z.logskew,2,anyDuplicated)>0)
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,3),fixed=c(T,T,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
 
 #system("say \'your program has finished\'")

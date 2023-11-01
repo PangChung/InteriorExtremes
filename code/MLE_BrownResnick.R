@@ -183,15 +183,16 @@ nloglik <- function(par,data,model="BR"){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     D <- ncol(data)
-    all_combn <- lapply(1:D,FUN=Rfast::comb_n,x=D,simplify=FALSE) 
+    all_combn <- lapply(1:D,FUN=Rfast::comb_n,n=D,simplify=FALSE) 
+    browser()
     all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
     if(model == "BR"){
         sigma = par$sigma
         all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,nVI,FUN.VALUE = rep(0,nrow(data)),data=data,sigma=sigma)})
         Vdata = V(data,sigma)
     }
-    if(model == "Trunc"){
-        all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,partialV_truncT,FUN.VALUE = rep(0,nrow(data)),x=data,par=par,log=FALSE)})
+    if(model == "truncT"){
+        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,FUN=partialV_truncT,x=data,par=par,log=FALSE)})
         Vdata = V_truncT(data,par)
     }
     if(model == "logskew"){
@@ -221,12 +222,13 @@ nloglik <- function(par,data,model="BR"){
 # data: matrix of dimension nxD, containing n D-dimensional random vectors (each row = 1 vector) on the unit Frechet scale
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q))
 nlogcomplik <- function(par,data,index,ncores,model){
-    nlogcomplik.contribution <- function(index){
+    nlogcomplik.contribution <- function(ind){
       par.index = par
-      par.index$sigma = par$sigma[index,index]
-      if(model == "logskew"){par.index$alpha = par.index$alpha[index]} 
-      val <- nloglik(par=par.index,data[,index],model)
+      par.index$sigma = par$sigma[ind,ind]
+      if(model == "logskew"){par.index$alpha = par.index$alpha[ind]} 
+      val <- nloglik(par=par.index,data[,ind],model)
     }
+    browser()
     if(!is.null(ncores)) res <- rowSums(matrix(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE) 
     else res <- rowSums(matrix(unlist(lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE)
     return(res)
@@ -241,32 +243,31 @@ nlogcomplik <- function(par,data,index,ncores,model){
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
 MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",method="Nelder-Mead",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,...){
     t <- proc.time()
-    nlogcomplik <- function(par2,opt=TRUE){
-        par <- init2
-        par[!fixed] <- par2
-        if( any(par < lb) | any( par > ub)  ){return(Inf)}
-        sigma = FUN(loc,par[1:2])
-        if(model=="BR"){par=list(sigma=sigma)}
-        if(model=="Trunc"){par=list(sigma=sigma,nu=par[-c(1:2)])}
-        if(model=="logskew"){par=list(sigma=sigma,alpha=alpha.func(loc,par[-c(1:2)]))}
-        val = nlogcomplik(par,data,index,ncores,model=model)
+    browser()
+    object.func <- function(par2,opt=TRUE){
+        par1 <- init
+        par1[!fixed] <- par2
+        if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
+        sigma = FUN(loc,par1[1:2])
+        if(model=="BR"){par.list <- list(sigma=sigma)}
+        if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-c(1:2)])}
+        if(model=="logskew"){par.list <- list(sigma=sigma,alpha=alpha.func(loc,par1[-c(1:2)]))}
+        val = nlogcomplik(par.list,data=data,index,ncores,model=model)
         if(opt) return(mean(val,na.rm=TRUE)) else return(val)
     }
-    init2 <- init
-    val_fn = c()
-    opt <- optim(par=init2[!fixed],fn=nlogcomplik,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
     if(hessian){
         h = 1e-4
         par.mat.grad = matrix(opt$par,nrow=length(opt$par),ncol=length(opt$par),byrow=TRUE) + diag(h,length(opt$par))
         val.object = object.func(opt$par,opt=FALSE)
-        val.object.grad = apply(par.mat.grad,1,function(x){(nlogcomplik(x,opt=FALSE) - val.object)/h})
+        val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
         opt$K = var(val.object.grad)
         opt$hessian.inv = solve(opt$hessian)
         opt$sigma = opt$hessian.inv %*% opt$K %*% opt$hessian.inv
     }
-    init2[!fixed] = opt$par
+    init[!fixed] = opt$par
     time <- proc.time()-t
-    opt$par = init2
+    opt$par = init
     opt$time <- time[3]
   return(opt)
 }
@@ -316,32 +317,30 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
 # neighbours: an q-by-D matrix with the corresponding the neighbors of each observation in the Vecchia sequence (where q is the number of neighbours, i.e., the size of the conditioning set)
 MVLE <- function(data,init,fixed,loc,sigma.FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=1000,method="Nelder-Mead",hessian=FALSE,alpha.func=NULL,lb=-Inf,ub=Inf,...){
     t <- proc.time()
-    nlogVecchialik <- function(par2,opt=TRUE){
-        par <- init2
-        par[!fixed] <- par2
-        if( any(par < lb) | any( par > ub)  ){return(Inf)}
-        sigma = FUN(loc,par[1:2])
-        if(model=="BR"){par=list(sigma=sigma)}
-        if(model=="Trunc"){par=list(sigma=sigma,nu=par[-c(1:2)])}
-        if(model=="logskew"){par=list(sigma=sigma,alpha=alpha.func(loc,par[-c(1:2)]))}
-        val = nlogVecchialik(par,data,vecchia.seq,neighbours,ncores,model)
+    object.func <- function(par2,opt=TRUE){
+        par1 <- init
+        par1[!fixed] <- par2
+        if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
+        sigma = FUN(loc,par1[1:2])
+        if(model=="BR"){par.list=list(sigma=sigma)}
+        if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-c(1:2)])}
+        if(model=="logskew"){par.list=list(sigma=sigma,alpha=alpha.func(loc,par1[-c(1:2)]))}
+        val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
         if(opt) return(mean(val,na.rm=TRUE)) else return(val)
     }
-    init2 <- init
-    val_fn = c()
-    opt <- optim(par=init2[!fixed],fn=nlogVecchialik,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
     if(hessian){
         h = 1e-4
         par.mat.grad = matrix(opt$par,nrow=length(opt$par),ncol=length(opt$par),byrow=TRUE) + diag(h,length(opt$par))
         val.object = object.func(opt$par,opt=FALSE)
-        val.object.grad = apply(par.mat.grad,1,function(x){(nlogVecchialik(x,opt=FALSE) - val.object)/h})
+        val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
         opt$K = var(val.object.grad)
         opt$hessian.inv = solve(opt$hessian)
         opt$sigma = opt$hessian.inv %*% opt$K %*% opt$hessian.inv
     }
-    init2[!fixed] = opt$par
+    init[!fixed] = opt$par
     time <- proc.time()-t
-    opt$par = init2
+    opt$par = init
     opt$time <- time[3]
   return( opt )
 }
