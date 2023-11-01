@@ -254,9 +254,9 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
     
     sigma.bar.11.inv = chol2inv(chol(sigma.bar[idx,idx]))
     sigma.2.1.bar = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx,drop=F] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=F]
-    sigma.tilde.inv = sigma.inv %*% ones %*% t(ones) %*% sigma.inv/sum.sigma.inv - sigma.inv
+    sigma.tilde.inv =  sigma.inv - sigma.inv %*% ones %*% t(ones) %*% sigma.inv/sum.sigma.inv
     sigma.tilde.inv.chol = chol(sigma.tilde.inv)
-    sigma.tilde = chol2inv(chol(sigma.tilde.inv.chol))
+    sigma.tilde = chol2inv(sigma.tilde.inv.chol)
     omega.tilde = diag(sqrt(diag(sigma.tilde)))
     omega.tilde.inv = diag(diag(omega.tilde)^(-1))
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
@@ -270,36 +270,37 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
     omega.tilde.2.1 = diag(sqrt(diag(sigma.tilde.2.1)))
     omega.tilde.2.1.inv = diag(diag(omega.tilde.2.1)^(-1))
     sigma.tilde.2.1.bar.true = omega.tilde.2.1.inv %*% sigma.tilde.2.1.bar %*% omega.tilde.2.1.inv
-    mu.tilde = sigma.tilde.inv %*% sigma.inv %*% ones /sum.sigma.inv/2
+    mu.tilde = c(sigma.tilde.inv %*% sigma.inv %*% ones /sum.sigma.inv/2)
     
-    delta = sigma_bar %*% alpha/sqrt(1+t(alpha) %*% sigma_bar %*% alpha)
+    delta = sigma.bar %*% alpha/c(sqrt(1+t(alpha) %*% sigma.bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
 
     b = c((t(alpha) %*% omega.inv %*% ones)^2/sum.sigma.inv)
-    alpha.tilde =  t(alpha) %*% omega %*% (diag(ones) + ones %*% t(colSums(sigma.inv))) * (1+b)^(-1/2)
+    alpha.tilde = c(t(alpha) %*% omega %*% (diag(ones) + ones %*% t(colSums(sigma.inv))) * (1+b)^(-1/2))
     delta.hat = (1+b)^(-1/2)*sqrt(b)
 
-    alpha.tilde.0 = delta.hat/sqrt(sum.sigma.inv) + t(alpha.tilde) %*% mu.tilde
+    alpha.tilde.0 = delta.hat/sqrt(sum.sigma.inv) + sum(alpha.tilde * mu.tilde)
 
     tau.tilde = alpha.tilde.0 * (1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2)
     
     
 
-    alpha2.1 = omega.tilde.2.1 %*% omega.tilde.inv[-idx,-idx] %*% alpha.tilde[-idx]
+    alpha2.1 = c(omega.tilde.2.1 %*% omega.tilde.inv[-idx,-idx] %*% alpha.tilde[-idx])
 
     alpha1.2 = (1 + t(alpha.tilde[-idx]) %*% sigma.tilde.2.1.bar %*% alpha.tilde[-idx])^(-1/2) * (alpha.tilde[idx] - sigma.tilde.11.bar.inv %*% 
                 sigma.tilde.bar[idx,-idx] %*% alpha.tilde[-idx] )
-    alpha.k = (1 + t(alpha[-idx]) %*%  sigma.2.1.bar %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.11.bar.inv %*% sigma.bar[idx,-idx,drop=F] %*% alpha[-idx] )
+    alpha.k = (1 + t(alpha[-idx]) %*%  sigma.2.1.bar %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=F] %*% alpha[-idx] )
 
-    b1 = t(alpha2.1) %*% sigma.tilde.2.1.bar.true %*% alpha2.1
-    b2 = (1+ b1)^(-1/2) * sigma.tilde.2.1.bar.true %*% alpha2.1
+    b1 = c(t(alpha2.1) %*% sigma.tilde.2.1.bar.true %*% alpha2.1)
+    b2 = c((1+ b1)^(-1/2) * sigma.tilde.2.1.bar.true %*% alpha2.1)
     func <- function(i){
         xi = x[i,]
         tau2.1 = tau.tilde * (1 + t(alpha1.2) %*% sigma.tilde.11.bar %*% alpha1.2) + alpha1.2 %*% omega.tilde.inv[idx,idx] %*% (log(xi[idx]) + a[idx] - mu.tilde[idx])
         mu.2.1 = c(mu.tilde[-idx] - sigma.tilde[-idx,idx,drop=F] %*% sigma.tilde.11.inv %*% (log(xi[idx]) + a[idx] - mu.tilde[idx]) ) 
-        mu.val = rbind(omega2.1.inv %*% (log(xi[-idx]) + a[-idx] - mu.2.1),tau2.1 * (1+b1)^(-1/2))
-        scale.val = cbind(rbind(sigma.2.1.bar, b2),rbind(b2,1))
-        phi = pnorm(b2)
+        mu.val = c(omega.tilde.2.1.inv %*% (log(xi[-idx]) + a[-idx] - mu.2.1),tau2.1 * (1+b1)^(-1/2))
+        scale.val = cbind(rbind(sigma.2.1.bar, b2),c(b2,1))
+        rownames(scale.val) <- colnames(scale.val) <-  NULL
+        phi = pnorm(c(tau2.1 * (1+b1)^(-1/2)))
         intensity.marginal = intensity_logskew(xi[idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),ncores=NULL,log=FALSE)
         val = intensity.marginal * phi^(-1) * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[[1]]
         return(val)
