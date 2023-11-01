@@ -30,7 +30,7 @@ par1 <- list(nu=nu,sigma=cov.mat)
 system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
 which(apply(Z.trunc,2,anyDuplicated)>0)
 
-png("figures/marginal_qqplot_truncT.png",width=d*1200,height=d*1200,res=200)
+png("figures/marginal_qqplot_truncT.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
 y=(1:m)/(1+m)
 for(idx in 1:ncol(Z.trunc)){
@@ -40,15 +40,16 @@ qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data
 abline(0,1,col="red")
 }
 dev.off()
+
 image(1:10,1:10,z=matrix(log(Z.trunc[1,]),nrow=10),col=rev(heat.colors(10)))
 
 ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 tc.truncT1 <- true_extcoef(all.pairs,par=par1,model="truncT1")
 
-pdf("figures/extcoef_truncT.pdf",width=6,height=4)
+png("figures/extcoef_truncT.png",width=6*300,height=4*300,res=300)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.trunc,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main="Truncated extremal t processes",pch=20,col="black")
+        main="Truncated extremal t processes",pch=20,col="black")
 points(x=diff.mat[t(all.pairs)],y=tc.truncT1,type="p",cex=0.5,col="red",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
@@ -62,9 +63,9 @@ par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
 which(apply(Z.logskew,1,anyDuplicated)>0)
 
-png("figures/marginal_qqplot_logskew.png",width=d*1200,height=d*1200,res=200)
+png("figures/marginal_qqplot_logskew.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
-for(idx in 1:nrow(Z.logskew)){
+for(idx in 1:ncol(Z.logskew)){
 z.order = order(Z.logskew[,idx],decreasing=FALSE)
 x = pgev(Z.logskew[z.order,idx],1,1,1);y=sort(runif(length(x)))
 p.value = ks.test(x,y)$p.value
@@ -79,7 +80,7 @@ image(1:10,1:10,z=matrix(log(Z.logskew[1,]),nrow=10),col=rev(heat.colors(10)) )
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
 tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew1"),mc.cores=ncores)
 
-pdf("figures/extcoef_logskew.pdf",width=6,height=4)
+png("figures/extcoef_logskew.png",width=6*300,height=4*300,res=300)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="black")
@@ -128,6 +129,3 @@ plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Di
 points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1,type="p",cex=0.5,col="red",pch=20)
 
 save.image("data/simulation_test.RData")
-
-system.time(for(i in 1:10) {x = combn(200,3)})
-system.time(for(i in 1:10) {x = Rfast::comb_n(200,3)})

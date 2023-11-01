@@ -42,7 +42,7 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
 
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
-V_truncT <- function(x,par,ncores=2){
+V_truncT <- function(x,par,ncores=NULL){
     sigma = par[[2]];nu = par[[1]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
@@ -62,7 +62,7 @@ V_truncT <- function(x,par,ncores=2){
     else T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
     a_j = rep(1,n)
     a_j[idx.finite] = T_j[idx.finite]/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
-
+    
     func <- function(idx){
         x_j = x[idx,] * a_j
         x_upper = lapply(1:n,function(i){ if(is.finite(x_j[i])) (x_j[-i]/x_j[i])^{1/nu} else rep(0,length(x_j[-i])) })
@@ -236,7 +236,6 @@ V_logskew <- function(x,par,ncores=NULL){
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
-#TODO: equation 46, 50 and page 130 eqaution 5.28
 partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
     if(length(idx)==0){
         val = V_logskew(x,par,ncores=ncores)
@@ -345,10 +344,9 @@ true_extcoef <- function(idx,par,model="logskew1"){
         alpha = par[[1]];sigma = par[[2]]
         val = V_logskew(rep(1,length(idx)),list(alpha=alpha[idx],sigma=sigma[idx,idx]),ncores=NULL)
     }
-    
     if(model == "truncT1"){
-        x = matrix(Inf,nrow=nrow(par[[2]]),ncol=ncol(idx))
-        all.pairs.new = cbind(c(idx),rep(1:ncol(idx),each=nrow(idx)))
+        x = matrix(Inf,nrow=ncol(idx),ncol=nrow(par[[2]]))
+        all.pairs.new = cbind(rep(1:ncol(idx),each=nrow(idx)),c(idx))
         x[all.pairs.new] = 1
         val = V_truncT(x,par,ncores=parallel::detectCores())
     }
