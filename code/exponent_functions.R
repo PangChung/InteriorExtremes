@@ -5,9 +5,10 @@
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
 intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
-    nu = par[[1]];sigma = par[[2]]
-    if(!is.matrix(sigma)) return(1/(x^2))
-    n = nrow(sigma)
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    sigma = par[[2]];nu = par[[1]]
+    n = nrow(x)
+    if(n==1) return(1/(x^2))
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
@@ -43,8 +44,9 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
 V_truncT <- function(x,par,ncores=NULL){
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[2]];nu = par[[1]]
-    n = nrow(sigma)
+    n = nrow(x)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
     sigma_fun <- function(j){
@@ -55,7 +57,6 @@ V_truncT <- function(x,par,ncores=NULL){
         return(val)
     }
     sigma_j = lapply(1:n,sigma_fun)
-    if(!is.matrix(x)){x <- matrix(x,ncol=n,byrow=TRUE)}
     idx.finite <- which(apply(x,2,function(xi){any(is.finite(xi))}))
     T_j = rep(1,n)
     if(!is.null(ncores)) T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
@@ -82,13 +83,18 @@ V_truncT <- function(x,par,ncores=NULL){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
+    sigma = par[[1]];nu = par[[2]]
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    n = nrow(x)
     if(length(idx)==0){
         val = V_truncT(x,par,ncores=ncores)
         if(log) return(log(val))
         else return(val)
     }
-    sigma = par[[1]];nu = par[[2]]
-    n = nrow(sigma)
+    if(length(idx)==n){
+       val = intensity_truncT(x,par,ncores,log)
+       return(val)
+    }
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     chol.sigma.11 = chol(sigma[idx,idx])
     inv.sigma.11 = chol2inv(chol.sigma.11)
@@ -104,13 +110,12 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     }
     if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
     a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
-    if(!is.matrix(x)){x <- matrix(x,ncol=n,byrow=TRUE)}
     func <- function(idx_j){
         x_j = x[idx_j,] * a_j
         x_log = log(x_j)
-        Q_sigma = (t(x_j) %*% inv.sigma %*% x_j)^(1/2)
-        val = 1/nu*sum(x_log[idx]- log(x[idx_j,idx,drop=F])) - phi + (nu-2)/2 * log(2) + (1-k)*log(nu) -
-            k/2*log(pi) - 1/2*logdet.sigma.11 -(k+nu)*log(Q_sigma)+log(gamma_k)
+        Q_sigma = (t(x_j[idx]) %*% inv.sigma.11 %*% x_j[idx])^(1/2)
+        val = c(1/nu*sum(x_log[idx]- log(x[idx_j,idx,drop=F])) - phi + (nu-2)/2 * log(2) + (1-k)*log(nu) -
+            k/2*log(pi) - 1/2*logdet.sigma.11 -(k+nu)*log(Q_sigma)+log(gamma_k))
         upper = c((x_j[-idx])^(1/nu)*sqrt(k+nu)/Q_sigma)
         loc = c(sigma[-idx,idx] %*% inv.sigma.11 %*% x_j[idx]^(1/nu)*sqrt(k+nu)/Q_sigma)
         val = val + log(mvtnorm::pmvt(lower=rep(0,n-k)-loc,upper=upper-loc,sigma=sigma_T,df=k+nu))[[1]]
@@ -138,8 +143,9 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
 ## for the log skew-normal based max-stable processes
 intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     alpha = par[[1]];sigma = par[[2]]
-    if(!is.matrix(sigma)) return(1/(x^2))
-    n = nrow(sigma)
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    n = nrow(x)
+    if(n==1) return(1/(x^2))
     omega = diag(sqrt(diag(sigma)))
     omega_inv = diag(diag(omega)^(-1))
     sigma_bar = omega_inv %*% sigma %*% omega_inv
@@ -151,7 +157,7 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     sum.inv.sigma = sum(inv.sigma)
     one.mat = matrix(1,n,n)
     one.vec = rep(1,n)
-    if(!is.matrix(x)){x <- matrix(x,ncol=n,byrow=TRUE)}
+    
     b = c((t(alpha) %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
     beta =  c(t(alpha) %*% omega_inv %*% (diag(one.vec) + one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
@@ -180,8 +186,9 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
 ## for the log skew-normal based max-stable processes
 V_logskew <- function(x,par,ncores=NULL){
     alpha = par[[1]];sigma = par[[2]]
-    if(!is.matrix(sigma)) return(1/x)
-    n = nrow(sigma)
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    n = nrow(x)
+    if(n==1) return(1/x)
     omega = diag(sqrt(diag(sigma)))
     omega_inv = diag(diag(omega)^(-1))
     sigma_bar = omega_inv %*% sigma %*% omega_inv
@@ -191,7 +198,6 @@ V_logskew <- function(x,par,ncores=NULL){
     b = c(t(alpha) %*% sigma_bar %*% alpha)
     delta = c(sigma_bar %*% alpha)/sqrt(c(1+b))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    if(!is.matrix(x)){x <- matrix(x,ncol=n,byrow=TRUE)}
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
@@ -237,13 +243,18 @@ V_logskew <- function(x,par,ncores=NULL){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
+    alpha = par[[1]];sigma = par[[2]]
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    n = nrow(x)
     if(length(idx)==0){
         val = V_logskew(x,par,ncores=ncores)
         if(log) return(log(val))
         else return(val)
     }
-    alpha = par[[1]];sigma = par[[2]]
-    n = nrow(sigma)
+    if(length(idx)==n){
+        val = intensity_logskew(x,par,ncores,log)
+        return(val)
+    }
     sigma.chol = chol(sigma)
     sigma.inv = chol2inv(sigma.chol)
     sum.sigma.inv = sum(sigma.inv)
