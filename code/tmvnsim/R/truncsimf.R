@@ -47,7 +47,6 @@ tmvnsim <- function(nsamp, k, lower=rep(-Inf,k), upper=rep(Inf,k), imod=rep(FALS
 		}
 	}
 #	print(rbind(lower, upper))
-	
 	#if(!is.loaded("tmvnlib.so")) dyn.load("tmvnlib.so")
 	xx <- matrix(0, nsamp, k)
 	wts <- rep(0, nsamp)
@@ -120,14 +119,13 @@ tmvtsim <- function(nsamp, k, lower=rep(-Inf,k), upper=rep(Inf,k), imod=rep(FALS
 		}
 	}
 #	print(rbind(lower, upper))
-	
 	#if(!is.loaded("tmvnlib.so")) dyn.load("tmvnlib.so")
 	xx <- matrix(0, nsamp, k)
 	wts <- rep(0, nsamp)
     func <- function(idx){
         denom <- sqrt(rchisq(1, df=df)/df)
         ret <- .Fortran("rtmvnghk",
-                                    n      = 1,
+                                    n      = as.integer(1),
                                     d      = as.integer(k),
                                     means  = as.double(rep(0,k)),
                                     sroot  = as.double(sroot),

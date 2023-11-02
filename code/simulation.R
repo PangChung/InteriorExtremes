@@ -8,10 +8,10 @@
     # @par[[1]] : nu: degrees of freedom
     # @par[[2]] : sigma: correlation matrix
 simu_truncT <- function(m,par,ncores=NULL){    
-    nu = par[[1]];sigma = par[[2]]
+    nu = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
-    gamma_1 = log(gamma((nu+1)/2))
+    gamma_1 = gamma((nu+1)/2)
     a_fun <- function(j,upper){
         sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
         sigma.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F] + diag(1e-5,n))/(nu+1) #causing numerical problems
@@ -23,14 +23,13 @@ simu_truncT <- function(m,par,ncores=NULL){
     sigma.list = lapply(T_j,function(x) x[[2]])
     sigma.chol = lapply(sigma.list,chol)
     a = T_j_val/phi*2^((nu-2)/2)*gamma_1*(pi^(-1/2))
-    #browser()
     # Simulate the max-stable process
     simu <- function(idx){
         r = rexp(1)
         r.hat = 1/r
         z = rep(NA,n)
         z = tmvtsim(n=1,k=n, means=sigma[,1],sigma=sigma.list[[1]],
-                  lower=rep(0,n),upper=rep(Inf,n),df=nu+1)[[1]]
+                  lower=rep(0,n),upper=rep(Inf,n),df=nu+1)
         z = z^nu * a[1]/a
         z = z * r.hat
         for(j in 2:n){
@@ -39,7 +38,7 @@ simu_truncT <- function(m,par,ncores=NULL){
             while(r.hat > z[j]){
                 z_temp = rep(NA,n);#z_temp[j] = 1
                 z_temp = tmvtsim(n=1,k=n, means=sigma[,j],sigma=sigma.list[[j]],
-                    lower=rep(0,n),upper=rep(Inf,n),df=nu+1)[[1]]
+                    lower=rep(0,n),upper=rep(Inf,n),df=nu+1)
                 z_temp = (z_temp)^nu * a[j]/a
                 z_temp = z_temp * r.hat
                 if(!any(z_temp[1:(j-1)] > z[1:(j-1)])){
@@ -65,7 +64,7 @@ simu_truncT <- function(m,par,ncores=NULL){
     # @par[[1]] : alpha: slant parameter of the skew normal distribution
     # @par[[2]] : sigma: correlation matrix
 simu_logskew <- function(m,par,ncores=NULL){  
-    alpha = par[[1]];sigma = par[[2]]
+    alpha = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
     omega.inv = diag(diag(omega)^(-1))
@@ -118,14 +117,14 @@ bi.simu <- function(m,par,ncores=10,model="truncT",random.seed=34234){
     set.seed(random.seed)
     if(model == "truncT"){
         par.func <- function(idx){
-            new.par <- list(par[[1]],par[[2]][c(1,idx),c(1,idx)])
+            new.par <- list(par[[2]][c(1,idx),c(1,idx)],par[[1]])
         }
         new.par.list <- lapply(2:nrow(par[[2]]),par.func)
         val.list<- mclapply(new.par.list,simu_truncT,m=m,ncores=NULL,mc.cores=10,mc.preschedule = TRUE)
     }
     if(model == "logskew"){
         par.func <- function(idx){
-            new.par <- list(par[[1]][c(1,idx)],par[[2]][c(1,idx),c(1,idx)])
+            new.par <- list(par[[2]][c(1,idx),c(1,idx)],par[[1]][c(1,idx)])
         }
         new.par.list <- lapply(2:nrow(par[[2]]),par.func)
         val.list<- mclapply(new.par.list,simu_logskew,m=m,ncores=NULL,mc.cores=10,mc.preschedule = TRUE) 

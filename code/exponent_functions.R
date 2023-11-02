@@ -6,7 +6,7 @@
 ## truncated extremal-t max-stable processes
 intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-    sigma = par[[2]];nu = par[[1]]
+    sigma = par[[1]];nu = par[[2]]
     n = nrow(x)
     if(n==1) return(1/(x^2))
     chol.sigma = chol(sigma)
@@ -45,7 +45,7 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
 ## truncated extremal-t max-stable processes
 V_truncT <- function(x,par,ncores=NULL){
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-    sigma = par[[2]];nu = par[[1]]
+    sigma = par[[1]];nu = par[[2]]
     n = nrow(x)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
@@ -142,7 +142,7 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
 ## this function computes the intensity function 
 ## for the log skew-normal based max-stable processes
 intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
-    alpha = par[[1]];sigma = par[[2]]
+    alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = nrow(x)
     if(n==1) return(1/(x^2))
@@ -185,7 +185,7 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
 V_logskew <- function(x,par,ncores=NULL){
-    alpha = par[[1]];sigma = par[[2]]
+    alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = nrow(x)
     if(n==1) return(1/x)
@@ -243,7 +243,7 @@ V_logskew <- function(x,par,ncores=NULL){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
-    alpha = par[[1]];sigma = par[[2]]
+    alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = nrow(x)
     if(length(idx)==0){
@@ -338,7 +338,7 @@ empirical_extcoef <- function(idx,data){
 # calculate true extremal coefficients
 true_extcoef <- function(idx,par,model="logskew1"){
     if(model=="logskew1"){
-        alpha = par[[1]];sigma = par[[2]]
+        alpha = par[[2]];sigma = par[[1]]
         n = nrow(sigma)
         omega = diag(sqrt(diag(sigma)))
         omega.inv = diag(diag(omega)^(-1))
@@ -349,12 +349,12 @@ true_extcoef <- function(idx,par,model="logskew1"){
         sigma.22.1 = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx]
         alpha.new = c(c(1 + t(alpha[-idx]) %*% sigma.22.1 %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.bar.11.inv %*% sigma.bar[idx,-idx] %*% alpha[-idx]))
         sigma.new = sigma[idx,idx]
-        val = V_logskew(rep(1,length(idx)),list(alpha=alpha.new,sigma=sigma.new),ncores=NULL)
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma.new,alpha=alpha.new),ncores=NULL)
     }
 
     if(model == "logskew2"){
         alpha = par[[1]];sigma = par[[2]]
-        val = V_logskew(rep(1,length(idx)),list(alpha=alpha[idx],sigma=sigma[idx,idx]),ncores=NULL)
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],alpha=alpha[idx]),ncores=NULL)
     }
     if(model == "truncT1"){
         x = matrix(Inf,nrow=ncol(idx),ncol=nrow(par[[2]]))
@@ -365,7 +365,7 @@ true_extcoef <- function(idx,par,model="logskew1"){
     
     if(model == "truncT2"){
         x = rep(1,length(idx))
-        val = V_truncT(x,list(nu = par[[1]],sigma=par[[2]][idx,idx]),ncores=NULL)
+        val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),ncores=NULL)
     }
     return(val)
 
@@ -408,7 +408,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             alpha = alpha.func(loc,par.2)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             print(par)
-            para.temp = list(alpha=alpha,sigma=cov.mat)
+            para.temp = list(sigma=cov.mat,alpha=alpha)
             val = -intensity_logskew(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
         }
@@ -420,7 +420,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             par.1 = par2[1:2];nu = par2[3]
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             cov.mat = cov.func(loc,par.1)
-            para.temp = list(nu=nu,sigma=cov.mat)
+            para.temp = list(sigma=cov.mat,nu=nu)
             val = -intensity_truncT(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
         }

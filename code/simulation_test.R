@@ -12,7 +12,7 @@ source("code/exponent_functions.R")
 source("code/MLE_BrownResnick.R")
 
 ### setting ###
-d <- 10
+d <- 4
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
@@ -20,13 +20,14 @@ diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(
 cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
-m = 1e+4
+m = 1e+3
 ncores=10
 all.pairs <- combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 
+tmvtsim(1,k=d^2,lower=rep(1,d^2),upper=rep(Inf,d^2),means=rep(0,d^2),sigma=diag(d^2),df=2)
 ### simulate the truncated extremal-t model ###
-par1 <- list(nu=nu,sigma=cov.mat)
+par1 <- list(sigma=cov.mat,nu=nu)
 system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
 which(apply(Z.trunc,2,anyDuplicated)>0)
 
@@ -59,7 +60,7 @@ dev.off()
 # Simulate a log-skew normal based max-stable process
 alpha = alpha.func(coord,2)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
-par2 <- list(alpha=alpha,sigma=cov.mat)
+par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
 
 which(apply(Z.logskew,1,anyDuplicated)>0)
@@ -112,7 +113,7 @@ fit.truncT.comp <- MCLE(data=Z.logskew,init=c(0.1,0.5,2),fixed=c(F,F,F),loc=coor
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,2)
 
-fitted.extcoef.logskew1.1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
+fitted.extcoef.logskew1.1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(sigma=cov.mat,alpha=alpha),model="logskew1"),mc.cores=10)
 plot(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="black")
 points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1.1,type="p",cex=0.5,col="red",pch=20)
@@ -121,7 +122,7 @@ mean((fitted.extcoef.logskew1.1 - tc.logskew )^2)
 
 cov.mat = cov.func(coord,fit.logskew$par[1:2])
 alpha = alpha.func(coord,fit.logskew$par[-c(1:2)])
-fitted.extcoef.logskew1.2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(alpha=alpha,sigma=cov.mat),model="logskew1"),mc.cores=10)
+fitted.extcoef.logskew1.2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(sigma=cov.mat,alpha=alpha),model="logskew1"),mc.cores=10)
 plot(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="black")
 points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1.2,type="p",cex=0.5,col="red",pch=20)
