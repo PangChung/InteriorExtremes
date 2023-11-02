@@ -6,7 +6,7 @@ library(gridExtra)
 library(partitions)
 library(ggplot2)
 library(Rfast)
-library(partitions)
+library(matrixStats)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/MLE_BrownResnick.R")
@@ -21,7 +21,7 @@ cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
 m = 1e+4
-ncores=20
+ncores=10
 all.pairs <- combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 
@@ -61,6 +61,7 @@ alpha = alpha.func(coord,2)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(alpha=alpha,sigma=cov.mat)
 system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
+
 which(apply(Z.logskew,1,anyDuplicated)>0)
 
 png("figures/marginal_qqplot_logskew.png",width=d*600,height=d*600,res=300)
@@ -90,7 +91,7 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
     bty="n", pch=20,cex=1)
 dev.off()
 
-#######################
+######################
 ## fit the model #####
 #######################
 # fit the truncated extremal t model: the angular density approach
@@ -102,6 +103,8 @@ fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.1,0.5,2),fixed=c(F,F,T),loc=coord,
 
 # fit the log-skew based model
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,3),fixed=c(T,T,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
+fit.truncT.comp <- MCLE(data=Z.logskew,init=c(0.1,0.5,2),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="logskew",
+                lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",hessian=FALSE
 
 #system("say \'your program has finished\'")
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
