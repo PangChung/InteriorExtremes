@@ -7,7 +7,7 @@
 intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
-    n = nrow(x)
+    n = ncol(x)
     if(n==1) return(1/(x^2))
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
@@ -46,7 +46,7 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
 V_truncT <- function(x,par,ncores=NULL){
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
-    n = nrow(x)
+    n = ncol(x)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
     sigma_fun <- function(j){
@@ -85,7 +85,7 @@ V_truncT <- function(x,par,ncores=NULL){
 partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     sigma = par[[1]];nu = par[[2]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-    n = nrow(x)
+    n = ncol(x)
     if(length(idx)==0){
         val = V_truncT(x,par,ncores=ncores)
         if(log) return(log(val))
@@ -144,7 +144,7 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
 intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-    n = nrow(x)
+    n = ncol(x)
     if(n==1) return(1/(x^2))
     omega = diag(sqrt(diag(sigma)))
     omega_inv = diag(diag(omega)^(-1))
@@ -187,7 +187,7 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
 V_logskew <- function(x,par,ncores=NULL){
     alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-    n = nrow(x)
+    n = ncol(x)
     if(n==1) return(1/x)
     omega = diag(sqrt(diag(sigma)))
     omega_inv = diag(diag(omega)^(-1))
@@ -245,7 +245,7 @@ V_logskew <- function(x,par,ncores=NULL){
 partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
     alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-    n = nrow(x)
+    n = ncol(x)
     if(length(idx)==0){
         val = V_logskew(x,par,ncores=ncores)
         if(log) return(log(val))
@@ -357,7 +357,7 @@ true_extcoef <- function(idx,par,model="logskew1"){
         val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],alpha=alpha[idx]),ncores=NULL)
     }
     if(model == "truncT1"){
-        x = matrix(Inf,nrow=ncol(idx),ncol=nrow(par[[2]]))
+        x = matrix(Inf,nrow=ncol(idx),ncol=nrow(par[[1]]))
         all.pairs.new = cbind(rep(1:ncol(idx),each=nrow(idx)),c(idx))
         x[all.pairs.new] = 1
         val = V_truncT(x,par,ncores=parallel::detectCores())

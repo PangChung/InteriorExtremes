@@ -30,7 +30,7 @@ system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
 which(apply(Z.trunc,2,anyDuplicated)>0)
 
 png("figures/marginal_qqplot_truncT.png",width=d*600,height=d*600,res=300)
-par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
+par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
 y=(1:m)/(1+m)
 for(idx in 1:ncol(Z.trunc)){
 print(idx)
