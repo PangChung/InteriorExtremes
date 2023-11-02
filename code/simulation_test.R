@@ -14,18 +14,16 @@ source("code/MLE_BrownResnick.R")
 ### setting ###
 d <- 4
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
-diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
-                         as.vector(outer(coord[,2],coord[,2],'-'))) 
+diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
-m = 1e+3
+m = 1e+4
 ncores=10
 all.pairs <- combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 
-tmvtsim(1,k=d^2,lower=rep(1,d^2),upper=rep(Inf,d^2),means=rep(0,d^2),sigma=diag(d^2),df=2)
 ### simulate the truncated extremal-t model ###
 par1 <- list(sigma=cov.mat,nu=nu)
 system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
@@ -35,7 +33,8 @@ png("figures/marginal_qqplot_truncT.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
 y=(1:m)/(1+m)
 for(idx in 1:ncol(Z.trunc)){
-x = pgev(Z.trunc[,idx],1,1,1);
+print(idx)
+x = pgev(Z.trunc[,idx],1,1,1)
 p.value = ks.test(x,y)$p.value
 qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data",ylab="Theoretical")
 abline(0,1,col="red")

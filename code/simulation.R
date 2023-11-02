@@ -28,18 +28,22 @@ simu_truncT <- function(m,par,ncores=NULL){
         r = rexp(1)
         r.hat = 1/r
         z = rep(NA,n)
-        z = tmvtsim(n=1,k=n, means=sigma[,1],sigma=sigma.list[[1]],
-                  lower=rep(0,n),upper=rep(Inf,n),df=nu+1)
+        denom <- sqrt(rchisq(1, df=nu+1)/(nu+1))
+        z = tmvnsim(n=1,k=n, means=rep(0,n),sigma=sigma.list[[1]],
+                  lower=(rep(0,n)-sigma[,1])*denom,upper=rep(Inf,n))[[1]]
+        z = z/denom + sigma[,1]          
         z = z^nu * a[1]/a
         z = z * r.hat
         for(j in 2:n){
             r = rexp(1)
             r.hat = 1/r
             while(r.hat > z[j]){
-                z_temp = rep(NA,n);#z_temp[j] = 1
-                z_temp = tmvtsim(n=1,k=n, means=sigma[,j],sigma=sigma.list[[j]],
-                    lower=rep(0,n),upper=rep(Inf,n),df=nu+1)
-                z_temp = (z_temp)^nu * a[j]/a
+                z_temp = rep(NA,n)
+                denom <- sqrt(rchisq(1, df=nu+1)/(nu+1))
+                z_temp = tmvnsim(n=1,k=n, means=rep(0,n),sigma=sigma.list[[j]],
+                  lower=(rep(0,n)-sigma[,j])*denom,upper=rep(Inf,n))[[1]]
+                z_temp = z_temp/denom + sigma[,j]          
+                z_temp = z_temp^nu*a[j]/a
                 z_temp = z_temp * r.hat
                 if(!any(z_temp[1:(j-1)] > z[1:(j-1)])){
                     z = pmax(z,z_temp)
