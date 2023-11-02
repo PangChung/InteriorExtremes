@@ -1,3 +1,0 @@
-useDynLib(tmvnsim)
-export(tmvnsim)
-export(tmvtsim)
