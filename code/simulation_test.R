@@ -61,11 +61,10 @@ alpha = alpha.func(coord,2)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
-
 which(apply(Z.logskew,1,anyDuplicated)>0)
 
 png("figures/marginal_qqplot_logskew.png",width=d*600,height=d*600,res=300)
-par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1))
+par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
 for(idx in 1:ncol(Z.logskew)){
 z.order = order(Z.logskew[,idx],decreasing=FALSE)
 x = pgev(Z.logskew[z.order,idx],1,1,1);y=sort(runif(length(x)))
@@ -95,16 +94,15 @@ dev.off()
 ## fit the model #####
 #######################
 # fit the truncated extremal t model: the angular density approach
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,T),thres=0.9,model="truncT",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,T),thres=0.9,model="truncT",method="Nelder-Mead",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
 # the composite likelihood approach : 
-fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.1,0.5,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="truncT",
+fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.1,0.5,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs[],maxit=200,model="truncT",
                 lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 
-
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.5,1,3),fixed=c(T,T,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
-fit.truncT.comp <- MCLE(data=Z.logskew,init=c(0.1,0.5,2),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="logskew",
-                lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",hessian=FALSE
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
+fit.logskew.comp <- MCLE(data=Z.logskew,init=c(0.1,0.5,2),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="logskew",
+                lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",hessian=FALSE)
 
 #system("say \'your program has finished\'")
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)

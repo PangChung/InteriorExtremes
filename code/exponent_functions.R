@@ -242,9 +242,9 @@ V_logskew <- function(x,par,ncores=NULL){
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
-partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
+partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     alpha = par[[2]];sigma = par[[1]]
-    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    if(!is.matrix(x)){x <- matrix(x,ncol=1)}
     n = ncol(x)
     if(length(idx)==0){
         val = V_logskew(x,par,ncores=ncores)
@@ -262,12 +262,12 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
     ones <- rep(1,n)
-    
+    one.mat <- matrix(1,n,n)
+    sigma.v = colsums(sigma.inv)/sqrt(sum.sigma.inv)
     sigma.bar.11.inv = chol2inv(chol(sigma.bar[idx,idx]))
     sigma.2.1.bar = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx,drop=F] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=F]
-    sigma.tilde.inv =  sigma.inv - sigma.inv %*% ones %*% t(ones) %*% sigma.inv/sum.sigma.inv
-    sigma.tilde.inv.chol = chol(sigma.tilde.inv)
-    sigma.tilde = chol2inv(sigma.tilde.inv.chol)
+    sigma.tilde.inv =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
+    sigma.tilde = sigma + (sigma %*% (sigma.v %*% t(sigma.v)) %*% sigma )/c(1 - sigma.v %*% sigma %*% sigma.v) ## sherman-morrison formula
     omega.tilde = diag(sqrt(diag(sigma.tilde)))
     omega.tilde.inv = diag(diag(omega.tilde)^(-1))
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
@@ -290,7 +290,7 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=TRUE){
     alpha.tilde = c(t(alpha) %*% omega %*% (diag(ones) + ones %*% t(colSums(sigma.inv))) * (1+b)^(-1/2))
     delta.hat = (1+b)^(-1/2)*sqrt(b)
 
-    alpha.tilde.0 = delta.hat/sqrt(sum.sigma.inv) + sum(alpha.tilde * mu.tilde)
+    alpha.tilde.0 = c(delta.hat/sqrt(sum.sigma.inv) + sum(alpha.tilde * mu.tilde))
 
     tau.tilde = alpha.tilde.0 * (1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2)
     
@@ -395,10 +395,10 @@ alpha.func <- function(coord,par=10){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
-                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE){
+                    ncores=NULL,method="Nelder-Mead",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE){
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
-    data = sweep(data[,idx.thres],1,data.sum[idx.thres],"/")
+    data = sweep(data[idx.thres,],1,data.sum[idx.thres],"/")
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
