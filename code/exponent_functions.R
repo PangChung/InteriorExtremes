@@ -255,27 +255,32 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
         val = intensity_logskew(x,par,ncores,log)
         return(val)
     }
+    ones <- rep(1,n)
+    one.mat <- matrix(1,n,n)
+    
     sigma.chol = chol(sigma)
     sigma.inv = chol2inv(sigma.chol)
     sum.sigma.inv = sum(sigma.inv)
     omega = diag(sqrt(diag(sigma)))
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
-    ones <- rep(1,n)
-    one.mat <- matrix(1,n,n)
-    sigma.v = colsums(sigma.inv)/sqrt(sum.sigma.inv)
-    sigma.bar.11.inv = chol2inv(chol(sigma.bar[idx,idx]))
-    sigma.2.1.bar = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx,drop=F] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=F]
+    
     sigma.tilde.inv =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
-    sigma.tilde = sigma + (sigma %*% (sigma.v %*% t(sigma.v)) %*% sigma )/c(1 - sigma.v %*% sigma %*% sigma.v) ## sherman-morrison formula
-    omega.tilde = diag(sqrt(diag(sigma.tilde)))
-    omega.tilde.inv = diag(diag(omega.tilde)^(-1))
+    
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
-    sigma.tilde.11 = sigma.tilde[idx,idx]
-    sigma.tilde.11.chol = chol(sigma.tilde.11)
+
+    sigma.tilde.inv.22 = sigma.tilde.inv[-idx,-idx,drop=F]
+    sigma.tilde.inv.22.chol = chol(sigma.tilde.inv.22)
+    sigma.tilde.inv.22.inv = chol2inv(sigma.tilde.inv.22.chol)
+    sigma.tilde.inv.21 = sigma.tilde.inv[-idx,idx,drop=F]
+    sigma.tilde.2.1 = chol2inv(chol(sigma.tilde.inv[-idx,-idx,drop=F]))
+
     sigma.tilde.11.inv = chol2inv(sigma.tilde.11.chol)
     sigma.tilde.11.bar = sigma.tilde.bar[idx,idx]
     sigma.tilde.11.bar.inv = chol2inv(chol(sigma.tilde.11.bar))
+
+    sigma.bar.11.inv = chol2inv(chol(sigma.bar[idx,idx]))
+    sigma.2.1.bar = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx,drop=F] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=F]
     sigma.tilde.2.1.bar = sigma.tilde.bar[-idx,-idx] - sigma.tilde.bar[-idx,idx,drop=F] %*% sigma.tilde.11.bar.inv %*% sigma.tilde.bar[idx,-idx,drop=F]
     sigma.tilde.2.1 = sigma.tilde[-idx,-idx] - sigma.tilde[-idx,idx,drop=F] %*% sigma.tilde.11.inv %*% sigma.tilde[idx,-idx,drop=F]
     omega.tilde.2.1 = diag(sqrt(diag(sigma.tilde.2.1)))
