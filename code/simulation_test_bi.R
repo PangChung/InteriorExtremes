@@ -5,7 +5,6 @@ library(gridExtra)
 library(ggplot2)
 source("code/simulation.R")
 source("code/exponent_functions.R")
-RNGkind("L'Ecuyer-CMRG")
 ## the spatial setting ##
 d <- 1000
 coord = as.matrix(expand.grid(0,0:(d-1))/d)

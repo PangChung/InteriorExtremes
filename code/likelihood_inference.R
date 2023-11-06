@@ -217,7 +217,7 @@ nloglik <- function(par,data,model="BR"){
 ###########################
 ## Composite likelihood ###
 ###########################
-### Negative log composite-likelihood function for max-stable models with unit Frechet margins
+### Negative log composite-likelihood function for max-stable models with unit Frechet margins ###
 # par: parameter vector (par[1]=range, par[2]=smoothness)
 # data: matrix of dimension nxD, containing n D-dimensional random vectors (each row = 1 vector) on the unit Frechet scale
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q))
@@ -228,7 +228,6 @@ nlogcomplik <- function(par,data,index,ncores,model){
       if(model == "logskew"){par.index$alpha = par.index$alpha[ind]} 
       val <- nloglik(par=par.index,data[,ind],model)
     }
-    browser()
     if(!is.null(ncores)) res <- rowSums(matrix(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE) 
     else res <- rowSums(matrix(unlist(lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE)
     return(res)

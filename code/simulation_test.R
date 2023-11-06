@@ -9,7 +9,7 @@ library(Rfast)
 library(matrixStats)
 source("code/simulation.R")
 source("code/exponent_functions.R")
-source("code/MLE_BrownResnick.R")
+source("code/likelihood_inference.R")
 
 ### setting ###
 d <- 10
