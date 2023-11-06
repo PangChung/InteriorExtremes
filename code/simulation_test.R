@@ -57,7 +57,7 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,2)
+alpha = alpha.func(coord,10)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
@@ -92,15 +92,16 @@ dev.off()
 
 ######################
 ## fit the model #####
-#######################
+#####################
 # fit the truncated extremal t model: the angular density approach
 system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,T),thres=0.9,model="truncT",method="Nelder-Mead",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
+
 # the composite likelihood approach : 
-fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.1,0.5,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs[],maxit=200,model="truncT",
+fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.1,0.5,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="truncT",
                 lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.1,0.5,0),fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
 fit.logskew.comp <- MCLE(data=Z.logskew,init=c(0.1,0.5,2),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="logskew",
                 lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",hessian=FALSE)
 

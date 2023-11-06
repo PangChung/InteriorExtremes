@@ -264,7 +264,7 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     omega = diag(sqrt(diag(sigma)))
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
-    
+    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     H =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
 
     sigma.tilde.inv = H[-idx,-idx,drop=FALSE]
@@ -274,21 +274,23 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     omega.tilde.inv = diag(diag(omega.tilde)^(-1))  
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
 
-    b = c((t(alpha) %*% omega_inv %*% one.vec)^2/sum.sigma.inv)
-    beta =  c(t(alpha) %*% omega_inv %*% (diag(one.vec) + one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))    
+    b = c((t(alpha) %*% omega.inv %*% ones)^2/sum.sigma.inv)
+    beta =  c(t(alpha) %*% omega.inv %*% (diag(ones) + one.mat %*% sigma.inv/sum.sigma.inv) * (1+b)^(-1/2))    
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     alpha.tilde = c(beta[-idx] %*% omega.tilde) 
-     
+    b1 =c((1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2))
     func <- function(i){
         xi = x[i,]
-        tau2.1 = tau.tilde * (1 + t(alpha1.2) %*% sigma.tilde.11.bar %*% alpha1.2) + alpha1.2 %*% omega.tilde.inv[idx,idx] %*% (log(xi[idx]) + a[idx] - mu.tilde[idx])
-        mu.2.1 = c(mu.tilde[-idx] - sigma.tilde[-idx,idx,drop=F] %*% sigma.tilde.11.inv %*% (log(xi[idx]) + a[idx] - mu.tilde[idx]) ) 
-        mu.val = c(omega.tilde.2.1.inv %*% (log(xi[-idx]) + a[-idx] - mu.2.1),tau2.1 * (1+b1)^(-1/2))
+        xi.tilde = log(xi) + a
+        mu.tilde = -sigma.tilde %*% (H[-idx,idx] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv)
+        tau.tilde = b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde)
+        b2 = -b1 %*% sigma.tilde.bar %*% alpha.tilde
         scale.val = cbind(rbind(sigma.2.1.bar, b2),c(b2,1))
+        mu.val = c(omega.tilde.inv %*% xi.tilde[-idx] - mu.tilde, tau.tilde * b1)
         rownames(scale.val) <- colnames(scale.val) <-  NULL
-        phi = pnorm(c(tau2.1 * (1+b1)^(-1/2)))
+        phi = pnorm(c(tau.tilde * b1))
         intensity.marginal = intensity_logskew(xi[idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),ncores=NULL,log=FALSE)
-        val = intensity.marginal * phi^(-1) * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[[1]]
+        val = intensity.marginal/phi * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.tilde)),upper=mu.tilde,sigma=scale.val)[[1]]
         return(val)
     }
     if(!is.null(ncores)){
@@ -384,7 +386,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             print(par)
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = -intensity_logskew(dat,par=para.temp,log=TRUE,ncores=ncore)
+            val = - intensity_logskew(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
         }
     }
