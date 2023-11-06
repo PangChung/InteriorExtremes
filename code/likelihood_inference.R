@@ -184,7 +184,6 @@ nloglik <- function(par,data,model="BR"){
     set.seed(747380)
     D <- ncol(data)
     all_combn <- lapply(1:D,FUN=Rfast::comb_n,n=D,simplify=FALSE) 
-    browser()
     all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
     if(model == "BR"){
         sigma = par$sigma
@@ -242,7 +241,6 @@ nlogcomplik <- function(par,data,index,ncores,model){
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
 MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",method="Nelder-Mead",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,...){
     t <- proc.time()
-    browser()
     object.func <- function(par2,opt=TRUE){
         par1 <- init
         par1[!fixed] <- par2
@@ -252,6 +250,7 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",metho
         if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-c(1:2)])}
         if(model=="logskew"){par.list <- list(sigma=sigma,alpha=alpha.func(loc,par1[-c(1:2)]))}
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
+        print(par2)
         if(opt) return(mean(val,na.rm=TRUE)) else return(val)
     }
     opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
@@ -325,6 +324,7 @@ MVLE <- function(data,init,fixed,loc,sigma.FUN,vecchia.seq,neighbours,ncores,mod
         if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-c(1:2)])}
         if(model=="logskew"){par.list=list(sigma=sigma,alpha=alpha.func(loc,par1[-c(1:2)]))}
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
+        print(par2)
         if(opt) return(mean(val,na.rm=TRUE)) else return(val)
     }
     opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)

@@ -7,7 +7,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 ## the spatial setting ##
 d <- 1000
-coord = as.matrix(expand.grid(0,0:(d-1))/d)
+coord = as.matrix(expand.grid(0,0:(d-1))/d)  
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),
                          as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))

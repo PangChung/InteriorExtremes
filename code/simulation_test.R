@@ -12,14 +12,14 @@ source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 
 ### setting ###
-d <- 10
+d <- 8
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
-m = 1e+4
+m = 1e+3
 ncores=10
 all.pairs <- combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -27,12 +27,12 @@ all.pairs.list = split(all.pairs,col(all.pairs))
 ### simulate the truncated extremal-t model ###
 par1 <- list(sigma=cov.mat,nu=nu)
 system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
-which(apply(Z.trunc,2,anyDuplicated)>0)
 
 png("figures/marginal_qqplot_truncT.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
 y=(1:m)/(1+m)
-for(idx in 1:ncol(Z.trunc)){
+for(idx in 1:ncol(Z.trunc))
+{
 print(idx)
 x = pgev(Z.trunc[,idx],1,1,1)
 p.value = ks.test(x,y)$p.value
@@ -40,8 +40,6 @@ qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data
 abline(0,1,col="red")
 }
 dev.off()
-
-image(1:10,1:10,z=matrix(log(Z.trunc[1,]),nrow=10),col=rev(heat.colors(10)))
 
 ec.trunc <- apply(all.pairs,2,empirical_extcoef,data=Z.trunc)
 tc.truncT1 <- true_extcoef(all.pairs,par=par1,model="truncT1")
@@ -57,11 +55,10 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,10)
+alpha = alpha.func(coord,0)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
-which(apply(Z.logskew,1,anyDuplicated)>0)
 
 png("figures/marginal_qqplot_logskew.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
@@ -73,8 +70,6 @@ qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data
 abline(0,1,col="red")
 }
 dev.off()
-
-image(1:10,1:10,z=matrix(log(Z.logskew[1,]),nrow=10),col=rev(heat.colors(10)) )
 
 
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
@@ -97,11 +92,17 @@ dev.off()
 system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,T),thres=0.9,model="truncT",method="Nelder-Mead",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
 
 # the composite likelihood approach : 
-fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.1,0.5,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="truncT",
+fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)]<0.5],maxit=200,model="truncT",
                 lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.1,0.5,0),fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
+alpha.seq = seq(-5,5,0.005)
+paras.list = as.matrix(expand.grid(0.5,1,alpha.seq))
+paras.list = split(paras.list,row(paras.list))
+logskew.vals <- unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=FALSE,mc.set.seed=FALSE))
+plot(alpha.seq,logskew.vals,cex=0.5,pch=20)
+
 fit.logskew.comp <- MCLE(data=Z.logskew,init=c(0.1,0.5,2),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="logskew",
                 lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",hessian=FALSE)
 

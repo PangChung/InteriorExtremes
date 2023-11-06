@@ -113,7 +113,7 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     func <- function(idx_j){
         x_j = x[idx_j,] * a_j
         x_log = log(x_j)
-        Q_sigma = (t(x_j[idx]) %*% inv.sigma.11 %*% x_j[idx])^(1/2)
+        Q_sigma = (x_j[idx] %*% inv.sigma.11 %*% x_j[idx])^(1/2)
         val = c(1/nu*sum(x_log[idx]- log(x[idx_j,idx,drop=F])) - phi + (nu-2)/2 * log(2) + (1-k)*log(nu) -
             k/2*log(pi) - 1/2*logdet.sigma.11 -(k+nu)*log(Q_sigma)+log(gamma_k))
         upper = c((x_j[-idx])^(1/nu)*sqrt(k+nu)/Q_sigma)
@@ -152,24 +152,24 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    delta = c(sigma_bar %*% alpha)/sqrt(c(1+t(alpha) %*% sigma_bar %*% alpha))
+    delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(inv.sigma)
     one.mat = matrix(1,n,n)
     one.vec = rep(1,n)
-    
-    b = c((t(alpha) %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
-    beta =  c(t(alpha) %*% omega_inv %*% (diag(one.vec) + one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
+    b = c((alpha %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
+    beta =  c(alpha %*% omega_inv %*% (diag(one.vec) + one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     func <- function(idx){
         x_log = log(x[idx,])
         x_circ = x_log + a
-        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(t(beta) %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
+        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
-        val = val - 1/2 * c(t(x_circ) %*% A %*% x_circ) - c(t(one.vec) %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
+        val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
         return(val)
     }
+    
     if(!is.null(ncores)){
         val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
     }
@@ -195,7 +195,7 @@ V_logskew <- function(x,par,ncores=NULL){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    b = c(t(alpha) %*% sigma_bar %*% alpha)
+    b = c(alpha %*% sigma_bar %*% alpha)
     delta = c(sigma_bar %*% alpha)/sqrt(c(1+b))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     I.mat1 = diag(rep(1,n))
@@ -212,10 +212,10 @@ V_logskew <- function(x,par,ncores=NULL){
         omega.j = sqrt(diag(diag(sigma.j),nrow=n-1))
         omega.j.inv = diag(diag(omega.j)^(-1),nrow=n-1)
         sigma.j.bar = omega.j.inv %*% sigma.j %*% omega.j.inv
-        alpha.hat = (1 - t(delta) %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) %*% omega.j %*% 
+        alpha.hat = (1 - delta %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) %*% omega.j %*% 
             sigma.j.inv %*% A.j %*% omega %*% delta   
         u.j = A.j %*% sigma %*% I.mat1[,j]
-        b1 = c(t(alpha.hat) %*% sigma.j.bar %*% alpha.hat)
+        b1 = c(alpha.hat %*% sigma.j.bar %*% alpha.hat)
         b3 = c(-(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
         sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),rbind(b3,1)))
         func_temp <- function(i){
@@ -274,8 +274,8 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     omega.tilde.inv = diag(diag(omega.tilde)^(-1))  
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
 
-    b = c((t(alpha) %*% omega.inv %*% ones)^2/sum.sigma.inv)
-    beta =  c(t(alpha) %*% omega.inv %*% (diag(ones) + one.mat %*% sigma.inv/sum.sigma.inv) * (1+b)^(-1/2))    
+    b = c((alpha %*% omega.inv %*% ones)^2/sum.sigma.inv)
+    beta =  c(alpha %*% omega.inv %*% (diag(ones) + one.mat %*% sigma.inv/sum.sigma.inv) * (1+b)^(-1/2))    
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     alpha.tilde = c(beta[-idx] %*% omega.tilde) 
     b1 =c((1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2))
@@ -324,7 +324,7 @@ true_extcoef <- function(idx,par,model="logskew1"){
         sigma.bar.11.chol = chol(sigma.bar.11)
         sigma.bar.11.inv = chol2inv(sigma.bar.11.chol)
         sigma.22.1 = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx]
-        alpha.new = c(c(1 + t(alpha[-idx]) %*% sigma.22.1 %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.bar.11.inv %*% sigma.bar[idx,-idx] %*% alpha[-idx]))
+        alpha.new = c(c(1 + alpha[-idx] %*% sigma.22.1 %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.bar.11.inv %*% sigma.bar[idx,-idx] %*% alpha[-idx]))
         sigma.new = sigma[idx,idx]
         val = V_logskew(rep(1,length(idx)),list(sigma=sigma.new,alpha=alpha.new),ncores=NULL)
     }
@@ -372,10 +372,12 @@ alpha.func <- function(coord,par=10){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
-                    ncores=NULL,method="Nelder-Mead",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE){
+                    ncores=NULL,method="Nelder-Mead",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE){
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],"/")
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
@@ -402,7 +404,11 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             if(opt) return(mean(val)) else return(val)
         }
     }
-    opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    if(opt){
+        opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    }else{
+        return(object.func(init[!fixed],opt=TRUE))
+    }
     if(hessian){
         h = 1e-4
         par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
@@ -425,6 +431,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     }
     par2 = init; par2[!fixed] = opt.result$par
     opt.result$par = par2
+    assign(".Random.seed", oldSeed, envir=globalenv())
     return(opt.result)
 }
 
