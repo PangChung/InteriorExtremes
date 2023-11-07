@@ -186,7 +186,7 @@ nloglik <- function(par,data,model="BR"){
     all_combn <- lapply(1:D,FUN=Rfast::comb_n,n=D,simplify=FALSE) 
     all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
     if(model == "BR"){
-        sigma = par$sigma
+        sigma = par[[1]]
         all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,nVI,FUN.VALUE = rep(0,nrow(data)),data=data,sigma=sigma)})
         Vdata = V(data,sigma)
     }
