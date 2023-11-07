@@ -307,6 +307,8 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     omega = diag(sqrt(diag(sigma)))
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
+    
+    delta = c(sigma.bar %*% alpha)/sqrt(c(1+alpha %*% sigma.bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     H =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
 
