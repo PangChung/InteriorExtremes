@@ -139,8 +139,8 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
 ###### Intensity function for log skew-normal based max-stable processes ######
 ###############################################################################
 
-## this function computes the intensity function 
-## for the log skew-normal based max-stable processes
+# this function computes the intensity function 
+# for the log skew-normal based max-stable processes
 intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
@@ -158,7 +158,7 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     one.mat = matrix(1,n,n)
     one.vec = rep(1,n)
     b = c((alpha %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
-    beta =  c(alpha %*% omega_inv %*% (diag(one.vec) + one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
+    beta =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     func <- function(idx){
@@ -181,6 +181,49 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     else
         return(exp(val))    
 }
+
+# intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
+#     delta = par[[2]];sigma = par[[1]]
+#     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+#     n = ncol(x)
+#     if(n==1) return(1/(x^2))
+#     omega = diag(sqrt(diag(sigma)))
+#     omega_inv = diag(diag(omega)^(-1))
+#     sigma_bar = omega_inv %*% sigma %*% omega_inv
+#     chol.sigma = chol(sigma)
+#     inv.sigma = chol2inv(chol.sigma)
+#     inv.sigma.bar = omega %*% inv.sigma %*% omega
+#     alpha = c(c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * inv.sigma.bar %*% delta)
+#     logdet.sigma = sum(log(diag(chol.sigma)))*2
+#     #delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+#     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
+#     sum.inv.sigma = sum(inv.sigma)
+#     one.mat = matrix(1,n,n)
+#     one.vec = rep(1,n)
+#     b = c((alpha %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
+#     beta =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
+#     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
+#     delta.hat = (1+b)^(-1/2)*sqrt(b)
+#     func <- function(idx){
+#         x_log = log(x[idx,])
+#         x_circ = x_log + a
+#         val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
+#             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
+#         val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
+#         return(val)
+#     }
+    
+#     if(!is.null(ncores)){
+#         val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+#     }
+#     else{
+#         val = unlist(lapply(1:nrow(x),func))
+#     }
+#     if(log)
+#         return(val)
+#     else
+#         return(exp(val))    
+# }
 
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
@@ -275,7 +318,7 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
 
     b = c((alpha %*% omega.inv %*% ones)^2/sum.sigma.inv)
-    beta =  c(alpha %*% omega.inv %*% (diag(ones) + one.mat %*% sigma.inv/sum.sigma.inv) * (1+b)^(-1/2))    
+    beta =  c(alpha %*% omega.inv %*% (diag(n) - one.mat %*% sigma.inv/sum.sigma.inv) * (1+b)^(-1/2))    
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     alpha.tilde = c(beta[-idx] %*% omega.tilde) 
     b1 =c((1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2))
@@ -330,7 +373,7 @@ true_extcoef <- function(idx,par,model="logskew1"){
     }
 
     if(model == "logskew2"){
-        alpha = par[[1]];sigma = par[[2]]
+        alpha = par[[2]];sigma = par[[1]]
         val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],alpha=alpha[idx]),ncores=NULL)
     }
     if(model == "truncT1"){
@@ -376,6 +419,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],"/")
+    #data = data[idx.thres,]
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     if(model == "logskew"){
@@ -386,7 +430,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
-            print(par)
+            #print(par)
             para.temp = list(sigma=cov.mat,alpha=alpha)
             val = - intensity_logskew(dat,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(mean(val)) else return(val)
