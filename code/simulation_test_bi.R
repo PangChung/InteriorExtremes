@@ -114,7 +114,7 @@ dev.off()
 
 save(random.seed,ec.logskew.1,ec.logskew.2,ec.logskew.3,tc.logskew.1,par2.1,par2.2,par2.3,nu,par1,ec.trunc,tc.truncT2,pairs,diff.mat,Z.trunc,file="data/bi_simulation.RData")
 
-partialV_logskew(Z.logskew.1$val[[1]],idx=1,par=Z.logskew.1$par[[1]])
+pval = mean(partialV_logskew(Z.logskew.1$val[[1]],idx=1,par=Z.logskew.1$par[[1]]))
 
 
 

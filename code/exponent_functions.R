@@ -286,7 +286,6 @@ V_logskew <- function(x,par,ncores=NULL){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
-    browser()
     alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,ncol=1)}
     n = ncol(x)
