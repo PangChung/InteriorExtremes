@@ -142,13 +142,16 @@ val.1 = V(data,par[[1]])
 val.1.1 = nVI(data,par[[1]],I = c(1,2))
 val.1.2 = nVI(data,par[[1]],I = 1)
 val.1.3 = nloglik(par,data,model="BR")
+
 val.2 = V_logskew(data,par)
 val.2.1 = intensity_logskew(data,par,log=FALSE)
 val.2.2 = partialV_logskew(data,idx = 1,par)
 val.2.3 = nloglik(par,data,model="logskew")
+
 max((val.2.1 - val.1.1)^2)
 max((val.2 - val.1)^2)
 max((val.2.2 - val.1.2)^2)
+max((val.2.3 - val.1.3)^2)
 
 
 
