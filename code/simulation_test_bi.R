@@ -112,7 +112,7 @@ lines(x=diff.mat[t(pairs)],y=tc.logskew.3,cex=1,lwd=2,col="red",lty=1)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 dev.off()
 
-save(random.seed,ec.logskew.1,ec.logskew.2,ec.logskew.3,tc.logskew.1,tc.logskew.2,tc.logskew.3,par2.1,par2.2,par2.3,nu,par1,ec.trunc,tc.truncT2,pairs,diff.mat,Z.trunc,file="data/bi_simulation.RData")
+save(random.seed,ec.logskew.1,ec.logskew.2,ec.logskew.3,tc.logskew.1,par2.1,par2.2,par2.3,nu,par1,ec.trunc,tc.truncT2,pairs,diff.mat,Z.trunc,file="data/bi_simulation.RData")
 
 
 
