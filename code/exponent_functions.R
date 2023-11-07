@@ -286,6 +286,7 @@ V_logskew <- function(x,par,ncores=NULL){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
+    browser()
     alpha = par[[2]];sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,ncol=1)}
     n = ncol(x)
@@ -300,23 +301,27 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     }
     ones <- rep(1,n)
     one.mat <- matrix(1,n,n)
-    
+    I <- diag(1,n)
     sigma.chol = chol(sigma)
     sigma.inv = chol2inv(sigma.chol)
     sum.sigma.inv = sum(sigma.inv)
     omega = diag(sqrt(diag(sigma)))
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
+
+    sigma.bar.11 = sigma.bar[idx,idx]
+    sigma.bar.11.chol = chol(sigma.bar.11)
+    sigma.bar.11.inv = chol2inv(sigma.bar.11.chol)
     
     delta = c(sigma.bar %*% alpha)/sqrt(c(1+alpha %*% sigma.bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     H =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
 
     sigma.tilde.inv = H[-idx,-idx,drop=FALSE]
-    sigma.tilde.inv.chol = chol(sigma.tilde)
+    sigma.tilde.inv.chol = chol(sigma.tilde.inv)
     sigma.tilde = chol2inv(sigma.tilde.inv.chol)
-    omega.tilde = diag(sqrt(diag(sigma.tilde)))
-    omega.tilde.inv = diag(diag(omega.tilde)^(-1))  
+    omega.tilde <- I[-idx,-idx,drop=FALSE];diag(omega.tilde) <- sqrt(diag(sigma.tilde))
+    omega.tilde.inv <- omega.tilde; diag(omega.tilde.inv) <- 1/diag(omega.tilde)
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
 
     b = c((alpha %*% omega.inv %*% ones)^2/sum.sigma.inv)
@@ -324,18 +329,21 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     alpha.tilde = c(beta[-idx] %*% omega.tilde) 
     b1 =c((1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2))
+    
+    alpha.k = c((1 + alpha[-idx] %*% (sigma.bar[-idx,-idx,drop=FALSE] - sigma.bar[-idx,idx,drop=FALSE] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=FALSE]) %*% alpha[-idx])^(-1/2) * (alpha[idx] + sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=FALSE] %*% alpha[-idx]))
+
     func <- function(i){
         xi = x[i,]
         xi.tilde = log(xi) + a
-        mu.tilde = -sigma.tilde %*% (H[-idx,idx] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv)
-        tau.tilde = b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde)
-        b2 = -b1 %*% sigma.tilde.bar %*% alpha.tilde
-        scale.val = cbind(rbind(sigma.2.1.bar, b2),c(b2,1))
+        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv))
+        tau.tilde = c(b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde))
+        b2 = c(-b1 %*% sigma.tilde.bar %*% alpha.tilde)
+        scale.val = cbind(rbind(sigma.tilde.bar, b2),c(b2,1))
         mu.val = c(omega.tilde.inv %*% xi.tilde[-idx] - mu.tilde, tau.tilde * b1)
         rownames(scale.val) <- colnames(scale.val) <-  NULL
         phi = pnorm(c(tau.tilde * b1))
-        intensity.marginal = intensity_logskew(xi[idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),ncores=NULL,log=FALSE)
-        val = intensity.marginal/phi * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.tilde)),upper=mu.tilde,sigma=scale.val)[[1]]
+        intensity.marginal = c(intensity_logskew(xi[idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),ncores=NULL,log=FALSE))
+        val = intensity.marginal/phi * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[[1]]
         return(val)
     }
     if(!is.null(ncores)){
