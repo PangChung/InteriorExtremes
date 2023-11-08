@@ -30,19 +30,7 @@ par1 <- list(sigma=cov.mat,nu=nu)
 system.time(Z.trunc <- bi.simu(m=m,par=par1,ncores=ncores,model="truncT"))
 Z.trunc.val <- do.call(rbind,Z.trunc$val)
 which(apply(Z.trunc.val,1,anyDuplicated)>0)
-#Z.trunc.gev <- apply(Z.trunc.val,1,function(x){pgev(x,1,1,1)})
-#ks.test.result <- unlist(mclapply(split(Z.trunc.gev,col(Z.trunc.gev)),ks.test.new,mc.cores=8,mc.set.seed = TRUE))
-#sum(!ks.test.result)
 
-# for(i in 1:nrow(Z.trunc.val)){
-# if(!ks.test.result[i]){
-#     qqplot(Z.trunc.gev[,i],(1:m)/(1+m),cex=0.5,main=paste("p-value:",ks.test.val,"stat: ",i))
-#     abline(0,1,col="red")
-#     hist(Z.trunc.gev[,i],50)
-#     print(i)
-#     Sys.sleep(10)
-# }
-# }
 ec.trunc <- unlist(lapply(Z.trunc$val,empirical_extcoef,idx=c(1,2)))
 tc.truncT2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par1,model="truncT2"),mc.cores=ncores)
 
@@ -60,18 +48,18 @@ dev.off()
 alpha.range = 10
 alpha = - 1 - coord[,2] + exp(sin(5*coord[,2]))
 alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.1 <- list(sigma=cov.mat,alpha=alpha)
+par2.1 <- alpha2delta(list(sigma=cov.mat,alpha=alpha))
 
 alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
 alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.2 <- list(sigma=cov.mat,alpha=alpha)
+par2.2 <- alpha2delta(list(sigma=cov.mat,alpha=alpha))
 
 alpha = 2.25 * sin(9*coord[,2])*cos(9*coord[,2])
 alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.3 <- list(sigma=cov.mat,alpha=alpha)
+par2.3 <- alpha2delta(list(sigma=cov.mat,alpha=alpha))
 
 alpha = rep(0,d)
-par2.4 <- list(sigma=cov.mat,alpha=alpha)
+par2.4 <- alpha2delta(list(sigma=cov.mat,alpha=alpha))
 
 pdf("figures/alpha_bi.pdf",width=10,height=8)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.lab=1.5,cex=1.5,mgp=c(2,1,0))
@@ -102,10 +90,10 @@ ec.logskew.1 <- unlist(lapply(Z.logskew.1$val,empirical_extcoef,idx=1:2))
 ec.logskew.2 <- unlist(lapply(Z.logskew.2$val,empirical_extcoef,idx=1:2))
 ec.logskew.3 <- unlist(lapply(Z.logskew.3$val,empirical_extcoef,idx=1:2))
 ec.logskew.4 <- unlist(lapply(Z.logskew.4$val,empirical_extcoef,idx=1:2))
-tc.logskew.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.1,model="logskew2"),mc.cores=ncores)
-tc.logskew.2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.2,model="logskew2"),mc.cores=ncores)
-tc.logskew.3 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.3,model="logskew2"),mc.cores=ncores)
-tc.logskew.4 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.4,model="logskew2"),mc.cores=ncores)
+tc.logskew.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.1,model="logskew1"),mc.cores=ncores)
+tc.logskew.2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.2,model="logskew1"),mc.cores=ncores)
+tc.logskew.3 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.3,model="logskew1"),mc.cores=ncores)
+tc.logskew.4 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.4,model="logskew1"),mc.cores=ncores)
 
 pdf("figures/extcoef_logskew_bi.pdf",width=10*4,height=8)
 
@@ -143,9 +131,9 @@ val.1.1 = nVI(data,par[[1]],I = c(1,2))
 val.1.2 = nVI(data,par[[1]],I = 1)
 val.1.3 = nloglik(par,data,model="BR")
 
-val.2 = V_logskew(data,par)
-val.2.1 = intensity_logskew(data,par,log=FALSE)
-val.2.2 = partialV_logskew(data,idx = 1,par)
+val.2 = V_logskew(data,par,alpha.para=FALSE)
+val.2.1 = intensity_logskew(data,par,alpha.para=FALSE,,log=FALSE)
+val.2.2 = partialV_logskew(data,idx = 1,par,alpha.para=FALSE)
 val.2.3 = nloglik(par,data,model="logskew")
 
 max((val.2.1 - val.1.1)^2)

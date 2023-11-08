@@ -286,9 +286,9 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE,alp
     
     if(alpha.para){
         alpha = par[[2]]
-        delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+        delta = c(sigma.bar %*% alpha)/sqrt(c(1+alpha %*% sigma.bar %*% alpha))
     }else{
-        inv.sigma.bar = omega %*% inv.sigma %*% omega
+        inv.sigma.bar = omega %*% sigma.inv %*% omega
         delta = par[[2]]
         alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
     }
