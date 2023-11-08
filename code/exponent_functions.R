@@ -353,6 +353,16 @@ alpha2delta <- function(par){
     return(list(sigma,delta))
 }
 
+delta2alpha <- function(par){
+    delta = par[[2]];sigma = par[[1]]
+    omega = diag(sqrt(diag(sigma)))
+    chol.sigma = chol(sigma)
+    inv.sigma = chol2inv(chol.sigma)
+    inv.sigma.bar = omega %*% inv.sigma %*% omega
+    alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+    return(list(sigma,alpha))
+}
+
 # calculate true extremal coefficients
 true_extcoef <- function(idx,par,model="logskew1"){
     if(model=="logskew1"){

@@ -47,26 +47,35 @@ dev.off()
 ## log-skew normal based max-stable processes ##
 alpha.range = 10
 alpha = - 1 - coord[,2] + exp(sin(5*coord[,2]))
-alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.1 <- alpha2delta(list(sigma=cov.mat,alpha=alpha))
+alpha.1 = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
+par2.1 <- alpha2delta(list(cov.mat,alpha.1))
 
 alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
-alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.2 <- alpha2delta(list(sigma=cov.mat,alpha=alpha))
+alpha.2 = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
+par2.2 <- alpha2delta(list(cov.mat,alpha.2))
 
 alpha = 2.25 * sin(9*coord[,2])*cos(9*coord[,2])
-alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.3 <- alpha2delta(list(sigma=cov.mat,alpha=alpha))
+alpha.3 = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
+par2.3 <- alpha2delta(list(cov.mat,alpha.3))
 
-alpha = rep(0,d)
-par2.4 <- alpha2delta(list(sigma=cov.mat,alpha=alpha))
+alpha.4 = rep(0,d)
+par2.4 <- alpha2delta(list(cov.mat,alpha.4))
 
 pdf("figures/alpha_bi.pdf",width=10,height=8)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.lab=1.5,cex=1.5,mgp=c(2,1,0))
-plot(x=(1:d)/(d+1),y=par2.1$alpha,type="l",ylim=c(-alpha.range+1,alpha.range+1),xlab="s",ylab="Alpha",col="black",lwd=2)
-lines(x=(1:d)/(d+1),y=par2.2$alpha,type="l",col="red",lwd=2)
-lines(x=(1:d)/(d+1),y=par2.3$alpha,type="l",col="blue",lwd=2)
-legend("topleft",legend=c("Alpha 1","Alpha 2","Alpha 3"),col=c("black","red","blue"),
+plot(x=(1:d)/(d+1),y=alpha.1,type="l",ylim=c(-alpha.range+1,alpha.range+1),xlab="s",ylab="alpha",col="black",lwd=2)
+lines(x=(1:d)/(d+1),y=alpha.2,type="l",col="red",lwd=2)
+lines(x=(1:d)/(d+1),y=alpha.3,type="l",col="blue",lwd=2)
+legend("topleft",legend=c("alpha 1","alpha 2","alpha 3"),col=c("black","red","blue"),
+    bty="n",lwd=2,cex=1)
+dev.off()
+
+pdf("figures/delta_bi.pdf",width=10,height=8)
+par(mfrow=c(1,1),mar=c(4,4,2,1),cex.lab=1.5,cex=1.5,mgp=c(2,1,0))
+plot(x=(1:d)/(d+1),y=par2.1[[2]],type="l",ylim=c(-1,1),xlab="s",ylab="delta",col="black",lwd=2)
+lines(x=(1:d)/(d+1),y=par2.2[[2]],type="l",col="red",lwd=2)
+lines(x=(1:d)/(d+1),y=par2.3[[2]],type="l",col="blue",lwd=2)
+legend("topleft",legend=c("delta 1","delta 2","delta 3"),col=c("black","red","blue"),
     bty="n",lwd=2,cex=1)
 dev.off()
 
@@ -121,7 +130,7 @@ dev.off()
 
 save.image(file="data/bi_simulation.RData")
 
-## compute the likelihood ## 
+## compute the likelihood for $alpha=0$ ## 
 ## it seems all the values agrees with each other ##
 par = Z.logskew.4$par[[1]]
 data = Z.logskew.4$val[[1]]
@@ -130,16 +139,19 @@ val.1 = V(data,par[[1]])
 val.1.1 = nVI(data,par[[1]],I = c(1,2))
 val.1.2 = nVI(data,par[[1]],I = 1)
 val.1.3 = nloglik(par,data,model="BR")
+val.1.4 = nVI(data,par[[1]],I = 2)
 
 val.2 = V_logskew(data,par,alpha.para=FALSE)
 val.2.1 = intensity_logskew(data,par,alpha.para=FALSE,,log=FALSE)
 val.2.2 = partialV_logskew(data,idx = 1,par,alpha.para=FALSE)
 val.2.3 = nloglik(par,data,model="logskew")
+val.2.4 = partialV_logskew(data,idx = 2,par,alpha.para=FALSE)
 
 max((val.2.1 - val.1.1)^2)
 max((val.2 - val.1)^2)
 max((val.2.2 - val.1.2)^2)
 max((val.2.3 - val.1.3)^2)
+max((val.2.4 - val.1.4)^2)
 
 
 
