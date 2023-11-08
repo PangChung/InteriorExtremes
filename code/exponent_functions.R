@@ -5,6 +5,7 @@
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
 intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
@@ -12,12 +13,14 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[1])
+    set.seed(747380)
+    logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
     gamma_1 = log(gamma((nu+1)/2))
     gamma_n = log(gamma((nu+d)/2))
     a_fun <- function(j,upper){
-        sigma.11_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
-        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.11_j,df=nu+1)[1]
+        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
+        set.seed(747380)
+        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))
     }
     if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
@@ -47,13 +50,13 @@ V_truncT <- function(x,par,ncores=NULL){
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
-    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
+    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
     sigma_fun <- function(j){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
     }
     a_fun <- function(j,upper,sigma_j){
-        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
+        val = mvtnorm::pmvt(lb=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[1]
         return(val)
     }
     sigma_j = lapply(1:n,sigma_fun)
@@ -95,7 +98,7 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
        val = intensity_truncT(x,par,ncores,log)
        return(val)
     }
-    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
+    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]]
     chol.sigma.11 = chol(sigma[idx,idx])
     inv.sigma.11 = chol2inv(chol.sigma.11)
     logdet.sigma.11 = sum(log(diag(chol.sigma.11)))*2
@@ -236,7 +239,7 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
         func_temp <- function(i){
             xi = x[i,]
             mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),delta[j]*omega[j,j])
-            val = pnorm(delta[j]*omega[j,j])^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ,algorithm = "TVPACK")[[1]]
+            val = pnorm(delta[j]*omega[j,j])^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[[1]]
             return(val)
         }
         val = unlist(lapply(1:nrow(x),func_temp))
@@ -308,8 +311,6 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE,alp
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     alpha.tilde = c(beta[-idx] %*% omega.tilde) 
     b1 =c((1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2))
-    
-    #alpha.k = c((1 + alpha[-idx] %*% (sigma.bar[-idx,-idx,drop=FALSE] - sigma.bar[-idx,idx,drop=FALSE] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=FALSE]) %*% alpha[-idx])^(-1/2) * (alpha[idx] + sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=FALSE] %*% alpha[-idx]))
 
     func <- function(i){
         xi.log = log(x[i,])
@@ -322,7 +323,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE,alp
         rownames(scale.val) <- colnames(scale.val) <-  NULL
         phi = pnorm(c(tau.tilde * b1))
         intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
-        val = intensity.marginal/phi * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma = scale.val)[[1]]
+        val = intensity.marginal/phi * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[[1]]
         return(val)
     }
     if(!is.null(ncores)){
@@ -418,8 +419,6 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],"/")
     #data = data[idx.thres,]
-    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
-    set.seed(747380)
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
@@ -473,7 +472,6 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     }
     par2 = init; par2[!fixed] = opt.result$par
     opt.result$par = par2
-    assign(".Random.seed", oldSeed, envir=globalenv())
     return(opt.result)
 }
 

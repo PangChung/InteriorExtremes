@@ -207,10 +207,10 @@ nloglik <- function(par,data,model="BR"){
       return( matrixStats::rowProds(as.matrix(as.data.frame(lapply(partition,FUN=get.nVI) ))))
     }
     res <- log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition))))) - Vdata
-    res <- mean(res[is.finite(res)])
+    if(any(!is.finite(res))){return(Inf)}
     #restore random seed to its previous value
     assign(".Random.seed", oldSeed, envir=globalenv())
-    return(-res)
+    return(-mean(res))
 }
 
 ###########################

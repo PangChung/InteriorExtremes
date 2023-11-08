@@ -1,6 +1,6 @@
-library(tmvnsim)
 library(parallel)
 library(mvtnorm)
+library(TruncatedNormal)
 library(evd)
 library(gridExtra)
 library(partitions)
@@ -19,14 +19,14 @@ diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(
 cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
-m = 1e+3
+m = 1e+4
 ncores=10
 all.pairs <- combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 
 ### simulate the truncated extremal-t model ###
 par1 <- list(sigma=cov.mat,nu=nu)
-system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
+system.time(Z.trunc <- simu_truncT(m=1000,par=par1,ncores=ncores))
 
 png("figures/marginal_qqplot_truncT.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
@@ -58,10 +58,8 @@ dev.off()
 alpha = alpha.func(coord,-0.5)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
-system.time(Z.logskew <- simu_logskew(m=m,par=par2,ncores=ncores))
-delta = c(alpha %*% cov.mat /sqrt(c(1+alpha %*% cov.mat %*% alpha)))
-cov.mat.inv  = chol2inv(chol(cov.mat))
-alpha.delta = c(c(1 - delta %*% cov.mat.inv %*% delta)^(-1/2) * cov.mat.inv %*% delta)
+system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
+
 
 png("figures/marginal_qqplot_logskew.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
@@ -74,9 +72,8 @@ abline(0,1,col="red")
 }
 dev.off()
 
-
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
-tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="logskew1"),mc.cores=ncores)
+tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par2),model="logskew1"),mc.cores=ncores)
 
 png("figures/extcoef_logskew.png",width=6*300,height=4*300,res=300)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
@@ -92,30 +89,25 @@ dev.off()
 ## fit the model #####
 #####################
 # fit the truncated extremal t model: the angular density approach
-system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,T),thres=0.9,model="truncT",method="Nelder-Mead",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
+system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.4,0.8,2),fixed=c(F,F,T),thres=0.9,model="truncT",method="Nelder-Mead",ncores=ncores,maxit=100,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE,opt=TRUE) )
 
-# the composite likelihood approach: 
-fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)]<0.5],maxit=200,model="truncT",
-                lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
+# # the composite likelihood approach
+# fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)] < 0.3],maxit=200,model="truncT", lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
+
+# # the vecchia approximation approach
+# fit.trunct.vecchia <- MVLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)]<0.5],maxit=200,model="truncT",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 
 # fit the log-skew based model
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,-10),fixed=c(F,F,F),thres=0.99,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
-
-cov.mat.fitted = cov.func(coord,fit.logskew$par[1:2])
-alpha.fitted = alpha.func(coord,-10)
-delta.fitted = c(alpha.fitted %*% cov.mat.fitted /sqrt(c(1+alpha.fitted %*% cov.mat.fitted %*% alpha.fitted)))
-mean(abs(delta.fitted - delta))
 
 alpha.seq = seq(-30,-0.1,0.1)
 paras.list = as.matrix(expand.grid(fit.logskew$par[1],fit.logskew$par[2],alpha.seq))
 paras.list = split(paras.list,row(paras.list))
 logskew.vals <- - c(unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=FALSE,opt=FALSE,mc.set.seed=FALSE)))
-dev.new()
 alpha.seq[which.max(logskew.vals)]
 plot(alpha.seq,logskew.vals,cex=0.5,pch=20)
 
-fit.logskew.comp <- MCLE(data=Z.logskew,init=c(0.1,0.5,2),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,maxit=200,model="logskew",
-                lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",hessian=FALSE)
+fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,-0.5),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
 
 #system("say \'your program has finished\'")
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
