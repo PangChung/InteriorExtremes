@@ -65,20 +65,16 @@ simu_truncT <- function(m,par,ncores=NULL){
 # Simulate a log-skew normal based max-stable process
 # @m : number of replicates
 # @par : parameters of the model
-#     @par[[1]] : alpha: slant parameter of the skew normal distribution
-#     @par[[2]] : sigma: correlation matrix
+#     @par[[1]] : sigma: correlation matrix
+#     @par[[2]] : delta: slant parameter of the skew normal distribution
 simu_logskew <- function(m,par,ncores=NULL){  
-    alpha = par[[2]];sigma = par[[1]]
+    delta = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
     omega = diag(sqrt(diag(sigma)))
     omega.inv = diag(diag(omega)^(-1))
     sigma.bar = omega.inv %*% sigma %*% omega.inv
-    sigma.bar.chol = chol(sigma.bar)
-    delta = c(sigma.bar %*% alpha)/sqrt(c(1+ t(alpha) %*% sigma.bar %*% alpha))
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-
     tau.new = delta * diag(omega)
-
     sigma.star = rbind(cbind(sigma.bar, delta), c(delta, 1))
     sigma.star.chol = chol(sigma.star)
     #message("normalizing constants computed")

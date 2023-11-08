@@ -141,8 +141,8 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
 
 # this function computes the intensity function 
 # for the log skew-normal based max-stable processes
-intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
-    alpha = par[[2]];sigma = par[[1]]
+intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+    sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
     if(n==1) return(1/(x^2))
@@ -152,19 +152,26 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+    if(alpha.para){
+        alpha = par[[2]]
+        delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+    }else{
+        inv.sigma.bar = omega %*% inv.sigma %*% omega
+        delta = par[[2]]
+        alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+    }
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(inv.sigma)
     one.mat = matrix(1,n,n)
     one.vec = rep(1,n)
     b = c((alpha %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
-    beta =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
+    beta.hat =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
     delta.hat = (1+b)^(-1/2)*sqrt(b)
     func <- function(idx){
         x_log = log(x[idx,])
         x_circ = x_log + a
-        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
+        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta.hat %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
         val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
         return(val)
@@ -182,53 +189,11 @@ intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
         return(exp(val))    
 }
 
-# intensity_logskew <- function(x,par,ncores=NULL,log=TRUE){
-#     delta = par[[2]];sigma = par[[1]]
-#     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-#     n = ncol(x)
-#     if(n==1) return(1/(x^2))
-#     omega = diag(sqrt(diag(sigma)))
-#     omega_inv = diag(diag(omega)^(-1))
-#     sigma_bar = omega_inv %*% sigma %*% omega_inv
-#     chol.sigma = chol(sigma)
-#     inv.sigma = chol2inv(chol.sigma)
-#     inv.sigma.bar = omega %*% inv.sigma %*% omega
-#     alpha = c(c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * inv.sigma.bar %*% delta)
-#     logdet.sigma = sum(log(diag(chol.sigma)))*2
-#     #delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
-#     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-#     sum.inv.sigma = sum(inv.sigma)
-#     one.mat = matrix(1,n,n)
-#     one.vec = rep(1,n)
-#     b = c((alpha %*% omega_inv %*% one.vec)^2/sum.inv.sigma)
-#     beta =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b)^(-1/2))
-#     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
-#     delta.hat = (1+b)^(-1/2)*sqrt(b)
-#     func <- function(idx){
-#         x_log = log(x[idx,])
-#         x_circ = x_log + a
-#         val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
-#             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
-#         val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
-#         return(val)
-#     }
-    
-#     if(!is.null(ncores)){
-#         val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
-#     }
-#     else{
-#         val = unlist(lapply(1:nrow(x),func))
-#     }
-#     if(log)
-#         return(val)
-#     else
-#         return(exp(val))    
-# }
 
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
-V_logskew <- function(x,par,ncores=NULL){
-    alpha = par[[2]];sigma = par[[1]]
+V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
+    sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
     if(n==1) return(1/x)
@@ -238,9 +203,16 @@ V_logskew <- function(x,par,ncores=NULL){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    b = c(alpha %*% sigma_bar %*% alpha)
-    delta = c(sigma_bar %*% alpha)/sqrt(c(1+b))
+    if(alpha.para){
+        alpha = par[[2]]
+        delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+    }else{
+        inv.sigma.bar = omega %*% inv.sigma %*% omega
+        delta = par[[2]]
+        alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+    }
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
+    b = c(alpha %*% sigma_bar %*% alpha)
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
@@ -285,17 +257,17 @@ V_logskew <- function(x,par,ncores=NULL){
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
-partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
-    alpha = par[[2]];sigma = par[[1]]
+partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE,alpha=TRUE){
+    sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,ncol=1)}
     n = ncol(x)
     if(length(idx)==0){
-        val = V_logskew(x,par,ncores=ncores)
+        val = V_logskew(x,par,alpha.para,ncores=ncores)
         if(log) return(log(val))
         else return(val)
     }
     if(length(idx)==n){
-        val = intensity_logskew(x,par,ncores,log)
+        val = intensity_logskew(x,par,alpha.para,ncores,log)
         return(val)
     }
     ones <- rep(1,n)
@@ -312,7 +284,15 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     sigma.bar.11.chol = chol(sigma.bar.11)
     sigma.bar.11.inv = chol2inv(sigma.bar.11.chol)
     
-    delta = c(sigma.bar %*% alpha)/sqrt(c(1+alpha %*% sigma.bar %*% alpha))
+    if(alpha.para){
+        alpha = par[[2]]
+        delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+    }else{
+        inv.sigma.bar = omega %*% inv.sigma %*% omega
+        delta = par[[2]]
+        alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+    }
+
     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
     H =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
 
@@ -329,7 +309,7 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
     alpha.tilde = c(beta[-idx] %*% omega.tilde) 
     b1 =c((1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2))
     
-    alpha.k = c((1 + alpha[-idx] %*% (sigma.bar[-idx,-idx,drop=FALSE] - sigma.bar[-idx,idx,drop=FALSE] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=FALSE]) %*% alpha[-idx])^(-1/2) * (alpha[idx] + sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=FALSE] %*% alpha[-idx]))
+    #alpha.k = c((1 + alpha[-idx] %*% (sigma.bar[-idx,-idx,drop=FALSE] - sigma.bar[-idx,idx,drop=FALSE] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=FALSE]) %*% alpha[-idx])^(-1/2) * (alpha[idx] + sigma.bar.11.inv %*% sigma.bar[idx,-idx,drop=FALSE] %*% alpha[-idx]))
 
     func <- function(i){
         xi.log = log(x[i,])
@@ -341,7 +321,7 @@ partialV_logskew <- function(x,idx,par,ncores=NULL,log=FALSE){
         mu.val = c(omega.tilde.inv %*% (xi.tilde[-idx] - mu.tilde), tau.tilde * b1)
         rownames(scale.val) <- colnames(scale.val) <-  NULL
         phi = pnorm(c(tau.tilde * b1))
-        intensity.marginal = c(intensity_logskew(x[i,idx],par=list(alpha=alpha.k,sigma=sigma[idx,idx]),ncores=NULL,log=FALSE))
+        intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
         val = intensity.marginal/phi * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma = scale.val)[[1]]
         return(val)
     }
@@ -364,27 +344,27 @@ empirical_extcoef <- function(idx,data){
     return(min(2,max(1,1/mean(1/pmax(data[,idx[1]],data[,idx[2]])))))
 }
 
+alpha2delta <- function(par){
+    alpha = par[[2]];sigma = par[[1]]
+    omega = diag(sqrt(diag(sigma)))
+    omega.inv = diag(diag(omega)^(-1))
+    sigma.bar = omega.inv %*% sigma %*% omega.inv
+    delta = c(sigma.bar %*% alpha)/sqrt(c(1+alpha %*% sigma.bar %*% alpha))
+    return(list(sigma,delta))
+}
+
 # calculate true extremal coefficients
 true_extcoef <- function(idx,par,model="logskew1"){
     if(model=="logskew1"){
-        alpha = par[[2]];sigma = par[[1]]
-        n = nrow(sigma)
-        omega = diag(sqrt(diag(sigma)))
-        omega.inv = diag(diag(omega)^(-1))
-        sigma.bar = omega.inv %*% sigma %*% omega.inv
-        sigma.bar.11 = sigma.bar[idx,idx]
-        sigma.bar.11.chol = chol(sigma.bar.11)
-        sigma.bar.11.inv = chol2inv(sigma.bar.11.chol)
-        sigma.22.1 = sigma.bar[-idx,-idx] - sigma.bar[-idx,idx] %*% sigma.bar.11.inv %*% sigma.bar[idx,-idx]
-        alpha.new = c(c(1 + alpha[-idx] %*% sigma.22.1 %*% alpha[-idx])^(-1/2) * (alpha[idx] - sigma.bar.11.inv %*% sigma.bar[idx,-idx] %*% alpha[-idx]))
-        sigma.new = sigma[idx,idx]
-        val = V_logskew(rep(1,length(idx)),list(sigma=sigma.new,alpha=alpha.new),ncores=NULL)
+        delta = par[[2]];sigma = par[[1]]
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL)
     }
 
     if(model == "logskew2"){
         alpha = par[[2]];sigma = par[[1]]
         val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],alpha=alpha[idx]),ncores=NULL)
     }
+
     if(model == "truncT1"){
         x = matrix(Inf,nrow=ncol(idx),ncol=nrow(par[[1]]))
         all.pairs.new = cbind(rep(1:ncol(idx),each=nrow(idx)),c(idx))
@@ -397,7 +377,6 @@ true_extcoef <- function(idx,par,model="logskew1"){
         val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),ncores=NULL)
     }
     return(val)
-
 }
 
 

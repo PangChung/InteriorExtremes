@@ -94,7 +94,7 @@ dev.off()
 # fit the truncated extremal t model: the angular density approach
 system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.1,0.5,2),fixed=c(F,F,T),thres=0.9,model="truncT",method="Nelder-Mead",ncores=ncores,maxit=500,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE) )
 
-# the composite likelihood approach : 
+# the composite likelihood approach: 
 fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)]<0.5],maxit=200,model="truncT",
                 lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 

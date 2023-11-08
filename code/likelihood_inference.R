@@ -195,7 +195,7 @@ nloglik <- function(par,data,model="BR"){
         Vdata = V_truncT(data,par)
     }
     if(model == "logskew"){
-        all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,partialV_logskew,FUN.VALUE = rep(0,nrow(data)),x=data,par=par,log=FALSE)})
+        all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,partialV_logskew,FUN.VALUE = rep(0,nrow(data)),x=data,par=par,alpha.para=FALSE,log=FALSE)})
         Vdata = V_logskew(data,par)
     }
     get.nVI <- function(I){
@@ -221,10 +221,13 @@ nloglik <- function(par,data,model="BR"){
 # data: matrix of dimension nxD, containing n D-dimensional random vectors (each row = 1 vector) on the unit Frechet scale
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q))
 nlogcomplik <- function(par,data,index,ncores,model){
+    if(model == "logskew"){
+        par <- alpha2delta(par)  
+    }
     nlogcomplik.contribution <- function(ind){
-      par.index = par
-      par.index$sigma = par$sigma[ind,ind]
-      if(model == "logskew"){par.index$alpha = par.index$alpha[ind]} 
+      par.index <- par
+      par.index[[1]] = par[[1]][ind,ind]
+      if(model == "logskew"){par.index[[2]] = par.index[[2]][ind]} 
       val <- nloglik(par=par.index,data[,ind],model)
     }
     if(!is.null(ncores)) res <- rowSums(matrix(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE) 
@@ -281,11 +284,14 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",metho
 # vecchia.seq: vector of length D (with integers from {1,...,D}), indicating the sequence of variables to be considered for the Vecchia approximation
 # neighbours: an q-by-D matrix with the corresponding the neighbors of each observation in the Vecchia sequence (where q is the number of neighbours, i.e., the size of the conditioning set)
 nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
+    if(model == "logskew"){
+        par <- alpha2delta(par)  
+    }
     logVecchialik.contribution <- function(i){
-        par.index = par
+        par.index <- par
         if(i==1 & !any(!is.na(neighbours[,i]))){
-            par.index$sigma = par$sigma[vecchia.seq[1],vecchia.seq[1]]
-            if(model == "logskew"){par.index$alpha = par.index$alpha[vecchia.seq[1]]}  
+            par.index[[1]] = par[[1]][vecchia.seq[1],vecchia.seq[1]]
+            if(model == "logskew"){par.index[[1]] = par.index[[1]][vecchia.seq[1]]}  
             contribution <- nloglik(par.index,data[,vecchia.seq[1],drop=FALSE],model) #density of 1st variable in the sequence (unit Fréchet)
         }else{
         ind.i <- vecchia.seq[i] #index of ith-variable in the Vecchia sequence
@@ -294,8 +300,8 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
         par.index$sigma = par$sigma[ind,ind]
         if(model == "logskew"){par.index$alpha = par.index$alpha[ind]}  
         num <- nloglik(,data[,ind,drop=FALSE],model) #joint density of ith-variable and its conditioning set
-        par.index$sigma = par$sigma[ind.neighbours,ind.neighbours]
-        if(model == "logskew"){par.index$alpha = par.index$alpha[ind.neighbours]}  
+        par.index[[1]] = par[[1]][ind.neighbours,ind.neighbours]
+        if(model == "logskew"){par.index[[2]] = par.index[[2]][ind.neighbours]}  
         denom <- nloglik(par.index,data[,ind.neighbours,drop=FALSE],model) #joint density of conditioning set only
         contribution <- num-denom
     }
