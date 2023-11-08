@@ -113,7 +113,7 @@ simu_logskew <- function(m,par,ncores=NULL){
 }
 
 # Simulate a truncated extremal-t max-stable process
-bi.simu <- function(m,par,ncores=10,model="truncT"){
+bi.simu <- function(m,par,ncores=10,model="truncT",alpha.para=TRUE){
     if(model == "truncT"){
         par.func <- function(idx){
             new.par <- list(par[[1]][c(1,idx),c(1,idx)],par[[2]])
@@ -123,7 +123,10 @@ bi.simu <- function(m,par,ncores=10,model="truncT"){
     }
     if(model == "logskew"){
         par.func <- function(idx){
-            new.par <- list(par[[1]][c(1,idx),c(1,idx)],par[[2]][c(1,idx)])
+            if(alpha.para)
+                new.par <- alpha2delta(list(par[[1]][c(1,idx),c(1,idx)],par[[2]][c(1,idx)]))
+            else 
+                new.par <- list(par[[1]][c(1,idx),c(1,idx)],par[[2]][c(1,idx)])
         }
         new.par.list <- lapply(2:nrow(par[[1]]),par.func)
         val.list<- mclapply(new.par.list,simu_logskew,m=m,ncores=NULL,mc.cores=10,mc.preschedule = TRUE) 
