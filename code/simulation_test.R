@@ -108,11 +108,8 @@ alpha.seq[which.max(logskew.vals)]
 plot(alpha.seq,logskew.vals,cex=0.5,pch=20)
 
 alpha = alpha.func(coord,0)
-#alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
-fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
-fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
 
 val.1.1 = nVI(Z.logskew[1:2,],par2[[1]],1:2)
 val.2.1 = partialV_logskew(Z.logskew[1:2,],idx=1:2,par2,alpha.para=TRUE,ncores=NULL)
@@ -122,30 +119,8 @@ val.1.2 = nVI(Z.logskew[1:2,],par2[[1]],3:5)
 val.2.2 = partialV_logskew(Z.logskew[1:2,],idx=3:5,par2,alpha.para=TRUE,ncores=NULL)
 max(abs(val.1.2 - val.2.2))
 
+fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
+fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
 #system("say \'your program has finished\'")
-#fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
-#idx.pairs <- which(all.pairs[1,]==45 | all.pairs[2,]==45)
-cov.mat = cov.func(coord,fit.logskew$par[1:2])
-alpha = alpha.func(coord,2)
-
-fitted.extcoef.logskew1.1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(sigma=cov.mat,alpha=alpha),model="logskew1"),mc.cores=10)
-plot(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main = "Log-skew normal based max-stable processes",pch=20,col="black")
-points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1.1,type="p",cex=0.5,col="red",pch=20)
-boxplot(ec.logskew - fitted.extcoef.logskew1.1)
-mean((fitted.extcoef.logskew1.1 - tc.logskew )^2)
-
-cov.mat = cov.func(coord,fit.logskew$par[1:2])
-alpha = alpha.func(coord,fit.logskew$par[-c(1:2)])
-fitted.extcoef.logskew1.2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=list(sigma=cov.mat,alpha=alpha),model="logskew1"),mc.cores=10)
-plot(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main = "Log-skew normal based max-stable processes",pch=20,col="black")
-points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1.2,type="p",cex=0.5,col="red",pch=20)
-boxplot(tc.logskew1 - fitted.extcoef.logskew1.2)
-mean((fitted.extcoef.logskew1.2 - tc.logskew1 )^2)
-
-plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
-    main = "Log-skew normal based max-stable processes",pch=20,col="black")
-points(x=diff.mat[t(all.pairs)],y=fitted.extcoef.logskew1,type="p",cex=0.5,col="red",pch=20)
 
 save.image("data/simulation_test.RData")
