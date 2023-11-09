@@ -316,12 +316,11 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     func <- function(i){
         xi.log = log(x[i,])
         xi.tilde = xi.log + a
-        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv))
+        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv))
         tau.tilde = c(b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde))
         b2 = c(-b1 * sigma.tilde.bar %*% alpha.tilde)
-        scale.val = cbind(rbind(sigma.tilde.bar, b2),c(b2,1))
-        mu.val = c(omega.tilde.inv %*% (xi.tilde[-idx] - mu.tilde), tau.tilde * b1)
-        rownames(scale.val) <- colnames(scale.val) <-  NULL
+        scale.val = unnamed(cbind(rbind(sigma.tilde.bar, b2),c(b2,1)))
+        mu.val = c(omega.tilde.inv %*% (xi.log[-idx] - mu.tilde), tau.tilde * b1)
         phi = pnorm(c(tau.tilde * b1))
         intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
         val = intensity.marginal/phi * mvtnorm::pmvnorm(lower=rep(-Inf,length(mu.val)),upper=mu.val,sigma=scale.val)[[1]]
