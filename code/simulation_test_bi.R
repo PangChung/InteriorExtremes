@@ -193,11 +193,11 @@ val.2.2 = partialV_logskew(data,idx = 1,par,alpha.para=FALSE)
 val.2.3 = nloglik(par,data,model="logskew")
 val.2.4 = partialV_logskew(data,idx = 2,par,alpha.para=FALSE)
 
-max((val.2.1 - val.1.1)^2)
-max((val.2 - val.1)^2)
-max((val.2.2 - val.1.2)^2)
-max((val.2.3 - val.1.3)^2)
-max((val.2.4 - val.1.4)^2)
+max(abs(val.2.1 - val.1.1))
+max(abs(val.2 - val.1))
+max(abs(val.2.2 - val.1.2))
+max(abs(val.2.3 - val.1.3))
+max(abs(val.2.4 - val.1.4)^2)
 
 
 
