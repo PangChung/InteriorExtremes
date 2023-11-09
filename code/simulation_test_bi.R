@@ -1,5 +1,5 @@
 rm(list=ls())
-library(tmvnsim)
+library(TruncatedNormal)
 library(parallel)
 library(evd)
 library(gridExtra)
@@ -25,6 +25,7 @@ m = 10000
 random.seed = 34234
 set.seed(random.seed)
 ncores=10
+
 ## the truncatd extremal-t max-stable processes ##
 par1 <- list(sigma=cov.mat,nu=nu)
 system.time(Z.trunc <- bi.simu(m=m,par=par1,ncores=ncores,model="truncT"))

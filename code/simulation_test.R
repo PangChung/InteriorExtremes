@@ -20,7 +20,7 @@ cov.mat <- cov.func(coord,c(0.5,1))
 chol(cov.mat)
 nu = 2
 m = 1e+4
-ncores=10
+ncores=detectCores()
 all.pairs <- combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 
@@ -55,7 +55,7 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,-0.5)
+alpha = alpha.func(coord,-1)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
@@ -99,7 +99,7 @@ system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.4,0.8,2),fi
 
 # fit the log-skew based model
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,-10),fixed=c(F,F,F),thres=0.99,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
-
+## plot the intensity function ##
 alpha.seq = seq(-30,-0.1,0.1)
 paras.list = as.matrix(expand.grid(fit.logskew$par[1],fit.logskew$par[2],alpha.seq))
 paras.list = split(paras.list,row(paras.list))
@@ -107,7 +107,15 @@ logskew.vals <- - c(unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=
 alpha.seq[which.max(logskew.vals)]
 plot(alpha.seq,logskew.vals,cex=0.5,pch=20)
 
-fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,-0.5),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
+alpha = alpha.func(coord,0)
+#alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
+par2 <- list(sigma=cov.mat,alpha=alpha)
+system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
+fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
+fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
+
+nVI(Z.logskew[1:100,],par2[[1]],1:2)
+partialV_logskew(Z.logskew[1:100,],idx=1:2,par2,alpha.para=TRUE,ncores=10)
 
 #system("say \'your program has finished\'")
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)

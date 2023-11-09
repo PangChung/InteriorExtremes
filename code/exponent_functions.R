@@ -56,7 +56,7 @@ V_truncT <- function(x,par,ncores=NULL){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
     }
     a_fun <- function(j,upper,sigma_j){
-        val = mvtnorm::pmvt(lb=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[1]
+        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[1]
         return(val)
     }
     sigma_j = lapply(1:n,sigma_fun)
@@ -260,7 +260,8 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
-partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE,alpha=TRUE){
+partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
+    browser()
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,ncol=1)}
     n = ncol(x)
@@ -317,7 +318,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE,alp
         xi.tilde = xi.log + a
         mu.tilde = c(-sigma.tilde %*% (H[-idx,idx] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv))
         tau.tilde = c(b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde))
-        b2 = c(-b1 %*% sigma.tilde.bar %*% alpha.tilde)
+        b2 = c(-b1 * sigma.tilde.bar %*% alpha.tilde)
         scale.val = cbind(rbind(sigma.tilde.bar, b2),c(b2,1))
         mu.val = c(omega.tilde.inv %*% (xi.tilde[-idx] - mu.tilde), tau.tilde * b1)
         rownames(scale.val) <- colnames(scale.val) <-  NULL
@@ -368,12 +369,12 @@ delta2alpha <- function(par){
 true_extcoef <- function(idx,par,model="logskew1"){
     if(model=="logskew1"){
         delta = par[[2]];sigma = par[[1]]
-        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL)
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=parallel::detectCores())
     }
 
     if(model == "logskew2"){
         alpha = par[[2]];sigma = par[[1]]
-        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],alpha=alpha[idx]),ncores=NULL)
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],alpha=alpha[idx]),ncores=parallel::detectCores())
     }
 
     if(model == "truncT1"){
@@ -385,7 +386,7 @@ true_extcoef <- function(idx,par,model="logskew1"){
     
     if(model == "truncT2"){
         x = rep(1,length(idx))
-        val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),ncores=NULL)
+        val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),ncores=parallel::detectCores())
     }
     return(val)
 }
