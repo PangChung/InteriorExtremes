@@ -125,7 +125,7 @@ nVI <- function(data,sigma,I){
         sigma.q.II <- t(sigma.II)%*%q.I
         q.I.sum <- sum(q.I)
         
-        log.Part1 <- apply(eval.x,1,function(x){return(max(pmvnorm(upper=x,sigma=gamma),0))})
+        log.Part1 <- apply(eval.x,1,function(x){return(max(mvtnorm::pmvnorm(upper=x,sigma=gamma),0))})
         log.Part2 <- ((nI-1)/2)*log(2*pi) + (1/2)*log(det(sigma.I)) + (1/2)*log(q.I.sum) + rowSums(log.data.I)
         log.Part3 <- c(-(1/2)*( 1/4*t(sigma.II)%*%sigma.I.inv%*%sigma.II -1/4*(sigma.q.II)^2/q.I.sum + sigma.q.II/q.I.sum - 1/q.I.sum))
         log.Part4 <- c(-(1/2)*(apply(log.data.I,1,function(x){return(t(x)%*%A.I%*%x)}) + log.data.I%*%(q.I%*%(2-sigma.q.II)/q.I.sum + sigma.I.inv%*%sigma.II)))
