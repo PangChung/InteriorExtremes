@@ -119,8 +119,12 @@ val.1.2 = nVI(Z.logskew[1:2,],par2[[1]],3:5)
 val.2.2 = partialV_logskew(Z.logskew[1:2,],idx=3:5,par2,alpha.para=TRUE,ncores=NULL)
 max(abs(val.1.2 - val.2.2))
 
-fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
-fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
-#system("say \'your program has finished\'")
+n = nrow(cov.mat)
+a = cov.mat - cov.mat %*% (rep(1,n) %*% t(rep(1,n))) %*% cov.mat 
+b = cov.mat - (cov.mat %*% rep(1,n)) %*% c(t(rep(1,n)) %*% cov.mat )
+sum(abs(a-b))
+
+fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.4,0.5),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,method="Nelder-Mead",hessian=TRUE)
+fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.1,0.5,0),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,method="Nelder-Mead",hessian=TRUE)
 
 save.image("data/simulation_test.RData")

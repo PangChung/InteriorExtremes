@@ -205,8 +205,8 @@ nloglik <- function(par,data,model="BR"){
       return( matrixStats::rowProds(as.matrix(as.data.frame(lapply(partition,FUN=get.nVI) ))))
     }
     res <- log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition))))) - Vdata
-    if(any(!is.finite(res))){return(Inf)}
-    return(-mean(res,na.rm=TRUE))
+    if(any(!is.finite(res))){return(rep(Inf,nrow(data)))}
+    return(-res)
 }
 
 ###########################
@@ -252,7 +252,11 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",metho
         print(par2)
         if(opt) return(mean(val,na.rm=TRUE)) else return(val)
     }
-    opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    if(sum(!fixed)==1){
+        opt <- optim(par=init[!fixed],fn=object.func,method="Brent",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    }else{
+        opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    }
     if(hessian){
         h = 1e-4
         par.mat.grad = matrix(opt$par,nrow=length(opt$par),ncol=length(opt$par),byrow=TRUE) + diag(h,length(opt$par))
@@ -303,7 +307,11 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
     }
     return(contribution)
     }
-    res <- rowSums(matrix(unlist(mclapply(1:length(vecchia.seq),FUN=logVecchialik.contribution,mc.cores=ncores,mc.set.seed = F)),ncol=length(vecchia.seq),byrow=FALSE),na.rm=TRUE)
+    if(!is.null(ncores)){
+        res <- rowSums(matrix(unlist(mclapply(1:length(vecchia.seq),FUN=logVecchialik.contribution,mc.cores=ncores,mc.set.seed = F)),ncol=length(vecchia.seq),byrow=FALSE),na.rm=TRUE)
+    }else{
+        res <- rowSums(matrix(unlist(lapply(1:length(vecchia.seq),FUN=logVecchialik.contribution)),ncol=length(vecchia.seq),byrow=FALSE),na.rm=TRUE)
+    }
     return(res)
 }
 
@@ -329,7 +337,11 @@ MVLE <- function(data,init,fixed,loc,sigma.FUN,vecchia.seq,neighbours,ncores,mod
         print(par2)
         if(opt) return(mean(val,na.rm=TRUE)) else return(val)
     }
-    opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    if(sum(!fixed)==1){
+        opt <- optim(par=init[!fixed],fn=object.func,method="Brent",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    }else{
+        opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+    }
     if(hessian){
         h = 1e-4
         par.mat.grad = matrix(opt$par,nrow=length(opt$par),ncol=length(opt$par),byrow=TRUE) + diag(h,length(opt$par))
