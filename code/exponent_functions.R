@@ -261,7 +261,6 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
-    browser()
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,ncol=1)}
     n = ncol(x)
@@ -319,7 +318,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
         mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv))
         tau.tilde = c(b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde))
         b2 = c(-b1 * sigma.tilde.bar %*% alpha.tilde)
-        scale.val = unnamed(cbind(rbind(sigma.tilde.bar, b2),c(b2,1)))
+        scale.val = unname(cbind(rbind(sigma.tilde.bar, b2),c(b2,1)))
         mu.val = c(omega.tilde.inv %*% (xi.log[-idx] - mu.tilde), tau.tilde * b1)
         phi = pnorm(c(tau.tilde * b1))
         intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))

@@ -115,7 +115,7 @@ fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0),fixed=c(F,F,T),l
 fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,method="Nelder-Mead",hessian=FALSE)
 
 nVI(Z.logskew[1:2,],par2[[1]],1:2)
-partialV_logskew(Z.logskew[1:2,],idx=1:2,par2,alpha.para=TRUE,ncores=10)
+partialV_logskew(Z.logskew[1:2,],idx=1:2,par2,alpha.para=TRUE,ncores=NULL)
 
 #system("say \'your program has finished\'")
 #fit.result <- MCLE.BR(data=t(Z.logskew[1:10,1:100]),init=c(0.5,1),fixed=c(F,F),distmat=coord[1:10,],FUN = cov.func,index=combn(10,2),ncores=10,method="Nelder-Mead",maxit=1000,hessian=FALSE)
