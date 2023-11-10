@@ -180,6 +180,7 @@ nVI.biv <- function(data,sigma,I){
 # FUN: the variogram function that returns the covraiance matrix
 nloglik <- function(par,data,model="BR"){
     #fix random seed (and save the current random seed to restore it at the end)
+    if(!is.matrix(data)){data <- matrix(data,ncol=1)}
     D <- ncol(data)
     all_combn <- lapply(1:D,FUN=Rfast::comb_n,n=D,simplify=FALSE) 
     all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
@@ -249,9 +250,11 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-c(1:2)])}
         if(model=="logskew"){par.list <- list(sigma=sigma,alpha=alpha.func(loc,par1[-c(1:2)]))}
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
-        if(opt) print(c(par2,val));
-            return(mean(val,na.rm=TRUE)) 
-        else return(val)
+        if(opt){ 
+            val = mean(val,na.rm=TRUE)
+            print(c(par2,val))
+        }
+        return(val)
     }
     if(sum(!fixed)==1){
         opt <- optim(par=init[!fixed],fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method="Brent",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
@@ -335,8 +338,11 @@ MVLE <- function(data,init,fixed,loc,sigma.FUN,vecchia.seq,neighbours,ncores,mod
         if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-c(1:2)])}
         if(model=="logskew"){par.list=list(sigma=sigma,alpha=alpha.func(loc,par1[-c(1:2)]))}
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
-        print(par2)
-        if(opt) return(mean(val,na.rm=TRUE)) else return(val)
+        if(opt){
+            val = mean(val,na.rm=TRUE)
+            print(c(par, val))
+        } 
+        return(val)
     }
     if(sum(!fixed)==1){
         opt <- optim(par=init[!fixed],fn=object.func,method="Brent",lower=lb[!fixed],upper=ub[!fixed],control=list(maxit=maxit,trace=TRUE),hessian=hessian)

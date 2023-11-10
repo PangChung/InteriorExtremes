@@ -199,7 +199,7 @@ max(abs(val.2.2 - val.1.2))
 max(abs(val.2.3 - val.1.3))
 max(abs(val.2.4 - val.1.4)^2)
 
-
+nloglik(par=Z.logskew.1$par[[1]],data=Z.logskew.1$val[[1]][1,],model="logskew")
 
 
 
