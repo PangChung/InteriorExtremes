@@ -100,14 +100,14 @@ system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.4,0.8,2),fi
 # fit the log-skew based model
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,-10),fixed=c(F,F,F),thres=0.99,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
 ## plot the intensity function ##
-alpha.seq = seq(-30,-0.1,0.1)
-paras.list = as.matrix(expand.grid(fit.logskew$par[1],fit.logskew$par[2],alpha.seq))
+alpha.seq = seq(-10,10,0.1)
+paras.list = as.matrix(expand.grid(0.5,1,alpha.seq))
 paras.list = split(paras.list,row(paras.list))
-logskew.vals <- - c(unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=FALSE,opt=FALSE,mc.set.seed=FALSE)))
+logskew.vals <- c(unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=FALSE,opt=FALSE,mc.set.seed=FALSE)))
 alpha.seq[which.max(logskew.vals)]
 plot(alpha.seq,logskew.vals,cex=0.5,pch=20)
 
-alpha = alpha.func(coord,0)
+alpha = alpha.func(coord,2)
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
 
@@ -124,7 +124,9 @@ a = cov.mat - cov.mat %*% (rep(1,n) %*% t(rep(1,n))) %*% cov.mat
 b = cov.mat - (cov.mat %*% rep(1,n)) %*% c(t(rep(1,n)) %*% cov.mat )
 sum(abs(a-b))
 
-fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.4,0.5),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,method="Nelder-Mead",hessian=TRUE)
-fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.1,0.5,0),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,method="Nelder-Mead",hessian=TRUE)
+fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,hessian=TRUE)
+fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.4,0.5),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,hessian=TRUE)
+
+fit.logskew.comp3 <- MCLE(data=Z.logskew[1:100,],init=c(fit.logskew.comp.2$par,0),fixed=c(T,T,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-5),ub=c(10,2.5,5),alpha.func=alpha.func,hessian=TRUE)
 
 save.image("data/simulation_test.RData")

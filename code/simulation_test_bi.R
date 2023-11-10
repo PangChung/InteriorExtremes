@@ -177,7 +177,7 @@ dev.off()
 save.image(file="data/bi_simulation.RData")
 
 ## compute the likelihood for $alpha=0$ ## 
-## it seems all the values agrees with each other ##
+## it seems all the values agree with each other ##
 par = Z.logskew.4$par[[1]]
 data = Z.logskew.4$val[[1]]
 
