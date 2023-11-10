@@ -416,11 +416,12 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
                     ncores=NULL,method="Nelder-Mead",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE){
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
-    data = sweep(data[idx.thres,],1,data.sum[idx.thres],"/")
+    data = data[idx.thres,]
+    data.sum = data.sum[idx.thres]
     #data = data[idx.thres,]
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
-        object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
+        object.func <- function(par,opt=TRUE,ncore=ncores){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
             cov.mat = cov.func(loc,par.1)
@@ -428,20 +429,20 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             #print(par)
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = - intensity_logskew(dat,par=para.temp,log=TRUE,ncores=ncore)
-            if(opt) return(mean(val)) else return(val)
+            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) + (ncol(data)+1) * log(data.sum)
+            if(opt) return(-mean(val)) else return(-val)
         }
     }
     if(model == "truncT"){
     ## 3 parameters: 2 for the covariance function; 1 for the df parameter
-        object.func <- function(par,opt=TRUE,dat=data,ncore=ncores){
+        object.func <- function(par,opt=TRUE,ncore=ncores){
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
-            val = -intensity_truncT(dat,par=para.temp,log=TRUE,ncores=ncore)
-            if(opt) return(mean(val)) else return(val)
+            val = intensity_truncT(dat,par=para.temp,log=TRUE,ncores=ncore) + (ncol(data)+1) * log(data.sum)
+            if(opt) return(-mean(val)) else return(-val)
         }
     }
     if(opt){

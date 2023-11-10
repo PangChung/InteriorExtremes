@@ -125,9 +125,9 @@ f = cov.mat %*% (matrix(1,n,n)) %*% cov.mat
 b = (cov.mat %*% rep(1.0,n)) %*% c(t(rep(1.0,n)) %*% cov.mat )
 sum(abs(a-b))
 
-fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,hessian=TRUE)
+fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,1),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,0.1),ub=c(10,2.5,Inf),alpha.func=alpha.func,hessian=TRUE)
 fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.4,0.5),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,hessian=TRUE)
 
-fit.logskew.comp3 <- MCLE(data=Z.logskew[1:100,],init=c(fit.logskew.comp.2$par,0),fixed=c(T,T,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-5),ub=c(10,2.5,5),alpha.func=alpha.func,hessian=TRUE)
+fit.logskew.comp3 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0.5),fixed=c(T,T,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,0.1),ub=c(10,2.5,5),alpha.func=alpha.func,hessian=TRUE)
 
 save.image("data/simulation_test.RData")
