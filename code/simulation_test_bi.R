@@ -202,7 +202,7 @@ max(abs(val.2.4 - val.1.4)^2)
 library(cubature)
 library(SimplicialCubature)
 func <- function(dat){
-    val = exp(-nloglik(par=alpha2delta(list(Z.logskew.1$par[[100]][[1]],alpha=c(-1,3))),data=dat,model="logskew"))
+    val = exp(-nloglik(par=alpha2delta(list(Z.logskew.1$par[[100]][[1]],alpha=c(-1,-2))),data=dat,model="logskew"))
 }
 
 func <- function(dat){
