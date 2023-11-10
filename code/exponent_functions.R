@@ -416,9 +416,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
                     ncores=NULL,method="Nelder-Mead",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE){
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
-    data = data[idx.thres,]
-    data.sum = data.sum[idx.thres]
-    #data = data[idx.thres,]
+    data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,ncore=ncores){
@@ -427,9 +425,8 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             cov.mat = cov.func(loc,par.1)
             alpha = alpha.func(loc,par.2)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
-            #print(par)
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) + (ncol(data)+1) * log(data.sum)
+            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore)
             if(opt) return(-mean(val)) else return(-val)
         }
     }
@@ -441,7 +438,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
-            val = intensity_truncT(dat,par=para.temp,log=TRUE,ncores=ncore) + (ncol(data)+1) * log(data.sum)
+            val = intensity_truncT(data,par=para.temp,log=TRUE,ncores=ncore) 
             if(opt) return(-mean(val)) else return(-val)
         }
     }
