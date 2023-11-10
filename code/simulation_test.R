@@ -55,7 +55,7 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,-2)
+alpha = alpha.func(coord,2) 
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
@@ -98,16 +98,21 @@ system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.4,0.8,2),fi
 # fit.trunct.vecchia <- MVLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)]<0.5],maxit=200,model="truncT",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 
 # fit the log-skew based model
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,0),fixed=c(F,F,F),thres=0.99,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
+# Simulate a log-skew normal based max-stable process
+alpha = alpha.func(coord,10) 
+#alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
+par2 <- list(sigma=cov.mat,alpha=alpha)
+system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,1),fixed=c(F,F,F),thres=0.98,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,0),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
 ## plot the intensity function ##
-alpha.seq = seq(-10,10,0.1)
+alpha.seq = seq(-10,10,0.01)
 paras.list = as.matrix(expand.grid(0.5,1,alpha.seq))
 paras.list = split(paras.list,row(paras.list))
 logskew.vals <- c(unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=FALSE,opt=FALSE,mc.set.seed=FALSE)))
 alpha.seq[which.max(logskew.vals)]
 plot(alpha.seq,logskew.vals,cex=0.5,pch=20)
 
-alpha = alpha.func(coord,2)
+alpha = alpha.func(coord,0)
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
 
@@ -126,8 +131,9 @@ b = (cov.mat %*% rep(1.0,n)) %*% c(t(rep(1.0,n)) %*% cov.mat )
 sum(abs(a-b))
 
 fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,1),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,0.1),ub=c(10,2.5,Inf),alpha.func=alpha.func,hessian=TRUE)
+
 fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.4,0.5),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,hessian=TRUE)
 
-fit.logskew.comp3 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0.5),fixed=c(T,T,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,0.1),ub=c(10,2.5,5),alpha.func=alpha.func,hessian=TRUE)
+fit.logskew.comp3 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0.5),fixed=c(T,T,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-5),ub=c(10,2.5,5),alpha.func=alpha.func,hessian=TRUE)
 
 save.image("data/simulation_test.RData")
