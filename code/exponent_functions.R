@@ -196,6 +196,7 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
 V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
+    browser()
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
@@ -230,12 +231,12 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
         omega.j = sqrt(diag(diag(sigma.j),nrow=n-1))
         omega.j.inv = diag(diag(omega.j)^(-1),nrow=n-1)
         sigma.j.bar = omega.j.inv %*% sigma.j %*% omega.j.inv
-        alpha.hat = (1 - delta %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) %*% omega.j %*% 
-            sigma.j.inv %*% A.j %*% omega %*% delta   
+        alpha.hat = c(1 - delta %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) * c(omega.j %*% 
+            sigma.j.inv %*% A.j %*% omega %*% delta)   
         u.j = A.j %*% sigma %*% I.mat1[,j]
         b1 = c(alpha.hat %*% sigma.j.bar %*% alpha.hat)
         b3 = c(-(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
-        sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),rbind(b3,1)))
+        sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),c(b3,1)))
         func_temp <- function(i){
             xi = x[i,]
             mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),delta[j]*omega[j,j])

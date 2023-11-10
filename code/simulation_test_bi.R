@@ -201,16 +201,17 @@ max(abs(val.2.4 - val.1.4)^2)
 
 library(cubature)
 library(SimplicialCubature)
-
+loc = cbind(seq(1,0,length.out=3),0)
+sigma = cov.func(loc,c(0.5,1))
 func <- function(dat){
-    val = exp(-nloglik(par=alpha2delta(list(Z.logskew.1$par[[100]][[1]],alpha=c(-1,-2))),data=dat,model="logskew"))
+    val = exp(-nloglik(par=alpha2delta(list(sigma=sigma,alpha=c(-5,-2,-2))),data=dat,model="logskew"))
 }
 
 func <- function(dat){
     val = exp(-nloglik(par=Z.logskew.1$par[[100]],data=dat,model="BR"))
 }
 
-res = adaptIntegrate(func,rep(0,2),rep(Inf,2))
+res = adaptIntegrate(func,rep(0,nrow(loc)),rep(Inf,nrow(loc)))
 
 func <- function(dat){    
     val = intensity_logskew(dat,par=Z.logskew.1$par[[100]],alpha.para=FALSE,log=FALSE)
