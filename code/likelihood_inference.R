@@ -43,6 +43,7 @@ vario.func <- function(loc,par){
 # data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
 # sigma: covariance matrix of dimension DxD
 V <- function(data,sigma){
+  if(!is.matrix(data)) data <- matrix(data,nrow=1)
   D <- ncol(data)
   if(D==1){
     return(1/data)
@@ -60,6 +61,9 @@ V <- function(data,sigma){
       sigma.i <- T.i%*%sigma%*%t(T.i)
       return(apply(eval.i,1,function(x){return(mvtnorm::pmvnorm(upper=x,sigma=sigma.i))})/data[,i])
     }
+    if(nrow(data)==1){
+        return( sum(sapply(1:D,fun.i)))
+    }
     return( rowSums(sapply(1:D,fun.i)) )
   }
 }
@@ -69,6 +73,7 @@ V <- function(data,sigma){
 # sigma: covariance matrix of dimension DxD
 # I: vector of indices with respect to which the partial derivatives are computed; if I==c(1:D), the function returns the full mixed derivative.
 nVI <- function(data,sigma,I){
+  if(!is.matrix(data)) data <- matrix(data,nrow=1)
   D <- ncol(data)
   nI <- length(I)
   if(nI==0){ ## If the index set is empty

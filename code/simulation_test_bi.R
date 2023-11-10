@@ -188,7 +188,7 @@ val.1.3 = nloglik(par,data,model="BR")
 val.1.4 = nVI(data,par[[1]],I = 2)
 
 val.2 = V_logskew(data,par,alpha.para=FALSE)
-val.2.1 = intensity_logskew(data,par,alpha.para=FALSE,,log=FALSE)
+val.2.1 = intensity_logskew(data,par,alpha.para=FALSE,log=FALSE)
 val.2.2 = partialV_logskew(data,idx = 1,par,alpha.para=FALSE)
 val.2.3 = nloglik(par,data,model="logskew")
 val.2.4 = partialV_logskew(data,idx = 2,par,alpha.para=FALSE)
@@ -199,7 +199,32 @@ max(abs(val.2.2 - val.1.2))
 max(abs(val.2.3 - val.1.3))
 max(abs(val.2.4 - val.1.4)^2)
 
-nloglik(par=Z.logskew.1$par[[1]],data=Z.logskew.1$val[[1]][1,],model="logskew")
+library(cubature)
+library(SimplicialCubature)
+func <- function(dat){
+    val = exp(-nloglik(par=Z.logskew.1$par[[100]],data=dat,model="logskew"))
+}
+
+func <- function(dat){
+    val = exp(-nloglik(par=Z.logskew.1$par[[100]],data=dat,model="BR"))
+}
+
+res = adaptIntegrate(func,rep(0,2),rep(Inf,2))
+
+transform <- function(u){
+    x <- u/sum(u)
+}
+
+func <- function(dat){    
+    val = intensity_logskew(dat,par=Z.logskew.1$par[[100]],alpha.para=FALSE,log=FALSE)
+}
+
+func <- function(dat){    
+    val = nVI(dat,sigma=Z.logskew.1$par[[100]][[1]],I=1:2)
+}
+
+S = CanonicalSimplex(2)
+adaptIntegrateSimplex(func,S)
 
 
 

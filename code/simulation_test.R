@@ -120,8 +120,9 @@ val.2.2 = partialV_logskew(Z.logskew[1:2,],idx=3:5,par2,alpha.para=TRUE,ncores=N
 max(abs(val.1.2 - val.2.2))
 
 n = nrow(cov.mat)
-a = cov.mat - cov.mat %*% (rep(1,n) %*% t(rep(1,n))) %*% cov.mat 
-b = cov.mat - (cov.mat %*% rep(1,n)) %*% c(t(rep(1,n)) %*% cov.mat )
+a = cov.mat %*% (rep(1,n) %*% t(rep(1,n))) %*% cov.mat 
+f = cov.mat %*% (matrix(1,n,n)) %*% cov.mat 
+b = (cov.mat %*% rep(1.0,n)) %*% c(t(rep(1.0,n)) %*% cov.mat )
 sum(abs(a-b))
 
 fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,hessian=TRUE)
