@@ -186,20 +186,20 @@ nloglik <- function(par,data,model="BR"){
     all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
     if(model == "BR"){
         sigma = par[[1]]
-        all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,nVI,FUN.VALUE = rep(0,nrow(data)),data=data,sigma=sigma)})
+        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,nVI,data=data,sigma=sigma)})
         Vdata = V(data,sigma)
     }
     if(model == "truncT"){
-        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,FUN=partialV_truncT,x=data,par=par,log=FALSE)})
+        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_truncT,x=data,par=par,log=FALSE)})
         Vdata = V_truncT(data,par)
     }
     if(model == "logskew"){
-        all_nVI <- lapply(all_combn,FUN = function(idx){vapply(idx,partialV_logskew,FUN.VALUE = rep(0,nrow(data)),x=data,par=par,alpha.para=FALSE,log=FALSE)})
+        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_logskew,x=data,par=par,alpha.para=FALSE,log=FALSE)})
         Vdata = V_logskew(data,par)
     }
     get.nVI <- function(I){
       nI <- length(I)
-      return(all_nVI[[nI]][,which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
+      return(all_nVI[[nI]][which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
     }
     parts <- listParts(D) ## using package `partitions'
     contribution.partition <- function(partition){
