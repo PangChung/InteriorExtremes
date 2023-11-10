@@ -180,7 +180,7 @@ nVI.biv <- function(data,sigma,I){
 # FUN: the variogram function that returns the covraiance matrix
 nloglik <- function(par,data,model="BR"){
     #fix random seed (and save the current random seed to restore it at the end)
-    if(!is.matrix(data)){data <- matrix(data,ncol=1)}
+    if(!is.matrix(data)){data <- matrix(data,nrow=1)}
     D <- ncol(data)
     all_combn <- lapply(1:D,FUN=Rfast::comb_n,n=D,simplify=FALSE) 
     all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
