@@ -167,7 +167,7 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
     sum.inv.sigma = sum(inv.sigma)
     one.mat = matrix(1,n,n)
     one.vec = rep(1,n)
-    b = c(alpha %*% omega_inv %*% one.vec/sum.inv.sigma)
+    b = c(alpha %*% omega_inv %*% one.vec/sqrt(sum.inv.sigma))
     beta.hat =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b^2)^(-1/2))
     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
     delta.hat = (1+b^2)^(-1/2)*b
@@ -306,7 +306,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     omega.tilde.inv <- omega.tilde; diag(omega.tilde.inv) <- 1/diag(omega.tilde)
     sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
 
-    b = c(alpha %*% omega.inv %*% ones/sum.sigma.inv)
+    b = c(alpha %*% omega.inv %*% ones/sqrt(sum.sigma.inv))
     beta =  c(alpha %*% omega.inv %*% (diag(n) - one.mat %*% sigma.inv/sum.sigma.inv) * (1+b^2)^(-1/2))    
     delta.hat = (1+b^2)^(-1/2)*b
     alpha.tilde = c(beta[-idx] %*% omega.tilde) 

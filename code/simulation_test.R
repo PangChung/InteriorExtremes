@@ -55,7 +55,7 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,-1)
+alpha = alpha.func(coord,-2)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
