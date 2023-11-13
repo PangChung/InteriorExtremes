@@ -5,7 +5,6 @@
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
 intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
-    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
@@ -13,25 +12,27 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
-    set.seed(747380)
+
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
     gamma_1 = log(gamma((nu+1)/2))
     gamma_n = log(gamma((nu+n)/2))
+
     a_fun <- function(j,upper){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
-        set.seed(747380)
-        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
+        val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))
     }
-    if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
-    a_j = T_j - logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
-    if(!is.matrix(x)){ x = matrix(x,ncol=n,byrow=TRUE)} 
-    const = -logphi - (n-1)*log(nu) - logdet.sigma/2 - n/2 * log(pi) + (nu-2)/2*log(2) + gamma_n
+
+    if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun))
+
+    a_j = T_j - logphi+ (nu-2)/2 * log(2) + gamma_1 - 1/2*log(pi)
+
+    const = -logphi - (n-1)*log(nu) - logdet.sigma/2 - n/2 * log(pi) + (nu-2)/2 * log(2) + gamma_n
     func <- function(idx){
         log_x = log(x[idx,])
         x_j = (log_x + a_j) * 1/nu
         x_circ = exp(x_j)
-        val = sum(x_j) - sum(log_x) + log(t(x_circ) %*% inv.sigma %*% x_circ) * (-nu-n)/2 + const
+        val = sum(x_j) - sum(log_x) + log(c(t(x_circ) %*% inv.sigma %*% x_circ)) * (-nu-n)/2 + const
         return(val)
     }
     if(!is.null(ncores)){
@@ -50,29 +51,33 @@ V_truncT <- function(x,par,ncores=NULL){
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
+    if(n==1){return(1/x)}
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
     sigma_fun <- function(j){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
     }
     a_fun <- function(j,upper,sigma_j){
-        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[1]
+        if(n==2){val = pt()}
+        val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
         return(val)
     }
+    idx.finite = which(apply(x,2,function(x.i){any(is.finite(x.i))}))
     sigma_j = lapply(1:n,sigma_fun)
-    idx.finite <- which(apply(x,2,function(xi){any(is.finite(xi))}))
     T_j = rep(1,n)
-    if(!is.null(ncores)) T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
-    else T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
+    if(!is.null(ncores)){ 
+        T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
+    }else{
+        T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
+    }
     a_j = rep(1,n)
-    a_j[idx.finite] = T_j[idx.finite]/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)    
+    a_j[idx.finite] = T_j/phi*2^(nu/2-1)*gamma_1*pi^(-0.5)    
     func <- function(idx){
         x_j = x[idx,] * a_j
-        x_upper = lapply(1:n,function(i){ if(is.finite(x_j[i])) (x_j[-i]/x_j[i])^{1/nu} else rep(0,length(x_j[-i])) })
-        is.finite.ind = which(is.finite(x_j))
-        V_j = rep(0,n)
-        V_j[is.finite.ind] = mapply(a_fun,j=is.finite.ind,upper=x_upper[is.finite.ind],sigma_j = sigma_j[is.finite.ind],SIMPLIFY = TRUE)
-        val = sum(V_j[is.finite.ind]/T_j[is.finite.ind]/x[idx,is.finite.ind])
+        idx.finite.j = which(is.finite(x_j))
+        x_upper = lapply(idx.finite.j,function(i){(x_j[-i]/x_j[i])^(1/nu)})
+        V_j = mapply(a_fun,j=idx.finite.j,upper=x_upper,sigma_j = sigma_j[idx.finite.j],SIMPLIFY = TRUE)
+        val = sum(V_j/T_j[idx.finite.j]/x[idx,idx.finite.j])
     }
     if(!is.null(ncores)){
         val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
@@ -88,12 +93,13 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     sigma = par[[1]];nu = par[[2]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
-    if(length(idx)==0){
+    k = length(idx)
+    if(k==0){
         val = V_truncT(x,par,ncores=ncores)
         if(log) return(log(val))
         else return(val)
     }
-    if(length(idx)==n){
+    if(k==n){
        val = intensity_truncT(x,par,ncores,log)
        return(val)
     }
@@ -101,27 +107,26 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     chol.sigma.11 = chol(sigma[idx,idx])
     inv.sigma.11 = chol2inv(chol.sigma.11)
     logdet.sigma.11 = sum(log(diag(chol.sigma.11)))*2
-    sigma_T = sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% inv.sigma.11 %*% sigma[-idx,idx,drop=F] 
-    k = length(idx)
+    sigma_T = (sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% inv.sigma.11 %*% sigma[-idx,idx,drop=F])/(nu+k)
     gamma_1 = log(gamma((nu+1)/2))
     gamma_k = log(gamma((k+nu)/2))
-    a_fun <- function(j,upper){
+    a_fun <- function(j){
         sigma_j = (sigma[-j,-j] - sigma[-j,j] %*% sigma[j,-j])/(nu + 1)
-        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
+        val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))
     }
-    if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
-    a_j = T_j - logphi+(nu-2)/2 * log(2) + gamma_1 - 1/2 * log(pi)
+    if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun))
+    a_j = T_j - logphi + (nu-2)/2 * log(2) + gamma_1 - 1/2 * log(pi)
     const = - logphi + (nu-2)/2 * log(2) + (1-k)*log(nu) - k/2*log(pi) - 1/2*logdet.sigma.11 + gamma_k + 1/nu* sum(a_j[idx])
     func <- function(idx_j){
         x_j = x[idx_j,]
         logx = log(x_j)
         x_j.circ = x_j * exp(a_j)
         Q_sigma = c((x_j.circ[idx] %*% inv.sigma.11 %*% x_j.circ[idx])^(1/2))
-        val = (1/nu-1) * sum(x_log[idx]) - (k+nu)*log(Q_sigma) + const
-        upper = (x_j.circ[-idx])^(1/nu)/Q_sigma
+        val = (1/nu-1) * sum(logx[idx]) - (k+nu)*log(Q_sigma) + const
         loc = c(sigma[-idx,idx] %*% inv.sigma.11 %*% (x_j.circ[idx]^(1/nu)))/Q_sigma
-        val = val + log(mvtnorm::pmvt(lower=rep(0,n-k)-loc,upper=upper-loc,sigma=sigma_T/(nu+k),df=k+nu)[[1]])
+        upper = (x_j.circ[-idx])^(1/nu)/Q_sigma
+        val = val + log(mvtnorm::pmvt(lower=-loc,upper=upper-loc,sigma=sigma_T,df=k+nu)[[1]])
         return(val)
     }
     if(!is.null(ncores)){
@@ -376,9 +381,8 @@ true_extcoef <- function(idx,par,model="logskew1"){
     }
 
     if(model == "truncT1"){
-        x = matrix(Inf,nrow=ncol(idx),ncol=nrow(par[[1]]))
-        all.pairs.new = cbind(rep(1:ncol(idx),each=nrow(idx)),c(idx))
-        x[all.pairs.new] = 1
+        n = nrow(par[[1]])
+        x = t(apply(all.pairs,2,function(id){x.id = rep(Inf,n); x.id[id] = 1;return(x.id)}))
         val = V_truncT(x,par,ncores=parallel::detectCores())
     }
     

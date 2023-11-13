@@ -26,7 +26,7 @@ all.pairs.list = split(all.pairs,col(all.pairs))
 
 ### simulate the truncated extremal-t model ###
 par1 <- list(sigma=cov.mat,nu=nu)
-system.time(Z.trunc <- simu_truncT(m=1000,par=par1,ncores=ncores))
+system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
 
 png("figures/marginal_qqplot_truncT.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
@@ -35,8 +35,8 @@ for(idx in 1:ncol(Z.trunc))
 {
 print(idx)
 x = pgev(Z.trunc[,idx],1,1,1)
-p.value = ks.test(x,y)$p.value
-qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data",ylab="Theoretical")
+#p.value = ks.test(x,y)$p.value
+qqplot(x,y,main=paste0("Station ",idx),xlab="Data",ylab="Theoretical")
 abline(0,1,col="red")
 }
 dev.off()
@@ -66,8 +66,7 @@ par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
 for(idx in 1:ncol(Z.logskew)){
 z.order = order(Z.logskew[,idx],decreasing=FALSE)
 x = pgev(Z.logskew[z.order,idx],1,1,1);y=sort(runif(length(x)))
-p.value = ks.test(x,y)$p.value
-qqplot(x,y,main=paste0("Station ",idx, " P value ", round(p.value,2)),xlab="Data",ylab="Theoretical")
+qqplot(x,y,main=paste0("Station ",idx),xlab="Data",ylab="Theoretical")
 abline(0,1,col="red")
 }
 dev.off()
