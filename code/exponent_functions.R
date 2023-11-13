@@ -26,12 +26,12 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
     a_j = T_j - logphi+log(2)*((nu-2)/2)+gamma_1-1/2*log(pi)
     if(!is.matrix(x)){ x = matrix(x,ncol=n,byrow=TRUE)} 
+    const = -logphi - (n-1)*log(nu) - logdet.sigma/2 - n/2 * log(pi) + (nu-2)/2*log(2) + gamma_n
     func <- function(idx){
         log_x = log(x[idx,])
         x_j = (log_x + a_j) * 1/nu
         x_circ = exp(x_j)
-        val = -logphi + sum(x_j) - sum(log_x) - (n-1)*log(nu) - logdet.sigma/2 - n/2 * log(2*pi) +  log(t(x_circ) %*% inv.sigma %*% x_circ) * 
-            (-nu-n)/2 + gamma_n
+        val = sum(x_j) - sum(log_x) + log(t(x_circ) %*% inv.sigma %*% x_circ) * (-nu-n)/2 + const
         return(val)
     }
     if(!is.null(ncores)){
@@ -65,8 +65,7 @@ V_truncT <- function(x,par,ncores=NULL){
     if(!is.null(ncores)) T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
     else T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
     a_j = rep(1,n)
-    a_j[idx.finite] = T_j[idx.finite]/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
-    
+    a_j[idx.finite] = T_j[idx.finite]/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)    
     func <- function(idx){
         x_j = x[idx,] * a_j
         x_upper = lapply(1:n,function(i){ if(is.finite(x_j[i])) (x_j[-i]/x_j[i])^{1/nu} else rep(0,length(x_j[-i])) })
@@ -98,30 +97,31 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
        val = intensity_truncT(x,par,ncores,log)
        return(val)
     }
-    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]]
+    logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
     chol.sigma.11 = chol(sigma[idx,idx])
     inv.sigma.11 = chol2inv(chol.sigma.11)
     logdet.sigma.11 = sum(log(diag(chol.sigma.11)))*2
     sigma_T = sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% inv.sigma.11 %*% sigma[-idx,idx,drop=F] 
     k = length(idx)
-    gamma_1 = gamma((nu+1)/2)
-    gamma_k = gamma((k+nu)/2)
+    gamma_1 = log(gamma((nu+1)/2))
+    gamma_k = log(gamma((k+nu)/2))
     a_fun <- function(j,upper){
         sigma_j = (sigma[-j,-j] - sigma[-j,j] %*% sigma[j,-j])/(nu + 1)
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
-        return(val)
+        return(log(val))
     }
     if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,upper=rep(Inf,n-1),mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun,upper=rep(Inf,n-1)))
-    a_j = T_j/phi*2^((nu-2)/2)*gamma_1*pi^(-1/2)
+    a_j = T_j - logphi+(nu-2)/2 * log(2) + gamma_1 - 1/2 * log(pi)
+    const = - logphi + (nu-2)/2 * log(2) + (1-k)*log(nu) - k/2*log(pi) - 1/2*logdet.sigma.11 + gamma_k + 1/nu* sum(a_j[idx])
     func <- function(idx_j){
-        x_j = x[idx_j,] * a_j
-        x_log = log(x_j)
-        Q_sigma = (x_j[idx] %*% inv.sigma.11 %*% x_j[idx])^(1/2)
-        val = c(1/nu*sum(x_log[idx]- log(x[idx_j,idx,drop=F])) - phi + (nu-2)/2 * log(2) + (1-k)*log(nu) -
-            k/2*log(pi) - 1/2*logdet.sigma.11 -(k+nu)*log(Q_sigma)+log(gamma_k))
-        upper = c((x_j[-idx])^(1/nu)*sqrt(k+nu)/Q_sigma)
-        loc = c(sigma[-idx,idx] %*% inv.sigma.11 %*% x_j[idx]^(1/nu)*sqrt(k+nu)/Q_sigma)
-        val = val + log(mvtnorm::pmvt(lower=rep(0,n-k)-loc,upper=upper-loc,sigma=sigma_T,df=k+nu))[[1]]
+        x_j = x[idx_j,]
+        logx = log(x_j)
+        x_j.circ = x_j * exp(a_j)
+        Q_sigma = c((x_j.circ[idx] %*% inv.sigma.11 %*% x_j.circ[idx])^(1/2))
+        val = (1/nu-1) * sum(x_log[idx]) - (k+nu)*log(Q_sigma) + const
+        upper = (x_j.circ[-idx])^(1/nu)/Q_sigma
+        loc = c(sigma[-idx,idx] %*% inv.sigma.11 %*% (x_j.circ[idx]^(1/nu)))/Q_sigma
+        val = val + log(mvtnorm::pmvt(lower=rep(0,n-k)-loc,upper=upper-loc,sigma=sigma_T/(nu+k),df=k+nu)[[1]])
         return(val)
     }
     if(!is.null(ncores)){
