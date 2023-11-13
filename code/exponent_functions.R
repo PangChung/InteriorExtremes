@@ -196,7 +196,6 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
 V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
-    browser()
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
