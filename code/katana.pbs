@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#PBS -l select=16:ncpus=1:mem=124gb
+#PBS -l walltime=11:59:59 ## ideal
+#PBS -j oe ##merge output and error into a single file
+#PBS -J 1-100 ## array jobs 
+#PBS -M peng.zhong@unsw.edu.au ## notify me via email when job ends (a) or terminated because of error (e)
+#PBS -m ae ## 
+
+cd ${PBS_O_WORKDIR}
+
+./myprogram ${PBS_ARRAY_INDEX}.dat

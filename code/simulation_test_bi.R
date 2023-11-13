@@ -201,7 +201,7 @@ max(abs(val.2.4 - val.1.4)^2)
 
 library(cubature)
 library(SimplicialCubature)
-n = 3
+n = 2
 loc = cbind(seq(1,0,length.out=n),0)
 sigma = cov.func(loc,c(0.5,1))
 par = alpha2delta(list(sigma=sigma,alpha=rep(-10,n)))
@@ -212,6 +212,10 @@ func <- function(dat){
 
 func <- function(dat){
     val = exp(-nloglik(par=list(sigma),data=dat,model="BR"))
+}
+
+func <- function(dat){
+    val = exp(-nloglik(par=list(sigma=sigma,nu=2),data=dat,model="truncT"))
 }
 
 res = adaptIntegrate(func,rep(0,n),rep(Inf,n))

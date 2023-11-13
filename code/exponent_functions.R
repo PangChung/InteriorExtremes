@@ -16,7 +16,7 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     set.seed(747380)
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
     gamma_1 = log(gamma((nu+1)/2))
-    gamma_n = log(gamma((nu+d)/2))
+    gamma_n = log(gamma((nu+n)/2))
     a_fun <- function(j,upper){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
         set.seed(747380)
