@@ -90,11 +90,11 @@ dev.off()
 # fit the truncated extremal t model: the angular density approach
 system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.4,0.8,2),fixed=c(F,F,T),thres=0.9,model="truncT",method="Nelder-Mead",ncores=ncores,maxit=100,lb=c(0.01,0.01),ub=c(10,2.0),bootstrap=FALSE,hessian=FALSE,opt=TRUE) )
 
-# # the composite likelihood approach
-# fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)] < 0.3],maxit=200,model="truncT", lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
+## the composite likelihood approach
+#fit.truncT.comp <- MCLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)] < 0.3],maxit=200,model="truncT", lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 
-# # the vecchia approximation approach
-# fit.trunct.vecchia <- MVLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)]<0.5],maxit=200,model="truncT",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
+## the vecchia approximation approach
+#fit.trunct.vecchia <- MVLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)]<0.5],maxit=200,model="truncT",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 
 # fit the log-skew based model
 # Simulate a log-skew normal based max-stable process
@@ -102,32 +102,15 @@ alpha = alpha.func(coord,10)
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,1),fixed=c(F,F,F),thres=0.98,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,0),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,2),fixed=c(F,F,F),thres=0.98,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,0.1),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
+
 ## plot the intensity function ##
-alpha.seq = seq(-10,10,0.01)
+alpha.seq = seq(0,20,0.01)
 paras.list = as.matrix(expand.grid(0.5,1,alpha.seq))
 paras.list = split(paras.list,row(paras.list))
 logskew.vals <- c(unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,fixed=c(F,F,F),thres=0.95,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=FALSE,opt=FALSE,mc.set.seed=FALSE)))
-alpha.seq[which.max(logskew.vals)]
+alpha.seq[which.min(logskew.vals)]
 plot(alpha.seq,logskew.vals,cex=0.5,pch=20)
-
-alpha = alpha.func(coord,0)
-par2 <- list(sigma=cov.mat,alpha=alpha)
-system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
-
-val.1.1 = nVI(Z.logskew[1:2,],par2[[1]],1:2)
-val.2.1 = partialV_logskew(Z.logskew[1:2,],idx=1:2,par2,alpha.para=TRUE,ncores=NULL)
-max(abs(val.1.1 - val.2.1))
-
-val.1.2 = nVI(Z.logskew[1:2,],par2[[1]],3:5)
-val.2.2 = partialV_logskew(Z.logskew[1:2,],idx=3:5,par2,alpha.para=TRUE,ncores=NULL)
-max(abs(val.1.2 - val.2.2))
-
-n = nrow(cov.mat)
-a = cov.mat %*% (rep(1,n) %*% t(rep(1,n))) %*% cov.mat 
-f = cov.mat %*% (matrix(1,n,n)) %*% cov.mat 
-b = (cov.mat %*% rep(1.0,n)) %*% c(t(rep(1.0,n)) %*% cov.mat )
-sum(abs(a-b))
 
 fit.logskew.comp <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,1),fixed=c(F,F,T),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,0.1),ub=c(10,2.5,Inf),alpha.func=alpha.func,hessian=TRUE)
 
@@ -136,3 +119,46 @@ fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:100,],init=c(0.4,0.5),fixed=c(F,F),l
 fit.logskew.comp3 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0.5),fixed=c(T,T,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-5),ub=c(10,2.5,5),alpha.func=alpha.func,hessian=TRUE)
 
 save.image("data/simulation_test.RData")
+
+library(cubature)
+library(SimplicialCubature)
+n = 2
+loc = cbind(seq(1,0,length.out=n),0)
+sigma = cov.func(loc,c(0.5,1))
+par = alpha2delta(list(sigma=sigma,alpha=rep(-10,n)))
+
+func <- function(dat){
+    val = exp(-nloglik(par=par,data=dat,model="logskew"))
+}
+
+func <- function(dat){
+    val = exp(-nloglik(par=list(sigma),data=dat,model="BR"))
+}
+
+func <- function(dat){
+    val = exp(-nloglik(par=list(sigma=sigma,nu=2),data=dat,model="truncT"))
+}
+
+print(res <- adaptIntegrate(func,rep(0,n),rep(Inf,n)))
+
+func <- function(dat){    
+    dat = t(dat)
+    if(!is.matrix(dat)) {data  <- c(dat,1-sum(dat))} else { data <- cbind(dat,1-rowSums(dat)) }
+    tryCatch(val <- intensity_logskew(data,par2,alpha.para=TRUE,log=FALSE)),
+             error = function(e) {print(e);print(dim(data));browser()},
+             finally = {})
+    return(val)
+}
+
+
+func <- function(dat){    
+    dat = t(dat)
+    if(!is.matrix(dat)) {data  <- c(dat,1-sum(dat))} else { data <- cbind(dat,1-rowSums(dat)) }
+    tryCatch(val <- nVI(data,sigma=sigma,I=1:3),
+             error = function(e) {print(e);print(dim(data));browser()},
+             finally = {})
+    return(val)
+}
+
+S = CanonicalSimplex(2)
+adaptIntegrateSimplex(func,S)

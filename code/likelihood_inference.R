@@ -49,7 +49,11 @@ V <- function(data,sigma){
     return(1/data)
   } else{
     fun.i <- function(i){
-      eval.i <- t(t(log(data[,-i]/data[,i])) + diag(sigma)[-i]/2 + sigma[i,i]/2 - sigma[i,-i])
+      if(nrow(data)==1){
+            eval.i <- t(log(data[,-i]/data[,i])) + diag(sigma)[-i]/2 + sigma[i,i]/2 - sigma[i,-i]
+      }else{
+            eval.i <- t(t(log(data[,-i]/data[,i]))) + diag(sigma)[-i]/2 + sigma[i,i]/2 - sigma[i,-i]
+      }
       Id <- diag(1,D-1)
       if(i==1){ ### see Wadsworth and Tawn (2014) for the definition of the matrix T.i...
         T.i <- cbind(-1,Id)

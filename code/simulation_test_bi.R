@@ -199,48 +199,6 @@ max(abs(val.2.2 - val.1.2))
 max(abs(val.2.3 - val.1.3))
 max(abs(val.2.4 - val.1.4)^2)
 
-library(cubature)
-library(SimplicialCubature)
-n = 3
-loc = cbind(seq(1,0,length.out=n),0)
-sigma = cov.func(loc,c(0.5,1))
-par = alpha2delta(list(sigma=sigma,alpha=rep(-10,n)))
-
-func <- function(dat){
-    val = exp(-nloglik(par=par,data=dat,model="logskew"))
-}
-
-func <- function(dat){
-    val = exp(-nloglik(par=list(sigma),data=dat,model="BR"))
-}
-
-func <- function(dat){
-    val = exp(-nloglik(par=list(sigma=sigma,nu=2),data=dat,model="truncT"))
-}
-
-print(res <- adaptIntegrate(func,rep(0,n),rep(Inf,n)))
-
-func <- function(dat){    
-    dat = t(dat)
-    if(!is.matrix(dat)) {data  <- c(dat,1-sum(dat))} else { data <- cbind(dat,1-rowSums(dat)) }
-    tryCatch(val <- intensity_logskew(data,par2,alpha.para=TRUE,log=FALSE)),
-             error = function(e) {print(e);print(dim(data));browser()},
-             finally = {})
-    return(val)
-}
-
-
-func <- function(dat){    
-    dat = t(dat)
-    if(!is.matrix(dat)) {data  <- c(dat,1-sum(dat))} else { data <- cbind(dat,1-rowSums(dat)) }
-    tryCatch(val <- nVI(data,sigma=sigma,I=1:3),
-             error = function(e) {print(e);print(dim(data));browser()},
-             finally = {})
-    return(val)
-}
-
-S = CanonicalSimplex(2)
-adaptIntegrateSimplex(func,S)
 
 
 

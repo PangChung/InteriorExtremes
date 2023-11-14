@@ -17,7 +17,11 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     gamma_1 = log(gamma((nu+1)/2))
     gamma_n = log(gamma((nu+n)/2))
 
-    a_fun <- function(j,upper){
+    a_fun <- function(j,upper=rep(Inf,n-1)){
+        if(n==2){
+            val = 1 - pt(-sigma[-j,j],df=nu+1)
+            return(log(val))
+        }
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
         val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))
@@ -58,7 +62,10 @@ V_truncT <- function(x,par,ncores=NULL){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
     }
     a_fun <- function(j,upper,sigma_j){
-        if(n==2){val = pt()}
+        if(n==2){
+            val = pt(upper-sigma[-j,j],df=nu+1) - pt(-sigma[-j,j],df=nu+1)
+            return(val)
+        }
         val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
         return(val)
     }
@@ -111,6 +118,10 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     gamma_1 = log(gamma((nu+1)/2))
     gamma_k = log(gamma((k+nu)/2))
     a_fun <- function(j){
+        if(n==2){
+            val = 1 - pt(-sigma[-j,j],df=nu+1)
+            return(log(val))
+        }
         sigma_j = (sigma[-j,-j] - sigma[-j,j] %*% sigma[j,-j])/(nu + 1)
         val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))
