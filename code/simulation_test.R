@@ -26,7 +26,7 @@ all.pairs.list = split(all.pairs,col(all.pairs))
 
 ### simulate the truncated extremal-t model ###
 par1 <- list(sigma=cov.mat,nu=nu)
-system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=ncores))
+system.time(Z.trunc <- simu_truncT(m=m,par=par1,ncores=10))
 
 png("figures/marginal_qqplot_truncT.png",width=d*600,height=d*600,res=300)
 par(mfrow=c(d,d),mgp=c(2,1,0),mar=c(2,2,3,1),cex=0.5)
@@ -55,7 +55,7 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,2) 
+alpha = alpha.func(coord,-2) 
 #alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))

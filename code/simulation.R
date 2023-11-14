@@ -23,35 +23,90 @@ simu_truncT <- function(m,par,ncores=NULL){
     sigma.list = lapply(T_j,function(x) x[[2]])
     sigma.chol = lapply(sigma.list,chol)
     a = T_j_val/phi*2^((nu-2)/2)*gamma_1*(pi^(-1/2))
+    
     # Simulate the max-stable process
-    simu <- function(idx){
-        r = rexp(1)
-        r.hat = 1/r
-        z = TruncatedNormal::rtmvt(n=1,mu=sigma[,1],sigma=sigma.list[[1]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
-        z = z^nu * a[1]/a
-        z = z * r.hat
-        for(j in 2:n){
-            r = rexp(1)
-            r.hat = 1/r
-            while(r.hat > z[j]){
-                z_temp = TruncatedNormal::rtmvt(n=1,mu=sigma[,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
-                z_temp = z_temp^nu*a[j]/a
-                z_temp = z_temp * r.hat
-                if(!any(z_temp[1:(j-1)] > z[1:(j-1)])){
-                    z = pmax(z,z_temp)
-                }
-                r = r + rexp(1)
-                r.hat = 1/r
+    idx.loc = cbind(1:m,1)
+    idx.loc.sum = lapply(1:n,function(id){which(idx.loc[,2]==id)})
+    r = rexp(m)
+    r.hat = 1/r
+
+    func <- function(idx.j,j){
+        m.idx.j = length(idx.j)
+        if(m.idx.j > 0 & j<=n){
+            val = TruncatedNormal::rtmvt(n=m.idx.j,mu=sigma[,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
+            if(!is.matrix(val)){ val = matrix(val,nrow=m.idx.j)}
+            val = t(t(val)^nu * a[j]/a)
+            return(val)
+        }
+        return(NULL)
+    }
+
+    func.compare <- function(idx,j){
+        val = !any(z[idx,1:(j-1)] < z.temp[idx,1:(j-1)]) 
+        if(val){
+            return(idx)
+        }else{
+            return(NULL)
+        }
+    }
+    
+    func.pmax <- function(idx){
+        return(pmax(z[idx,],z.temp[idx,]))
+    }
+
+    if(!is.null(ncores)){
+        z = mcmapply(func,idx.j=idx.loc.sum,j=1:n,mc.cores=ncores,SIMPLIFY=FALSE)
+    }else{
+        z = mapply(func,idx.j=idx.loc.sum,j=1:n,SIMPLIFY=FALSE)
+    }
+    
+    z = do.call(rbind,z) 
+    z = z *  r.hat
+    idx.loc[,2] = 2
+    idx.loc.sum = lapply(1:n,function(id){which(idx.loc[,2]==id)})
+    idx.new.r <- idx.pass.r <-  rep(TRUE,m)
+    idx.finish <- idx.r.old <- rep(FALSE,m)
+    count = 1
+    while(any(!idx.finish)){
+        r[idx.r.old] = r[idx.r.old ] + rexp(sum(idx.r.old))
+        r.hat[idx.r.old] = 1/r[idx.r.old]
+        if(sum(idx.new.r) != 0){
+            r[idx.new.r] = rexp(sum(idx.new.r))
+            r.hat[idx.new.r] = 1/r[idx.new.r]
+        }
+        idx.pass.r[!idx.finish] <- r.hat[!idx.finish] > z[idx.loc[!idx.finish,,drop=FALSE]]
+        idx.pass.r[idx.finish] = FALSE
+        idx.go.ahead = !idx.pass.r & !idx.finish
+        if(sum(idx.go.ahead) > 0){
+            idx.loc[idx.go.ahead,2] = idx.loc[idx.go.ahead,2] +  1
+            idx.new.r[idx.go.ahead] = TRUE
+        }
+        if(sum(idx.pass.r)!=0){
+            idx.new.r[idx.pass.r] = FALSE
+            idx.loc.sum.simu = lapply(1:n,function(id){which(idx.loc[idx.pass.r,2]==id)})
+            if(!is.null(ncores)){
+                z.temp.0 = mcmapply(func,idx.j=idx.loc.sum.simu,j=1:n,mc.cores=ncores,SIMPLIFY=FALSE)
+            }else{
+                z.temp.0 = mapply(func,idx.j=idx.loc.sum.simu,j=1:n,SIMPLIFY=FALSE)
+            }
+            z.temp = z
+            idx.temp = which(idx.pass.r)[unlist(idx.loc.sum.simu)]
+            z.temp[idx.temp,] = do.call(rbind,z.temp.0) * r.hat[idx.temp]
+            idx.temp = unlist(mapply(func.compare,idx=which(idx.pass.r),j=idx.loc[idx.pass.r,2],SIMPLIFY=FALSE))
+            if(length(idx.temp)!=0){
+                z[idx.temp,] = do.call(rbind,lapply(idx.temp,func.pmax))
+                idx.loc[idx.temp,2] = idx.loc[idx.temp,2] + 1
+                idx.new.r[idx.temp] = TRUE
             }
         }
-        return(z)
+        idx.finish = idx.loc[,2] > n
+        idx.new.r = idx.new.r & !idx.finish
+        idx.r.old = !idx.new.r & !idx.finish
+        count = count + 1
+        print(paste0(c(count,sum(idx.finish),m),collapse = "/"))
     }
-    if(!is.null(ncores)) Z = mclapply(1:m,simu,mc.cores=ncores) else Z = lapply(1:m,simu)
-    Z = matrix(unlist(Z),byrow=TRUE, nrow=m)
-    return(Z)
+    return(z)
 }
-
-
 
 
 # Simulate a log-skew normal based max-stable process
@@ -101,6 +156,97 @@ simu_logskew <- function(m,par,ncores=NULL){
         Z = mclapply(1:m,simu,mc.cores=ncores)
     }else Z = lapply(1:m,simu)
     Z = matrix(unlist(Z),byrow=TRUE,nrow=m)
+    return(Z)
+}
+
+simu_logskew2 <- function(m,par,ncores=NULL){  
+    delta = par[[2]];sigma = par[[1]]
+    n = nrow(sigma)
+    omega = diag(sqrt(diag(sigma)))
+    omega.inv = diag(diag(omega)^(-1))
+    sigma.bar = omega.inv %*% sigma %*% omega.inv
+    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
+    tau.new = delta * diag(omega)
+    sigma.star = rbind(cbind(sigma.bar, delta), c(delta, 1))
+    sigma.star.chol = chol(sigma.star)
+    # Simulate the max-stable process
+    idx.loc = cbind(1:m,1)
+    idx.loc.sum = lapply(1:n,function(id){which(idx.loc[,2]==id)})
+    r = rexp(m)
+    r.hat = 1/r
+    func <- function(idx.j,j){
+        m.idx.j = length(idx.j)
+        if(m.idx.j==0){return(NULL)}
+        func.i <- function(i){
+            x <- c(t(sigma.star.chol) %*% rnorm(n+1))
+            while(x[n+1] + tau.new[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+            x0 <- c(omega %*% x[1:n] + sigma[,j])
+            val <- exp(x0-a);val <- val/val[j]
+            return(val)
+        }
+        if(!is.null(ncores)){
+            z = mclapply(1:m.idx.j,func.i,mc.cores=ncores)    
+        }else{
+            z = lapply(1:m.idx.j,func.i)
+        }
+        return(do.call(rbind,z))
+    }
+
+    func.compare <- function(idx,j){
+        val = !any(z[idx,1:(j-1)] < z.temp[idx,1:(j-1)]) 
+        if(val){
+            return(idx)
+        }else{
+            return(NULL)
+        }
+    }
+    
+    func.pmax <- function(idx){
+        return(pmax(z[idx,],z.temp[idx,]))
+    }
+
+    z = mapply(func,idx.j=idx.loc.sum,j=1:n,SIMPLIFY=FALSE)
+    z = do.call(rbind,z) 
+    z = z *  r.hat
+    idx.loc[,2] = 2
+    idx.loc.sum = lapply(1:n,function(id){which(idx.loc[,2]==id)})
+    idx.new.r <- idx.pass.r <-  rep(TRUE,m)
+    idx.finish <- idx.r.old <- rep(FALSE,m)
+    count = 1
+    while(any(!idx.finish)){
+        r[idx.r.old] = r[idx.r.old ] + rexp(sum(idx.r.old))
+        r.hat[idx.r.old] = 1/r[idx.r.old]
+        if(sum(idx.new.r) != 0){
+            r[idx.new.r] = rexp(sum(idx.new.r))
+            r.hat[idx.new.r] = 1/r[idx.new.r]
+        }
+        idx.pass.r[!idx.finish] <- r.hat[!idx.finish] > z[idx.loc[!idx.finish,,drop=FALSE]]
+        idx.pass.r[idx.finish] = FALSE
+        idx.go.ahead = !idx.pass.r & !idx.finish
+        if(sum(idx.go.ahead) > 0){
+            idx.loc[idx.go.ahead,2] = idx.loc[idx.go.ahead,2] +  1
+            idx.new.r[idx.go.ahead] = TRUE
+        }
+        if(sum(idx.pass.r)!=0){
+            idx.new.r[idx.pass.r] = FALSE
+            idx.loc.sum.simu = lapply(1:n,function(id){which(idx.loc[idx.pass.r,2]==id)})
+            z.temp.0 = mapply(func,idx.j=idx.loc.sum.simu,j=1:n,SIMPLIFY=FALSE)
+            z.temp = z
+            idx.temp = which(idx.pass.r)[unlist(idx.loc.sum.simu)]
+            z.temp[idx.temp,] = do.call(rbind,z.temp.0) * r.hat[idx.temp]
+            idx.temp = unlist(mapply(func.compare,idx=which(idx.pass.r),j=idx.loc[idx.pass.r,2],SIMPLIFY=FALSE))
+            if(length(idx.temp)!=0){
+                z[idx.temp,] = do.call(rbind,lapply(idx.temp,func.pmax))
+                idx.loc[idx.temp,2] = idx.loc[idx.temp,2] + 1
+                idx.new.r[idx.temp] = TRUE
+            }
+        }
+        idx.finish = idx.loc[,2] > n
+        idx.new.r = idx.new.r & !idx.finish
+        idx.r.old = !idx.new.r & !idx.finish
+        count = count + 1
+        print(paste0(c(count,sum(idx.finish),m),collapse = "/"))
+    }
     return(Z)
 }
 
