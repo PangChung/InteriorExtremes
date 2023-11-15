@@ -122,7 +122,7 @@ save.image("data/simulation_test.RData")
 
 library(cubature)
 library(SimplicialCubature)
-n = 5
+n = 2
 loc = cbind(seq(1,0,length.out=n),0)
 sigma = cov.func(loc,c(0.5,1))
 par = alpha2delta(list(sigma=sigma,alpha=rep(-10,n)))
@@ -139,7 +139,7 @@ func <- function(dat){
     val = exp(-nloglik(par=list(sigma=sigma,nu=2),data=dat,model="truncT"))
 }
 
-print(res <- adaptIntegrate(func,rep(0,n),rep(Inf,n)))
+print(res <- adaptIntegrate(func,rep(0,n),rep(Inf,n),tol=1e-4,maxEval=1e+5))
 
 func <- function(dat){    
     dat = t(dat)
@@ -156,5 +156,13 @@ func <- function(dat){
     return(val)
 }
 
+func <- function(dat){    
+    dat = t(dat)
+    if(!is.matrix(dat)) {data  <- c(dat,1-sum(dat))} else { data <- cbind(dat,1-rowSums(dat)) }
+    val <- intensity_truncT(data,list(sigma,nu=2),log=FALSE)
+    return(val)
+}
+
 S = CanonicalSimplex(n-1)
-adaptIntegrateSimplex(func,S)
+
+print(res <- adaptIntegrateSimplex(func,S,maxEvals=1e+6,absError=1e-4))

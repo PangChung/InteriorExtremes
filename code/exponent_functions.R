@@ -114,7 +114,7 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     chol.sigma.11 = chol(sigma[idx,idx])
     inv.sigma.11 = chol2inv(chol.sigma.11)
     logdet.sigma.11 = sum(log(diag(chol.sigma.11)))*2
-    sigma_T = (sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% inv.sigma.11 %*% sigma[-idx,idx,drop=F])/(nu+k)
+    sigma_T = (sigma[-idx,-idx] - sigma[-idx,idx,drop=F] %*% inv.sigma.11 %*% sigma[idx,-idx,drop=F])/(nu+k)
     gamma_1 = log(gamma((nu+1)/2))
     gamma_k = log(gamma((k+nu)/2))
     a_fun <- function(j){
@@ -122,7 +122,7 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
             val = 1 - pt(-sigma[-j,j],df=nu+1)
             return(log(val))
         }
-        sigma_j = (sigma[-j,-j] - sigma[-j,j] %*% sigma[j,-j])/(nu + 1)
+        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=FALSE] %*% sigma[j,-j,drop=FALSE])/(nu + 1)
         val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))
     }
