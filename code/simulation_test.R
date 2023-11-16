@@ -143,7 +143,7 @@ print(res <- adaptIntegrate(func,rep(0,n),rep(Inf,n),tol=1e-4,maxEval=1e+5))
 
 func <- function(dat){    
     dat = t(dat)
-    if(!is.matrix(dat)) {data  <- c(dat,1-sum(dat))} else { data <- cbind(dat,1-rowSums(dat)) }
+    if(!is.matrix(dat)) {data  <- c(dat,1-sum(dat))} else {data <- cbind(dat,1-rowSums(dat))}
     val <- intensity_logskew(data,list(sigma,rep(0,n)),alpha.para=TRUE,log=FALSE)
     return(val)
 }
