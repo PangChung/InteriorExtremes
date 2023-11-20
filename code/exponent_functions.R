@@ -296,7 +296,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     sigma = par[[1]]
-    if(!is.matrix(x)){x <- matrix(x,ncol=1)}
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
     if(length(idx)==0){
         val = V_logskew(x,par,alpha.para,ncores=ncores)

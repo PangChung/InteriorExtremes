@@ -174,8 +174,6 @@ func <- function(dat){
 S = CanonicalSimplex(n-1)
 print(res <- adaptIntegrateSimplex(func,S,maxEvals=1e+6,absError=1e-4))
 
-library(numDeriv)
-
 func <- function(x,idx,par){
     x = rbind(x,x) 
     x[1,idx] = x[1,idx] + 1e-8
@@ -186,19 +184,18 @@ func <- function(x,idx,par){
 }
 
 x = c(1,2,3)
-func(x,par=list(sigma=sigma,nu=2),idx=1)
-partialV_truncT(x,par=list(sigma=sigma,nu=2),idx=1)
+func(x,par=list(sigma=sigma,nu=2),idx=3)
+partialV_truncT(x,par=list(sigma=sigma,nu=2),idx=3,log=FALSE)
 
-func <- function(x,x.res,par){
-    x = rbind(c(x-1e-4,x.res),c(x+1e-4,x.res))
+func <- function(x,par,idx){
+    x = rbind(x,x) 
+    x[1,idx] = x[1,idx] + 1e-4
+    x[2,idx] = x[2,idx] - 1e-4
     val = V_logskew(x,par=par,alpha.para=FALSE)
-    val =(val[1]-val[2])/(2*1e-4)
+    val =(val[2]-val[1])/(2*1e-4)
     return(val)
 }
 
-func(0.5,c(1,2),par=par)
-partialV_logskew(matrix(c(0.5,1,2),nrow=1),par,idx=1,alpha.para=FALSE)
+func(x,idx=1,par=par)
+partialV_logskew(x,par,idx=1,alpha.para=FALSE)
 
-grad(func,x=0.5,x.res=c(1,2),par=list(sigma=sigma,nu=2))
-
-val = partialV_truncT(c(0.5,1,2),par=list(sigma=sigma,nu=2),idx=1)
