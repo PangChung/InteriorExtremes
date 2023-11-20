@@ -176,16 +176,18 @@ print(res <- adaptIntegrateSimplex(func,S,maxEvals=1e+6,absError=1e-4))
 
 library(numDeriv)
 
-func <- function(x,x.res,par){
-    x = rbind(c(x-1e-8,x.res),c(x+1e-8,x.res))
+func <- function(x,idx,par){
+    x = rbind(x,x) 
+    x[1,idx] = x[1,idx] + 1e-8
+    x[2,idx] = x[2,idx] - 1e-8
     val = V_truncT(x,par=par)
-    val = (val[1]-val[2])/(2*1e-8)
+    val = (val[2]-val[1])/(2*1e-8)
     return(val)
 }
 
-
-func(0.5,c(1,2),par=list(sigma=sigma,nu=2))
-partialV_truncT(c(0.5,1,2),par=list(sigma=sigma,nu=2),idx=1)
+x = c(1,2,3)
+func(x,par=list(sigma=sigma,nu=2),idx=1)
+partialV_truncT(x,par=list(sigma=sigma,nu=2),idx=1)
 
 func <- function(x,x.res,par){
     x = rbind(c(x-1e-4,x.res),c(x+1e-4,x.res))
