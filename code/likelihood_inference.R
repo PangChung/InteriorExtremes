@@ -8,44 +8,49 @@
 ###########################
 ## semivariogram function but returns a covariance matrix
 vario.func <- function(loc,par){ 
-  alpha = par[1];lambda = par[2];a = par[3]; theta = par[4]
-  #Sigma <- matrix(c(par[3],-par[4],-par[4],1),2,2)
-  A = matrix(c(cos(theta),sin(theta),-sin(theta),cos(theta)),2,2)
-  Sigma <- A%*%diag(c(1,a),2)%*%t(A)
-  loc = matrix(loc,ncol=2)
-  n = nrow(loc)
-  if(n==1){
-    val=2*(sqrt(t(loc[1,])%*%Sigma%*%loc[1,])/lambda)^alpha
-    return(val)
-  }
-  fun <- function(idx){
-    loc.temp <- loc[idx,]
-      if(idx[1]==idx[2]){
-        h <- loc.temp[1,]
-        val = 2*(sqrt(t(h)%*%Sigma%*%h)/lambda)^alpha
-      }else{
-        h <- loc.temp[1,]-loc.temp[2,]
-        val <- (sqrt(t(loc.temp[1,])%*%Sigma%*%(loc.temp[1,]))/lambda)^alpha+
-          (sqrt(t(loc.temp[2,])%*%Sigma%*%(loc.temp[2,]))/lambda)^alpha-
-          (sqrt(t(h)%*%Sigma%*%h)/lambda)^alpha 
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)    
+    alpha = par[1];lambda = par[2];a = par[3]; theta = par[4]
+    #Sigma <- matrix(c(par[3],-par[4],-par[4],1),2,2)
+    A = matrix(c(cos(theta),sin(theta),-sin(theta),cos(theta)),2,2)
+    Sigma <- A%*%diag(c(1,a),2)%*%t(A)
+    loc = matrix(loc,ncol=2)
+    n = nrow(loc)
+    if(n==1){
+        val=2*(sqrt(t(loc[1,])%*%Sigma%*%loc[1,])/lambda)^alpha
+        return(val)
+    }
+    fun <- function(idx){
+        loc.temp <- loc[idx,]
+        if(idx[1]==idx[2]){
+            h <- loc.temp[1,]
+            val = 2*(sqrt(t(h)%*%Sigma%*%h)/lambda)^alpha
+        }else{
+            h <- loc.temp[1,]-loc.temp[2,]
+            val <- (sqrt(t(loc.temp[1,])%*%Sigma%*%(loc.temp[1,]))/lambda)^alpha+
+            (sqrt(t(loc.temp[2,])%*%Sigma%*%(loc.temp[2,]))/lambda)^alpha-
+            (sqrt(t(h)%*%Sigma%*%h)/lambda)^alpha 
       }
       return(val)
     }
-  idx <- cbind(rep(1:n, times = n:1),unlist(lapply(1:n, function(x){x:n})))
-  val <- apply(idx,1,fun)
-  val.mat <- matrix(1,n,n)
-  val.mat[idx]<-val;
-  val.mat[idx[,c(2,1)]]<-val
-  return(val.mat + .Machine$double.eps * diag(n))
+    idx <- cbind(rep(1:n, times = n:1),unlist(lapply(1:n, function(x){x:n})))
+    val <- apply(idx,1,fun)
+    val.mat <- matrix(1,n,n)
+    val.mat[idx]<-val;
+    val.mat[idx[,c(2,1)]]<-val
+    assign(".Random.seed", oldSeed, envir=globalenv())
+    return(val.mat + .Machine$double.eps * diag(n))
 }
 
 ### Exponent function V for the Brown-Resnick model
 # data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
 # sigma: covariance matrix of dimension DxD
 V <- function(data,sigma){
-  if(!is.matrix(data)) data <- matrix(data,nrow=1)
-  D <- ncol(data)
-  if(D==1){
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)  
+    if(!is.matrix(data)) data <- matrix(data,nrow=1)
+    D <- ncol(data)
+    if(D==1){
     return(1/data)
   } else{
     fun.i <- function(i){
@@ -66,8 +71,10 @@ V <- function(data,sigma){
       return(apply(eval.i,1,function(x){return(mvtnorm::pmvnorm(upper=x,sigma=sigma.i))})/data[,i])
     }
     if(nrow(data)==1){
+        assign(".Random.seed", oldSeed, envir=globalenv())
         return( sum(sapply(1:D,fun.i)))
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     return( rowSums(sapply(1:D,fun.i)) )
   }
 }
@@ -77,7 +84,9 @@ V <- function(data,sigma){
 # sigma: covariance matrix of dimension DxD
 # I: vector of indices with respect to which the partial derivatives are computed; if I==c(1:D), the function returns the full mixed derivative.
 nVI <- function(data,sigma,I){
-  if(!is.matrix(data)) data <- matrix(data,nrow=1)
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
+    if(!is.matrix(data)) data <- matrix(data,nrow=1)
   D <- ncol(data)
   nI <- length(I)
   if(nI==0){ ## If the index set is empty
@@ -101,6 +110,7 @@ nVI <- function(data,sigma,I){
       log.Part4 <- c(-(1/2)*(apply(log.data,1,function(x){return(t(x)%*%A%*%x)}) + log.data%*%(q%*%(2-sigma.q)/q.sum + sigma.inv%*%sigma.DD)))
       
       res <- exp(log.Part1-log.Part2+log.Part3+log.Part4)
+      assign(".Random.seed", oldSeed, envir=globalenv())
       return( drop(res) )
     }
   } else{ ## Partial derivative
@@ -139,6 +149,7 @@ nVI <- function(data,sigma,I){
         log.Part3 <- c(-(1/2)*( 1/4*t(sigma.II)%*%sigma.I.inv%*%sigma.II -1/4*(sigma.q.II)^2/q.I.sum + sigma.q.II/q.I.sum - 1/q.I.sum))
         log.Part4 <- c(-(1/2)*(apply(log.data.I,1,function(x){return(t(x)%*%A.I%*%x)}) + log.data.I%*%(q.I%*%(2-sigma.q.II)/q.I.sum + sigma.I.inv%*%sigma.II)))
         res <- drop(log.Part1*exp(-log.Part2+log.Part3+log.Part4))
+        assign(".Random.seed", oldSeed, envir=globalenv())
       return(drop(res))
     }
   }

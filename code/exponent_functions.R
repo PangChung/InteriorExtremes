@@ -5,6 +5,8 @@
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
 intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
@@ -45,6 +47,7 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     }else{
         val = unlist(lapply(1:nrow(x),func))
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     if(log) return(val)
     else return(exp(val))
 } 
@@ -52,6 +55,8 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
 V_truncT <- function(x,par,ncores=NULL){
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
@@ -63,7 +68,7 @@ V_truncT <- function(x,par,ncores=NULL){
     }
     a_fun <- function(j,upper,sigma_j){
         if(n==2){
-            val = pt(upper-sigma[-j,j],df=nu+1) - pt(-sigma[-j,j],df=nu+1)
+            val = pt((upper-sigma[-j,j])/sqrt(sigma_j),df=nu+1) - pt(-sigma[-j,j]/sqrt(sigma_j),df=nu+1)
             return(val)
         }
         val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
@@ -78,7 +83,7 @@ V_truncT <- function(x,par,ncores=NULL){
         T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
     }
     a_j = rep(1,n)
-    a_j[idx.finite] = T_j/phi*2^(nu/2-1)*gamma_1*pi^(-0.5)    
+    a_j[idx.finite] = T_j/phi*2^(nu/2-1)*gamma_1/sqrt(pi)    
     func <- function(idx){
         x_j = x[idx,] * a_j
         idx.finite.j = which(is.finite(x_j))
@@ -91,12 +96,15 @@ V_truncT <- function(x,par,ncores=NULL){
     }else{
         val = unlist(lapply(1:nrow(x),func))
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     return(val)
 }
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     sigma = par[[1]];nu = par[[2]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
@@ -146,6 +154,7 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     else{
         val = unlist(lapply(1:nrow(x),func))
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     if(log){
         return(val)
     }
@@ -161,6 +170,8 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
 # this function computes the intensity function 
 # for the log skew-normal based max-stable processes
 intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
@@ -202,6 +213,7 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
     else{
         val = unlist(lapply(1:nrow(x),func))
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     if(log)
         return(val)
     else
@@ -212,6 +224,8 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
 V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
@@ -271,12 +285,16 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
         val = matrix(unlist(val),nrow=n,byrow=TRUE)
         val = apply(val,2,sum)
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     return(val)
 }
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
+    # set a random seed
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,ncol=1)}
     n = ncol(x)
@@ -347,12 +365,13 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     else{
         val = unlist(lapply(1:nrow(x),func))
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     if(log){
         return(log(val))
     }
     else{
         return(val)
-    } 
+    }
 }
 
 # calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
@@ -383,23 +402,23 @@ delta2alpha <- function(par){
 true_extcoef <- function(idx,par,model="logskew1"){
     if(model=="logskew1"){
         delta = par[[2]];sigma = par[[1]]
-        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=parallel::detectCores())
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL)
     }
 
     if(model == "logskew2"){
         alpha = par[[2]];sigma = par[[1]]
-        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],alpha=alpha[idx]),ncores=parallel::detectCores())
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma,alpha=alpha[idx]),ncores=NULL)
     }
 
     if(model == "truncT1"){
         n = nrow(par[[1]])
-        x = t(apply(all.pairs,2,function(id){x.id = rep(Inf,n); x.id[id] = 1;return(x.id)}))
-        val = V_truncT(x,par,ncores=parallel::detectCores())
+        x = t(apply(idx,2,function(id){x.id = rep(Inf,n); x.id[id] = 1;return(x.id)}))
+        val = V_truncT(x,par,ncores=min(detectCores(),nrow(x)))
     }
     
     if(model == "truncT2"){
         x = rep(1,length(idx))
-        val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),ncores=parallel::detectCores())
+        val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),ncores=NULL)
     }
     return(val)
 }
@@ -422,16 +441,19 @@ alpha.func <- function(loc,par){
 
 alpha.func <- function(coord,par=10){
     #alpha = 1 + 1.5*coord[,2] - par * exp(2*sin(2*coord[,2]))
-    #alpha = par*exp(2*sin(2*coord[,2]))
-    alpha = rep(par,nrow(coord))
+    alpha = par + exp(2*sin(2*coord[,2]))
+    #alpha = rep(par,nrow(coord))
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
+fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit=100,
                     ncores=NULL,method="Nelder-Mead",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE){
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
+    if(is.null(fixed)){fixed = rep(FALSE,length(init))}
+    if(is.null(lb)){lb=rep(-Inf,length(init))}
+    if(is.null(ub)){ub=rep(Inf,length(init))}
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,ncore=ncores){
@@ -460,7 +482,7 @@ fit.model <- function(data,loc,init,fixed,thres = 0.90,model="truncT",maxit=100,
     if(opt){
         opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
     }else{
-        return(object.func(init[!fixed],opt=TRUE))
+        return(object.func(init[!fixed],opt,ncores))
     }
     if(hessian){
         h = 1e-4

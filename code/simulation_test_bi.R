@@ -33,7 +33,8 @@ Z.trunc.val <- do.call(rbind,Z.trunc$val)
 which(apply(Z.trunc.val,1,anyDuplicated)>0)
 
 ec.trunc <- unlist(lapply(Z.trunc$val,empirical_extcoef,idx=c(1,2)))
-tc.truncT2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par1,model="truncT2"),mc.cores=ncores)
+tc.truncT2 <- mapply(true_extcoef,pairs.list,MoreArgs=list(par=par1,model="truncT2"))
+
 
 pdf("figures/extcoef_truncT_bi.pdf",width=6,height=4)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
@@ -46,21 +47,23 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 ## log-skew normal based max-stable processes ##
+
 alpha.range = 10
 alpha = - 1 - coord[,2] + exp(sin(5*coord[,2]))
 alpha.1 = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.1 <- list(cov.mat,alpha.1)
+cov.mat.logskew = matrix(c(1,0.5,0.5,1),2,2)
+par2.1 <- list(cov.mat.logskew,alpha.1)
 
 alpha = 1 + 1.5*coord[,2] - exp(2*sin(10*coord[,2]))
 alpha.2 = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.2 <- list(cov.mat,alpha.2)
+par2.2 <- list(cov.mat.logskew,alpha.2)
 
 alpha = 2.25 * sin(9*coord[,2])*cos(9*coord[,2])
 alpha.3 = (alpha - min(alpha))/(max(alpha)-min(alpha))*alpha.range-alpha.range/2
-par2.3 <- list(cov.mat,alpha.3)
+par2.3 <- list(cov.mat.logskew,alpha.3)
 
 alpha.4 = rep(0,d)
-par2.4 <- list(cov.mat,alpha.4)
+par2.4 <- list(cov.mat.logskew,alpha.4)
 
 pdf("figures/alpha_bi.pdf",width=10,height=8)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.lab=1.5,cex=1.5,mgp=c(2,1,0))
@@ -74,71 +77,123 @@ dev.off()
 
 
 set.seed(random.seed)
-system.time(Z.logskew.1 <- bi.simu(m=m ,par=par2.1,ncores=ncores, model="logskew"))
+system.time(Z.logskew.1 <- bi.simu(m=m ,par=par2.1,ncores=ncores, model="logskew2"))
 
 set.seed(random.seed)
-system.time(Z.logskew.2 <- bi.simu(m=m,par=par2.2,ncores=ncores, model="logskew"))
+system.time(Z.logskew.2 <- bi.simu(m=m,par=par2.2,ncores=ncores, model="logskew2"))
 
 set.seed(random.seed)
-system.time(Z.logskew.3 <- bi.simu(m=m,par=par2.3,ncores=ncores, model="logskew"))
+system.time(Z.logskew.3 <- bi.simu(m=m,par=par2.3,ncores=ncores, model="logskew2"))
 
 set.seed(random.seed)
-system.time(Z.logskew.4 <- bi.simu(m=m,par=par2.4,ncores=ncores, model="logskew"))
+system.time(Z.logskew.4 <- bi.simu(m=m,par=par2.4,ncores=ncores, model="logskew2"))
+
+alpha.vec = seq(-10,10,0.1)
+val.1 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(x,x)),x=c(1,1)),mc.cores=ncores))
+plot(alpha.vec,val.1,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(x,x)")
+
+val.2 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-x,x)),x=c(1,1)),mc.cores=ncores))
+point(alpha.vec,val.2,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-x,x)",col=2)
+
+val.3 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-sin(x)*10,sin(x)*10)),x=c(1,1)),mc.cores=ncores))
+points(alpha.vec,val.3,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-sin(x)*10,sin(x)*10)",col=3)
+
+val.4 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-sin(x)*10,cos(x)*10)),x=c(1,1)),mc.cores=ncores))
+points(alpha.vec,val.4,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-sin(x)*10,cos(x)*10)",col=4)
+
+val.5 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(sin(x)*10,cos(x)*10)),x=c(1,1)),mc.cores=ncores))
+points(alpha.vec,val.4,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x)*10,cos(x)*10)")
+
+val.6 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(0,0)),x=c(1,1)),mc.cores=ncores))
+
+points(alpha.vec,val.6,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x)*10,cos(x)*10)",col=6)
+
+val.7 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-10,x)),x=c(1,1)),mc.cores=ncores))
+
+points(alpha.vec,val.6,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x)*10,cos(x)*10)",col=7)
+
+val.8 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-10,x)*2),x=c(1,1)),mc.cores=ncores))
+
+points(alpha.vec,val.6,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x)*10,cos(x)*10)",col=8)
 
 ec.logskew.1 <- unlist(lapply(Z.logskew.1$val,empirical_extcoef,idx=1:2))
 ec.logskew.2 <- unlist(lapply(Z.logskew.2$val,empirical_extcoef,idx=1:2))
 ec.logskew.3 <- unlist(lapply(Z.logskew.3$val,empirical_extcoef,idx=1:2))
 ec.logskew.4 <- unlist(lapply(Z.logskew.4$val,empirical_extcoef,idx=1:2))
-tc.logskew.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.1,model="logskew2"),mc.cores=ncores)
-tc.logskew.2 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.2,model="logskew2"),mc.cores=ncores)
-tc.logskew.3 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.3,model="logskew2"),mc.cores=ncores)
-tc.logskew.4 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=par2.4,model="logskew2"),mc.cores=ncores)
+
+tc.logskew.1 <- mcmapply(true_extcoef,Z.logskew.1$par,MoreArgs=list(idx=1:2,model="logskew1"),mc.cores=ncores)
+tc.logskew.2 <- mcmapply(true_extcoef,Z.logskew.2$par,MoreArgs=list(idx=1:2,model="logskew1"),mc.cores=ncores)
+tc.logskew.3 <- mcmapply(true_extcoef,Z.logskew.3$par,MoreArgs=list(idx=1:2,model="logskew1"),mc.cores=ncores)
+tc.logskew.4 <- mcmapply(true_extcoef,Z.logskew.4$par,MoreArgs=list(idx=1:2,model="logskew1"),mc.cores=ncores)
 
 pdf("figures/extcoef_logskew_bi.pdf",width=10*4,height=8)
 par(mfrow=c(1,4),mar=c(4,4,1,1),cex.main=1.5,cex.lab=2,cex=2,mgp=c(2.2,1,0))
 
-plot(x=diff.mat[t(pairs)],y=ec.logskew.1,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal coefficient",
+plot(x=alpha.1,y=ec.logskew.1,type="p",cex=0.5,ylim=c(1,2),xlab="Alpha",ylab="Extremal coefficient",
     main="",col="black",pch=20)
-lines(x=diff.mat[t(pairs)],y=tc.logskew.1,cex=1,lwd=2,col="red",lty=1)
+points(x=alpha.1,y=tc.logskew.1,cex=0.5,col="red",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 
-plot(x=diff.mat[t(pairs)],y=ec.logskew.2,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal coefficient",
+plot(x=alpha.2,y=ec.logskew.2,type="p",cex=0.5,ylim=c(1,2),xlab="Alpha",ylab="Extremal coefficient",
     main="",col="black",pch=20)
-lines(x=diff.mat[t(pairs)],y=tc.logskew.2,cex=1,lwd=2,col="red",lty=1)
+points(x=alpha.2,y=tc.logskew.2,cex=0.5,col="red",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 
-plot(x=diff.mat[t(pairs)],y=ec.logskew.3,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal coefficient",
+plot(x=alpha.3,y=ec.logskew.3,type="p",cex=0.5,ylim=c(1,2),xlab="Alpha",ylab="Extremal coefficient",
     main="",col="black",pch=20)
-lines(x=diff.mat[t(pairs)],y=tc.logskew.3,cex=1,lwd=2,col="red",lty=1)
+points(x=alpha.3,y=tc.logskew.3,cex=0.5,col="red",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 
-plot(x=diff.mat[t(pairs)],y=ec.logskew.4,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal coefficient",
+plot(x=alpha.4,y=ec.logskew.4,type="p",cex=0.5,ylim=c(1,2),xlab="Alpha",ylab="Extremal coefficient",
     main="",col="black",pch=20)
-lines(x=diff.mat[t(pairs)],y=tc.logskew.4,cex=1,lwd=2,col="red",lty=1)
+points(x=alpha.4,y=tc.logskew.4,cex=0.5,col="red",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
+dev.off()
+
+pdf("figures/delta_bi.pdf",width=10,height=8)
+par(mfrow=c(1,1),mar=c(4,4,2,1),cex.lab=1.5,cex=1.5,mgp=c(2,1,0))
+delta.1 = unlist(lapply(Z.logskew.1$par,function(x){x[[2]][1]}))
+
+plot(x=alpha.1,y=delta.1,type="l",ylim=c(-1,1),xlab="alpha",ylab="delta",col="black",lwd=2)
+
+delta.2 = unlist(lapply(Z.logskew.2$par,function(x){x[[2]][1]}))
+
+lines(x=alpha.2,y=delta.2,type="l",col="red",lwd=2)
+
+delta.3 = unlist(lapply(Z.logskew.3$par,function(x){x[[2]][1]}))
+
+lines(x=alpha.3,y=delta.3,type="l",col="blue",lwd=2)
+
+delta.4 = unlist(lapply(Z.logskew.4$par,function(x){x[[2]][1]}))
+
+lines(x=alpha.4,y=delta.4,type="l",col="purple",lwd=2)
+
+legend("topleft",legend=c("delta 1","delta 2","delta 3","delta 4"),col=c("black","red","blue","purple"),
+    bty="n",lwd=2,cex=1)
 dev.off()
 
 ## simulate the data for the d locations jointly ##
 set.seed(random.seed)
-system.time(Z.logskew.1.1 <- bi.simu(m=m ,par=alpha2delta(par2.1),ncores=ncores, model="logskew",alpha.para=FALSE))
+system.time(Z.logskew.1.1 <- bi.simu(m=m ,par=alpha2delta(list(cov.mat,alpha.1)),ncores=ncores, model="logskew",alpha.para=FALSE))
 
 set.seed(random.seed)
-system.time(Z.logskew.2.1 <- bi.simu(m=m ,par=alpha2delta(par2.2),ncores=ncores, model="logskew",alpha.para=FALSE))
+system.time(Z.logskew.2.1 <- bi.simu(m=m ,par=alpha2delta(list(cov.mat,alpha.2)),ncores=ncores, model="logskew",alpha.para=FALSE))
 
 set.seed(random.seed)
-system.time(Z.logskew.3.1 <- bi.simu(m=m ,par=alpha2delta(par2.3),ncores=ncores, model="logskew",alpha.para=FALSE))
+system.time(Z.logskew.3.1 <- bi.simu(m=m ,par=alpha2delta(list(cov.mat,alpha.3)),ncores=ncores, model="logskew",alpha.para=FALSE))
 
 set.seed(random.seed)
-system.time(Z.logskew.4.1 <- bi.simu(m=m ,par=alpha2delta(par2.4),ncores=ncores, model="logskew",alpha.para=FALSE))
+system.time(Z.logskew.4.1 <- bi.simu(m=m ,par=alpha2delta(list(cov.mat,alpha.4)),ncores=ncores, model="logskew",alpha.para=FALSE))
 
 ec.logskew.1.1 <- unlist(lapply(Z.logskew.1.1$val,empirical_extcoef,idx=1:2))
 ec.logskew.2.1 <- unlist(lapply(Z.logskew.2.1$val,empirical_extcoef,idx=1:2))
 ec.logskew.3.1 <- unlist(lapply(Z.logskew.3.1$val,empirical_extcoef,idx=1:2))
 ec.logskew.4.1 <- unlist(lapply(Z.logskew.4.1$val,empirical_extcoef,idx=1:2))
-tc.logskew.1.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=alpha2delta(par2.1),model="logskew1"),mc.cores=ncores)
-tc.logskew.2.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=alpha2delta(par2.2),model="logskew1"),mc.cores=ncores)
-tc.logskew.3.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=alpha2delta(par2.3),model="logskew1"),mc.cores=ncores)
-tc.logskew.4.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=alpha2delta(par2.4),model="logskew1"),mc.cores=ncores)
+
+tc.logskew.1.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=alpha2delta(list(cov.mat,alpha.1)),model="logskew1"),mc.cores=ncores)
+tc.logskew.2.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=alpha2delta(list(cov.mat,alpha.2)),model="logskew1"),mc.cores=ncores)
+tc.logskew.3.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=alpha2delta(list(cov.mat,alpha.3)),model="logskew1"),mc.cores=ncores)
+tc.logskew.4.1 <- mcmapply(true_extcoef,pairs.list,MoreArgs=list(par=alpha2delta(list(cov.mat,alpha.4)),model="logskew1"),mc.cores=ncores)
 
 pdf("figures/extcoef_logskew_joint.pdf",width=10*4,height=8)
 par(mfrow=c(1,4),mar=c(4,4,1,1),cex.main=1.5,cex.lab=2,cex=2,mgp=c(2.2,1,0))
@@ -164,12 +219,12 @@ lines(x=diff.mat[t(pairs)],y=tc.logskew.4.1,cex=1,lwd=2,col="red",lty=1)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
 dev.off()
 
-pdf("figures/delta_bi.pdf",width=10,height=8)
+pdf("figures/delta_joint.pdf",width=10,height=8)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.lab=1.5,cex=1.5,mgp=c(2,1,0))
-plot(x=(1:d)/(d+1),y=alpha2delta(par2.1)[[2]],type="l",ylim=c(-1,1),xlab="s",ylab="delta",col="black",lwd=2)
-lines(x=(1:d)/(d+1),y=alpha2delta(par2.2)[[2]],type="l",col="red",lwd=2)
-lines(x=(1:d)/(d+1),y=alpha2delta(par2.3)[[2]],type="l",col="blue",lwd=2)
-lines(x=(1:d)/(d+1),y=alpha2delta(par2.4)[[2]],type="l",col="purple",lwd=2)
+plot(x=alpha.1,y=alpha2delta(list(cov.mat,alpha.1))[[2]],type="l",ylim=c(-1,1),xlab="alpha",ylab="delta",col="black",lwd=2)
+lines(x=alpha.2,y=alpha2delta(list(cov.mat,alpha.2))[[2]],type="l",col="red",lwd=2)
+lines(x=alpha.3,y=alpha2delta(list(cov.mat,alpha.3))[[2]],type="l",col="blue",lwd=2)
+lines(x=alpha.4,y=alpha2delta(list(cov.mat,alpha.4))[[2]],type="l",col="purple",lwd=2)
 legend("topleft",legend=c("delta 1","delta 2","delta 3","delta 4"),col=c("black","red","blue","purple"),
     bty="n",lwd=2,cex=1)
 dev.off()
