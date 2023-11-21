@@ -182,11 +182,9 @@ func <- function(x,idx,par){
     val = (val[2]-val[1])/(2*1e-8)
     return(val)
 }
-
 x = c(1,2,3)
 func(x,par=list(sigma=sigma,nu=2),idx=3)
 partialV_truncT(x,par=list(sigma=sigma,nu=2),idx=3,log=FALSE)
-
 func <- function(x,par,idx){
     x = rbind(x,x) 
     x[1,idx] = x[1,idx] + 1e-4
@@ -195,7 +193,6 @@ func <- function(x,par,idx){
     val =(val[2]-val[1])/(2*1e-4)
     return(val)
 }
-
 func(x,idx=1,par=par)
 partialV_logskew(x,par,idx=1,alpha.para=FALSE)
 

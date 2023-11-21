@@ -140,12 +140,12 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
     func <- function(idx_j){
         x_j = x[idx_j,]
         logx = log(x_j)
-        x_j.circ = x_j * exp(a_j)
-        Q_sigma = c((x_j.circ[idx] %*% inv.sigma.11 %*% x_j.circ[idx])^(1/2))
-        val = (1/nu-1) * sum(logx[idx]) - (k+nu)*log(Q_sigma) + const
-        loc = c(sigma[-idx,idx] %*% inv.sigma.11 %*% (x_j.circ[idx]^(1/nu)))/Q_sigma
-        upper = (x_j.circ[-idx])^(1/nu)/Q_sigma
-        val = val + log(mvtnorm::pmvt(lower=-loc,upper=upper-loc,sigma=sigma_T,df=k+nu)[[1]])
+        x_j.circ = (x_j * exp(a_j))^(1/nu)
+        Q_sigma = c((x_j.circ[idx] %*% inv.sigma.11 %*% x_j.circ[idx]))
+        val = (1/nu-1) * sum(logx[idx]) - (k+nu)*log(Q_sigma)/2 + const
+        loc = c(sigma[-idx,idx] %*% inv.sigma.11 %*% (x_j.circ[idx]))
+        upper = x_j.circ[-idx]
+        val = val + log(mvtnorm::pmvt(lower=-loc,upper=upper-loc,sigma=sigma_T*Q_sigma,df=k+nu)[[1]])
         return(val)
     }
     if(!is.null(ncores)){

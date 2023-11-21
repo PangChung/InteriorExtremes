@@ -88,33 +88,39 @@ system.time(Z.logskew.3 <- bi.simu(m=m,par=par2.3,ncores=ncores, model="logskew2
 set.seed(random.seed)
 system.time(Z.logskew.4 <- bi.simu(m=m,par=par2.4,ncores=ncores, model="logskew2"))
 
+#cov.mat.logskew = cov.func(cbind(1,seq(0,1,length.out=3)),c(0.5,1))
 alpha.vec = seq(-10,10,0.1)
-val.1 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(x,x)),x=c(1,1)),mc.cores=ncores))
+val.1 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(x,x)),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
 plot(alpha.vec,val.1,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(x,x)")
 
-val.2 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-x,x)),x=c(1,1)),mc.cores=ncores))
-point(alpha.vec,val.2,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-x,x)",col=2)
+val.2 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-x,x)),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
+points(alpha.vec,val.2,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-x,x)",col=2)
 
-val.3 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-sin(x)*10,sin(x)*10)),x=c(1,1)),mc.cores=ncores))
-points(alpha.vec,val.3,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-sin(x)*10,sin(x)*10)",col=3)
+val.3 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-sin(x),sin(x))),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
+points(alpha.vec,val.3,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-sin(x),sin(x))",col=3)
 
-val.4 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-sin(x)*10,cos(x)*10)),x=c(1,1)),mc.cores=ncores))
-points(alpha.vec,val.4,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-sin(x)*10,cos(x)*10)",col=4)
+val.4 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-sin(x),cos(x))),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
+points(alpha.vec,val.4,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-sin(x),cos(x))",col=4)
 
-val.5 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(sin(x)*10,cos(x)*10)),x=c(1,1)),mc.cores=ncores))
-points(alpha.vec,val.4,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x)*10,cos(x)*10)")
+val.5 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(sin(x),cos(x))),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
+points(alpha.vec,val.4,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x),cos(x))",col=5)
 
-val.6 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(0,0)),x=c(1,1)),mc.cores=ncores))
+val.6 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(0,0)),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
 
-points(alpha.vec,val.6,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x)*10,cos(x)*10)",col=6)
+points(alpha.vec,val.6,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(0,0)",col=6)
 
-val.7 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-10,x)),x=c(1,1)),mc.cores=ncores))
+val.7 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(x,10)),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
 
-points(alpha.vec,val.6,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x)*10,cos(x)*10)",col=7)
+points(alpha.vec,val.7,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(x,10)",col=7)
 
-val.8 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-10,x)*2),x=c(1,1)),mc.cores=ncores))
+val.8 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-10,x)*2),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
 
-points(alpha.vec,val.6,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(sin(x)*10,cos(x)*10)",col=8)
+points(alpha.vec,val.8,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-10,x)",col=8)
+
+val.9 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-10,x)*2),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
+
+points(alpha.vec,val.8,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-10,x)*2",col=9)
+
 
 ec.logskew.1 <- unlist(lapply(Z.logskew.1$val,empirical_extcoef,idx=1:2))
 ec.logskew.2 <- unlist(lapply(Z.logskew.2$val,empirical_extcoef,idx=1:2))
