@@ -420,6 +420,10 @@ true_extcoef <- function(idx,par,model="logskew1"){
         x = rep(1,length(idx))
         val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),ncores=NULL)
     }
+    if(model == "BR"){
+        x = rep(1,length(idx))
+        val = V(x,sigma=par[[1]][idx,idx])
+    }
     return(val)
 }
 

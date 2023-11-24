@@ -54,8 +54,8 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,-2) 
-#alpha = (alpha - min(alpha))/(max(alpha)-min(alpha))*10-5
+alpha = alpha.func(coord,-2)
+#par2 <- list(sigma=sd.mat %*% cov.mat %*% sd.mat,alpha=alpha)
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
 
@@ -71,15 +71,19 @@ abline(0,1,col="red")
 dev.off()
 
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
-tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par2),model="logskew1"),mc.cores=ncores)
+tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par2),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
+tc.logskew2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="BR"),mc.cores=ncores,mc.set.seed=FALSE)
+
+max(abs(tc.logskew1 - tc.logskew2))
 
 png("figures/extcoef_logskew.png",width=6*300,height=4*300,res=300)
 par(mfrow=c(1,1),mar=c(4,4,2,1),cex.main=1,cex.lab=1,mgp=c(2,1,0))
 plot(x=diff.mat[t(all.pairs)],y=ec.logskew,type="p",cex=0.5,ylim=c(1,2),xlab="Distance",ylab="Extremal Coefficient",
     main = "Log-skew normal based max-stable processes",pch=20,col="black")
-points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=0.5,col="red",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.logskew1,type="p",cex=1,col="red",pch=20)
+points(x=diff.mat[t(all.pairs)],y=tc.logskew2,type="p",cex=1,col="blue",pch=20)
 abline(h=c(1,2),col="grey",lty=2,cex=2)
-legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
+legend("topleft",legend=c("Empirical","Theoretical","BR"),col=c("black","red","blue"),
     bty="n", pch=20,cex=1)
 dev.off()
 
@@ -96,29 +100,31 @@ system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.4,0.8,2),fi
 #fit.trunct.vecchia <- MVLE(data=Z.trunc,init=c(0.5,1,2),fixed=c(F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)]<0.5],maxit=200,model="truncT",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),ncores=ncores)
 
 # fit the log-skew based model
-alpha.func <-  function(coord,par=10){
+set.seed(422242)
+alpha.func <-  function(coord,par=3){
     #alpha = 1 + 1.5*coord[,2] - par * exp(2*sin(2*coord[,2]))
     #alpha = par + exp(2*sin(2*coord[,2]))
     alpha = rep(par,nrow(coord))
 }
-alpha = rep(0,nrow(cov.mat))#alpha.func(coord,2) 
+#alpha = rep(0,nrow(cov.mat)) 
+alpha = alpha.func(coord,2) 
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
-system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,0),fixed=c(F,F,T),thres=0.98,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
+system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,1),fixed=c(F,F,F),thres=0.98,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
 
 ## plot the intensity function ##
-alpha.seq = seq(-10,10,0.01)
+alpha.seq = seq(0,10,0.01)
 paras.list = as.matrix(expand.grid(fit.logskew$par[1],fit.logskew$par[2],alpha.seq))
 paras.list = split(paras.list,row(paras.list))
 
-logskew.vals <- matrix(unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,thres=0.5,model="logskew",ncores=ncores,opt=FALSE)),nrow=length(paras.list),byrow=TRUE)
+logskew.vals <- matrix(unlist(mclapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,thres=0.98,model="logskew",ncores=ncores,opt=FALSE,mc.set.seed=FALSE)),nrow=length(paras.list),byrow=TRUE)
 plot(alpha.seq,rowMeans(logskew.vals),cex=0.5,pch=20)
 idx.min = which.min(rowMeans(logskew.vals))
 points(alpha.seq[idx.min],rowMeans(logskew.vals)[idx.min],cex=1,pch=20,col="red")
 
 fit.logskew.comp <- MCLE(data=Z.logskew[1:1000,],init=c(0.5,1,1),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)] < 0.3],ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,hessian=TRUE)
 
-fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:1000,],init=c(0.3,0.5),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,hessian=TRUE)
+fit.logskew.comp.2 <- MCLE(data=Z.logskew[1:1000,],init=c(0.5,1),fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs,ncores=ncores,maxit=200,model="BR",lb=c(0.1,0.1),ub=c(10,2.5),alpha.func=alpha.func,hessian=TRUE)
 
 fit.logskew.comp3 <- MCLE(data=Z.logskew[1:100,],init=c(0.5,1,0.5),fixed=c(T,T,F),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)] < 0.3],ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-5),ub=c(10,2.5,5),alpha.func=alpha.func,hessian=TRUE)
 
@@ -143,9 +149,9 @@ func <- function(dat){
     val = exp(-nloglik(par=list(sigma=sigma,nu=2),data=dat,model="truncT"))
 }
 
-print(res <- adaptIntegrate(func,rep(0,n),rep(Inf,n),tol=1e-4,maxEval=1e+5))
+print(res <- adaptIntegrate(func,rep(0,n),rep(Inf,n),tol=1e-5,maxEval=1e+5))
 
-n = 3
+n = 10
 loc = cbind(seq(1,0,length.out=n),0)
 sigma = cov.func(loc,c(0.5,1))
 par = alpha2delta(list(sigma=sigma,alpha=rep(-10,n)))
@@ -176,10 +182,10 @@ print(res <- adaptIntegrateSimplex(func,S,maxEvals=1e+6,absError=1e-4))
 
 func <- function(x,idx,par){
     x = rbind(x,x) 
-    x[1,idx] = x[1,idx] + 1e-8
-    x[2,idx] = x[2,idx] - 1e-8
+    x[1,idx] = x[1,idx] + 1e-3
+    x[2,idx] = x[2,idx] - 1e-3
     val = V_truncT(x,par=par)
-    val = (val[2]-val[1])/(2*1e-8)
+    val = (val[2]-val[1])/(2*1e-3)
     return(val)
 }
 
@@ -189,12 +195,24 @@ partialV_truncT(x,par=list(sigma=sigma,nu=2),idx=3,log=FALSE)
 
 func <- function(x,par,idx){
     x = rbind(x,x) 
-    x[1,idx] = x[1,idx] + 1e-4
-    x[2,idx] = x[2,idx] - 1e-4
+    x[1,idx] = x[1,idx] + 1e-3
+    x[2,idx] = x[2,idx] - 1e-3
     val = V_logskew(x,par=par,alpha.para=FALSE)
-    val =(val[2]-val[1])/(2*1e-4)
+    val =(val[2]-val[1])/(2*1e-3)
     return(val)
 }
+
 func(x,idx=1,par=par)
 partialV_logskew(x,par,idx=1,alpha.para=FALSE)
 
+func <- function(x,par,idx){
+    x = rbind(x,x) 
+    x[1,idx] = x[1,idx] + 1e-8
+    x[2,idx] = x[2,idx] - 1e-8
+    val = partialV_logskew(x,par=par,alpha.para=FALSE,idx=(1:ncol(x))[-idx])
+    val =(val[2]-val[1])/(2*1e-8)
+    return(val)
+}
+
+func(x,idx=1,par=par)
+intensity_logskew(x,par=par,alpha.para=FALSE,log=FALSE)
