@@ -113,7 +113,7 @@ system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,1),fixed=c(F,F,F),thres=0.98,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
 
 ## plot the intensity function ##
-alpha.seq = seq(0,10,0.01)
+alpha.seq = seq(-5,5,0.01)
 paras.list = as.matrix(expand.grid(fit.logskew$par[1],fit.logskew$par[2],alpha.seq))
 paras.list = split(paras.list,row(paras.list))
 
