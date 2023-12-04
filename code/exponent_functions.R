@@ -434,18 +434,15 @@ cov.func <- function(loc,par){
     diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
         as.vector(outer(loc[,2],loc[,2],'-')))
     cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) #+ diag(1e-6,n) 
+    #cov.mat <- diag(seq(1,2,length.out=n)) %*% cov.mat %*% diag(seq(1,2,length.out=n))
     return(cov.mat)
 }
 
-alpha.func <- function(loc,par){
-    beta.1 = par[1];beta.2 = par[2];beta.3 = par[3]
-    alpha = beta.1 + loc[,1] * beta.2 + loc[,2] * beta.3
+alpha.func <- function(coord,par=1){
+    n = nrow(coord)
+    alpha = rep(exp(par),n)
+    alpha[ceiling(n/2):n] = -alpha[ceiling(n/2):n]
     return(alpha)
-}
-
-alpha.func <- function(coord,par=10){
-    #alpha = 1 + 1.5*coord[,2] - par * exp(2*sin(2*coord[,2]))
-    alpha = par + exp(2*sin(2*coord[,2]))
     #alpha = rep(par,nrow(coord))
 }
 

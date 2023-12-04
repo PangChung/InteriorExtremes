@@ -89,13 +89,13 @@ set.seed(random.seed)
 system.time(Z.logskew.4 <- bi.simu(m=m,par=par2.4,ncores=ncores, model="logskew2"))
 
 cov.mat.logskew = cov.func(cbind(1,seq(0,1,length.out=2)),c(1,1))
-cov.mat.logskew = diag(c(1,2)) %*% cov.mat.logskew %*% diag(c(1,2))
+cov.mat.logskew = diag(c(2,2)) %*% cov.mat.logskew %*% diag(c(2,2))
 alpha.vec = seq(-10,10,0.1)
 val.1 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(x,x)),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
 plot(alpha.vec,val.1,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(x,x)")
 
 val.2 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-x,x)),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
-points(alpha.vec,val.2,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-x,x)",col=2)
+plot(alpha.vec,val.2,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-x,x)",col=2)
 
 val.3 = unlist(mclapply(alpha.vec,function(x) V_logskew(alpha.para=TRUE,par=list(cov.mat.logskew,c(-sin(x),sin(x))),x=c(1,1)),mc.cores=ncores,mc.set.seed=FALSE))
 points(alpha.vec,val.3,pch=20,cex=0.5,ylim=c(1,2),xlab="x",ylab="Bivariate extremal coefficient",main="alpha=(-sin(x),sin(x))",col=3)

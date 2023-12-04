@@ -101,14 +101,11 @@ system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.4,0.8,2),fi
 
 # fit the log-skew based model
 set.seed(422242)
-alpha.func <-  function(coord,par=3){
-    #alpha = 1 + 1.5*coord[,2] - par * exp(2*sin(2*coord[,2]))
-    #alpha = par + exp(2*sin(2*coord[,2]))
-    alpha = rep(par,nrow(coord))
-}
-#alpha = rep(0,nrow(cov.mat)) 
 alpha = alpha.func(coord,2) 
+cov.mat = cov.func(coord,c(0.5,1))
+#cov.mat = diag(seq(1,2,length.out=d^2)) %*% cov.mat %*% diag(seq(1,2,length.out=d^2))
 par2 <- list(sigma=cov.mat,alpha=alpha)
+alpha2delta(par2)[[2]]
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
 system.time( fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,1),fixed=c(F,F,F),thres=0.98,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
 
