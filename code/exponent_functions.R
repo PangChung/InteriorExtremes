@@ -440,8 +440,8 @@ cov.func <- function(loc,par){
 
 alpha.func <- function(coord,par=1){
     n = nrow(coord)
-    alpha = rep(exp(par),n)
-    alpha[ceiling(n/2):n] = -alpha[ceiling(n/2):n]
+    alpha = rep(exp(par)/(1+exp(par)),n)
+    alpha[ceiling(n/2):n] = - alpha[ceiling(n/2):n]
     return(alpha)
     #alpha = rep(par,nrow(coord))
 }
@@ -486,7 +486,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
         return(object.func(init[!fixed],opt,ncores))
     }
     if(hessian){
-        h = 1e-4
+        h = 1e-3
         par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
         val.object = object.func(opt.result$par,opt=FALSE)
         val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
