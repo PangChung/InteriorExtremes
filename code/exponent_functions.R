@@ -169,6 +169,58 @@ partialV_truncT <- function(x,idx,par,ncores=NULL,log=TRUE){
 
 # this function computes the intensity function 
 # for the log skew-normal based max-stable processes
+# intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+#     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+#     set.seed(747380)
+#     sigma = par[[1]]
+#     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+#     n = ncol(x)
+#     if(n==1) return(1/(x^2))
+#     omega = diag(sqrt(diag(sigma)))
+#     omega_inv = diag(diag(omega)^(-1))
+#     sigma_bar = omega_inv %*% sigma %*% omega_inv
+#     chol.sigma = chol(sigma)
+#     inv.sigma = chol2inv(chol.sigma)
+#     logdet.sigma = sum(log(diag(chol.sigma)))*2
+#     if(alpha.para){
+#         alpha = par[[2]]
+#         delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+#     }else{
+#         inv.sigma.bar = omega %*% inv.sigma %*% omega
+#         delta = par[[2]]
+#         alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+#     }
+#     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
+#     sum.inv.sigma = sum(inv.sigma)
+#     one.mat = matrix(1,n,n)
+#     one.vec = rep(1,n)
+#     b = c(alpha %*% omega_inv %*% one.vec/sqrt(sum.inv.sigma))
+#     beta.hat =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b^2)^(-1/2))
+#     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
+#     delta.hat = (1+b^2)^(-1/2)*b
+#     func <- function(idx){
+#         x_log = log(x[idx,])
+#         x_circ = x_log + a
+#         val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta.hat %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
+#             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
+#         val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
+#         return(val)
+#     }
+    
+#     if(!is.null(ncores)){
+#         val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+#     }
+#     else{
+#         val = unlist(lapply(1:nrow(x),func))
+#     }
+#     assign(".Random.seed", oldSeed, envir=globalenv())
+#     if(log)
+#         return(val)
+#     else
+#         return(exp(val))    
+# }
+
+
 intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
@@ -194,14 +246,12 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
     sum.inv.sigma = sum(inv.sigma)
     one.mat = matrix(1,n,n)
     one.vec = rep(1,n)
-    b = c(alpha %*% omega_inv %*% one.vec/sqrt(sum.inv.sigma))
-    beta.hat =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b^2)^(-1/2))
+    beta.hat =  c(alpha %*% omega_inv)
     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
-    delta.hat = (1+b^2)^(-1/2)*b
     func <- function(idx){
         x_log = log(x[idx,])
         x_circ = x_log + a
-        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta.hat %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
+        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta.hat %*% x_circ,log.p=TRUE) -
             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
         val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
         return(val)
@@ -438,17 +488,25 @@ cov.func <- function(loc,par){
     return(cov.mat)
 }
 
-alpha.func <- function(coord,par=1){
+# alpha.func <- function(coord,par=1){
+#     n = nrow(coord)
+#     alpha = rep(exp(par)/(1+exp(par)),n)
+#     alpha[ceiling(n/2):n] = - alpha[ceiling(n/2):n]
+#     return(alpha)
+#     #alpha = rep(par,nrow(coord))
+# }
+
+alpha.func <- function(coord,par=rep(1,1,1)){
     n = nrow(coord)
-    alpha = rep(exp(par)/(1+exp(par)),n)
-    alpha[ceiling(n/2):n] = - alpha[ceiling(n/2):n]
+    basis <- bs(x=1:n,degree = length(par))
+    basis <- sweep(basis,2,apply(basis,2,mean),FUN="-")
+    alpha <- c(par %*% t(basis))
     return(alpha)
-    #alpha = rep(par,nrow(coord))
 }
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit=100,
-                    ncores=NULL,method="Nelder-Mead",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE){
+                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE){
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
@@ -481,7 +539,16 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
         }
     }
     if(opt){
-        opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+        opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+        if(model=="logskew" & any(!fixed[-c(1:2)]) & max(abs(opt.result$par[-c(1:2)]))<0.2 ){
+            init2 = init
+            init2[!fixed] = opt.result$par
+            init2[-c(1:2)] = -init2[-c(1:2)]
+            opt.result2 = optim(init2[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+            if(opt.result2$value < opt.result$value){
+                opt.result = opt.result2
+            }
+        }
     }else{
         return(object.func(init[!fixed],opt,ncores))
     }

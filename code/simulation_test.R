@@ -101,29 +101,33 @@ system.time( fit.truncT <- fit.model(data=Z.trunc,loc=coord,init=c(0.4,0.8,2),fi
 
 # fit the log-skew based model
 set.seed(422242)
-alpha.para = 2
-alpha = alpha.func(coord,alpha.para) 
+alpha.para = c(-0.2,0.5,0.6)
+alpha = alpha.func(coord,alpha.para)
+range(alpha) 
 cov.mat = cov.func(coord,c(0.5,1))
-#cov.mat = diag(seq(1,2,length.out=d^2)) %*% cov.mat %*% diag(seq(1,2,length.out=d^2))
 par2 <- list(sigma=cov.mat,alpha=alpha)
 range(alpha2delta(par2)[[2]])
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
-system.time(fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=c(0.3,0.5,-4),fixed=c(F,F,F),thres=0.98,model="logskew",method="Nelder-Mead",lb=c(0.1,0.1,-Inf),ub=c(10,1.9,Inf),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
+init = c(0.3,0.5,rexp(length(alpha.para))*(-1)^(1:length(alpha.para)+1))
+system.time(fit.logskew <- fit.model(data=Z.logskew,loc=coord,init=init,fixed=c(F,F,rep(F,length(alpha.para))),thres=0.9,model="logskew",lb=c(0.1,0.1,rep(-Inf,length(alpha.para))),ub=c(10,1.9,rep(Inf,length(alpha.para))),bootstrap=FALSE,ncores=ncores,maxit=10000,hessian=TRUE,opt=TRUE) )
 
 ## plot the intensity function ##
-alpha.seq = seq(-5,5,0.1)
+alpha.seq = seq(-20,20,0.1)
 paras.list = as.matrix(expand.grid(fit.logskew$par[1],fit.logskew$par[2],alpha.seq))
 paras.list = split(paras.list,row(paras.list))
 paras.list.2 = lapply(paras.list,FUN=function(x){list(sigma=cov.func(coord,x[1:2]),alpha=alpha.func(coord,x[3]))})
+
 logskew.vals <- lapply(paras.list,FUN=fit.model,data=Z.logskew,loc=coord,thres=0.98,model="logskew",ncores=ncores,opt=FALSE)
 logskew.vals = sapply(logskew.vals,mean)
+
+dev.off()
 plot(alpha.seq,logskew.vals,cex=0.5,pch=20,,main="Log-skew normal based max-stable processes",xlab="alpha",ylab="Approxi. likelihood")
 idx.min = which.min(logskew.vals)
 points(alpha.seq[idx.min],logskew.vals[idx.min],cex=1,pch=20,col="red")
 idx.est = which.min(abs(alpha.seq - fit.logskew$par[3]))
 points(alpha.seq[idx.est],logskew.vals[idx.est],cex=1,pch=2,col="blue")
 idx.true = which.min(abs(alpha.seq - alpha.para))
-points(alpha.seq[idx.true],logskew.vals[idx.true],cex=1,pch=2,col="green")
+points(alpha.seq[idx.true],logskew.vals[idx.true],cex=1,pch=2,col="red")
 
 system.time(logskew.comp.vals <- mclapply(paras.list.2,FUN=nlogcomplik,data=Z.logskew[1:1000,],index=all.pairs[,diff.mat[t(all.pairs)]<0.2],ncores=NULL,model="logskew",mc.cores=ncores,mc.set.seed = FALSE))
 logskew.comp.vals <- sapply(logskew.comp.vals,mean)
@@ -131,7 +135,7 @@ plot(alpha.seq,logskew.comp.vals,cex=0.5,pch=20,,main="Log-skew normal based max
 idx.min = which.min(logskew.comp.vals)
 points(alpha.seq[idx.min],logskew.comp.vals[idx.min],cex=1,pch=20,col="red")
 idx.true = which.min(abs(alpha.seq - alpha.para))
-points(alpha.seq[idx.true],logskew.comp.vals[idx.true],cex=1,pch=2,col="green")
+points(alpha.seq[idx.true],logskew.comp.vals[idx.true],cex=1,pch=2,col="red")
 
 ## fit the composite likelihood 
 fit.logskew.comp <- MCLE(data=Z.logskew[1:1000,],init=c(0.5,1,-3),fixed=c(F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,diff.mat[t(all.pairs)] < 0.5],ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf),ub=c(10,2.5,Inf),alpha.func=alpha.func,hessian=TRUE)
