@@ -483,7 +483,7 @@ cov.func <- function(loc,par){
     n = nrow(loc)
     diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
         as.vector(outer(loc[,2],loc[,2],'-')))
-    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) #+ diag(1e-6,n) 
+    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) + diag(1e-6,n) 
     #cov.mat <- diag(seq(1,2,length.out=n)) %*% cov.mat %*% diag(seq(1,2,length.out=n))
     return(cov.mat)
 }
@@ -540,10 +540,10 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     }
     if(opt){
         opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
-        if(model=="logskew" & any(!fixed[-c(1:2)]) & max(abs(opt.result$par[-c(1:2)]))<0.2 ){
+        if(model=="logskew" & any(!fixed[-c(1:2)])){
             init2 = init
             init2[!fixed] = opt.result$par
-            init2[-c(1:2)] = -init2[-c(1:2)]
+            init2[-c(1:2)] = -init2[-c(1:2)] * 5
             opt.result2 = optim(init2[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
             if(opt.result2$value < opt.result$value){
                 opt.result = opt.result2
