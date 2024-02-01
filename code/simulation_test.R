@@ -37,6 +37,7 @@ for(idx in 1:ncol(Z.trunc)){
     #p.value = ks.test(x,y)$p.value
     qqplot(x,y,main=paste0("Station ",idx),xlab="Data",ylab="Theoretical")
     abline(0,1,col="red")
+    
 }
 dev.off()
 

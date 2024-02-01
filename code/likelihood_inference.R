@@ -315,17 +315,17 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
         par.index <- par
         if(i==1 & !any(!is.na(neighbours[,i]))){
             par.index[[1]] = par[[1]][vecchia.seq[1],vecchia.seq[1]]
-            if(model == "logskew"){par.index[[1]] = par.index[[1]][vecchia.seq[1]]}  
+            if(model == "logskew"){par.index[[1]] = par[[1]][vecchia.seq[1]]}  
             contribution <- nloglik(par.index,data[,vecchia.seq[1],drop=FALSE],model) #density of 1st variable in the sequence (unit Fréchet)
         }else{
         ind.i <- vecchia.seq[i] #index of ith-variable in the Vecchia sequence
         ind.neighbours <- na.omit(neighbours[,i])
         ind <- c(ind.i,ind.neighbours)
-        par.index$sigma = par$sigma[ind,ind]
-        if(model == "logskew"){par.index$alpha = par.index$alpha[ind]}  
-        num <- nloglik(,data[,ind,drop=FALSE],model) #joint density of ith-variable and its conditioning set
+        par.index[[1]] = par[[1]][ind,ind]
+        if(model == "logskew"){par.index[[2]] = par.index[[2]][ind]}  
+        num <- nloglik(par.index,data[,ind,drop=FALSE],model) #joint density of ith-variable and its conditioning set
         par.index[[1]] = par[[1]][ind.neighbours,ind.neighbours]
-        if(model == "logskew"){par.index[[2]] = par.index[[2]][ind.neighbours]}  
+        if(model == "logskew"){par.index[[2]] = par[[2]][ind.neighbours]}  
         denom <- nloglik(par.index,data[,ind.neighbours,drop=FALSE],model) #joint density of conditioning set only
         contribution <- num-denom
     }
@@ -347,7 +347,7 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
 # sigma.FUN: function returns covariance matrix
 # vecchia.seq: vector of length D (with integers from {1,...,D}), indicating the sequence of variables to be considered for the Vecchia approximation
 # neighbours: an q-by-D matrix with the corresponding the neighbors of each observation in the Vecchia sequence (where q is the number of neighbours, i.e., the size of the conditioning set)
-MVLE <- function(data,init,fixed,loc,sigma.FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=1000,hessian=FALSE,alpha.func=NULL,lb=-Inf,ub=Inf,...){
+MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=1000,hessian=FALSE,alpha.func=NULL,lb=-Inf,ub=Inf,...){
     t <- proc.time()
     object.func <- function(par2,opt=TRUE){
         par1 <- init
