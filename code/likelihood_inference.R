@@ -360,7 +360,7 @@ MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
         if(opt){
             val = mean(val,na.rm=TRUE)
-            print(c(par, val))
+            print(c(par2, val))
         } 
         return(val)
     }
@@ -368,6 +368,7 @@ MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR
         opt <- optim(par=init[!fixed],fn=object.func,method="Brent",lower=lb[!fixed],upper=ub[!fixed],control=list(maxit=maxit,trace=TRUE),hessian=hessian)
     }else{
         opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+        #opt <- optim(par=init[!fixed],fn=object.func,method="L-BFGS-B",lower=lb,upper=ub,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
     }
     if(hessian){
         h = 1e-4

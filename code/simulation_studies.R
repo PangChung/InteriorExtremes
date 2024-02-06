@@ -14,7 +14,7 @@ source("code/likelihood_inference.R")
 
 ncores=detectCores()
 d <- 10 ## 10 * 10 grid on [0,1]^2
-m <- 10000 ## number of samples
+m <- 1000 ## number of samples
 set.seed(1342342)
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
@@ -47,18 +47,21 @@ for(i in 1:nrow(par.skew.normal)){
 
 ## trainning the model with the log-skew normal based max-stable process ##
 idx.case = 11
-fit.logskew.comp <- MCLE(data=samples.skew.normal[[idx.case]],init=c(0.5,1,0,0,0),fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,sample(1:ncol(all.pairs),1000,replace=FALSE)],ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf,-Inf,-Inf),ub=c(10,2.5,Inf,Inf,Inf), alpha.func=alpha.func,hessian=TRUE)
-
-vecchia.seq <- sample(1:nrow(coord),size=nrow(coord),replace=FALSE)
+vecchia.seq <- 1:nrow(coord)#sample(1:nrow(coord),size=nrow(coord),replace=FALSE)
 neighbours.mat <- sapply(1:nrow(coord),FUN=neighbours,vecchia.seq=vecchia.seq,
 					q=3,loc=diff.mat)
-fit.logskew.vecchia <- MVLE(data=samples.skew.normal[[idx.case]],init=c(0.5,1,0,0,0),fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf,-Inf,-Inf),ub=c(10,2,Inf,Inf,Inf),ncores=ncores)
+lb=c(0.01,0.01,-Inf,-Inf,-Inf)
+ub=c(10,2.0,Inf,Inf,Inf)
+init = c(1,0.5,-0.1,0.1,0.1)
+init = par.skew.normal[idx.case,]
 
+fit.logskew.vecchia <- MVLE(data=samples.skew.normal[[idx.case]][1:100,],init=init,fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=200,model="logskew",lb=lb,ub=ub,ncores=4)
+fit.logskew.comp <- MCLE(data=samples.skew.normal[[idx.case]][1:100,],init=init,fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,sample(1:ncol(all.pairs),1000,replace=FALSE)],ncores=ncores,maxit=200,model="logskew",lb=lb,ub=ub, alpha.func=alpha.func,hessian=TRUE)
 # trainning the model with angular density 
 fit.logskew.angular <- list()
 for(i in 1:nrow(par.skew.normal)){
-    tryCatch(fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(1,1.5,-0.1,0.1,0.1),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,maxit=100,lb=c(0.01,0.01,-Inf,-Inf,-Inf),ub=c(10,2.0,Inf,Inf,Inf),bootstrap=FALSE,hessian=TRUE,opt=TRUE),
-             error=function(e){print(e);fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(0.5,1.5,-0.1,0.1,0.1),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,maxit=100,lb=c(0.01,0.01,-Inf,-Inf,-Inf),ub=c(10,2.0,Inf,Inf,Inf),bootstrap=FALSE,hessian=TRUE,opt=TRUE)})
+    tryCatch(fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(1,1.5,-0.1,0.1,0.1),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE),
+             error=function(e){print(e);fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(0.5,1.5,-0.1,0.1,0.1),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)})
 }
 
 save(samples.skew.normal,par.skew.list,ec.logskew,tc.logskew,fit.logskew.angular,par.skew.normal,neighbours.mat,vecchia.seq,file="data/simulation_study_logskew.RData")
