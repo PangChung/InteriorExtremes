@@ -27,7 +27,7 @@ para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 for (arg in args) eval(parse(text = arg))
-file2save = paste0("/srv/scratch/z3536974/data/simulation_study_vecchia_",id,"_",thres*100,".RData")
+file2save = paste0("/srv/scratch/z3536974/data/simulation_study_vecchia_",id,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 vecchia.seq <- 1:nrow(coord)#sample(1:nrow(coord),size=nrow(coord),replace=FALSE)
@@ -50,7 +50,7 @@ fit.logskew.vecchia <- list()
 for(i in 1:nrow(par.skew.normal)){
     par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(coord,par.skew.normal[i,-c(1:2)]))
     samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-    fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=200,model="logskew",lb=lb,ub=ub,ncores=ncores)
+    fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=500,model="logskew",lb=lb,ub=ub,ncores=ncores)
 }
 
 save(fit.logskew.vecchia,file=file2save)
