@@ -1,0 +1,1426 @@
+
+Attaching package: ‘TruncatedNormal’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    pmvnorm, pmvt
+
+Loading required package: Rcpp
+Loading required package: RcppZiggurat
+Loading required package: RcppParallel
+
+Attaching package: ‘RcppParallel’
+
+The following object is masked from ‘package:Rcpp’:
+
+    LdFlags
+
+
+Rfast: 2.1.0
+ ___ __ __ __ __    __ __ __ __ __ _             _               __ __ __ __ __     __ __ __ __ __ __   
+|  __ __ __ __  |  |  __ __ __ __ _/            / \             |  __ __ __ __ /   /__ __ _   _ __ __\  
+| |           | |  | |                         / _ \            | |                        / /          
+| |           | |  | |                        / / \ \           | |                       / /          
+| |           | |  | |                       / /   \ \          | |                      / /          
+| |__ __ __ __| |  | |__ __ __ __           / /     \ \         | |__ __ __ __ _        / /__/\          
+|    __ __ __ __|  |  __ __ __ __|         / /__ _ __\ \        |_ __ __ __ _   |      / ___  /           
+|   \              | |                    / _ _ _ _ _ _ \                     | |      \/  / /       
+| |\ \             | |                   / /           \ \                    | |         / /          
+| | \ \            | |                  / /             \ \                   | |        / /          
+| |  \ \           | |                 / /               \ \                  | |       / /          
+| |   \ \__ __ _   | |                / /                 \ \     _ __ __ __ _| |      / /          
+|_|    \__ __ __\  |_|               /_/                   \_\   /_ __ __ __ ___|      \/             team
+
+Attaching package: ‘Rfast’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    Crossprod, dmvnorm, dmvt, rmvnorm, rmvt, Tcrossprod
+
+
+Attaching package: ‘matrixStats’
+
+The following objects are masked from ‘package:Rfast’:
+
+    colMads, colMaxs, colMedians, colMins, colRanks, colVars, rowMads,
+    rowMaxs, rowMedians, rowMins, rowRanks, rowVars
+
+final  value -397.694486 
+converged
+final  value -397.694486 
+converged
+iter   10 value -401.513706
+final  value -401.513706 
+converged
+final  value -401.513706 
+converged
+final  value -407.684011 
+converged
+final  value -407.684012 
+converged
+final  value -419.630862 
+converged
+iter   10 value -419.731910
+iter   20 value -420.014305
+iter   30 value -420.052603
+iter   40 value -420.058364
+iter   50 value -420.058927
+final  value -420.058928 
+converged
+final  value -451.121094 
+converged
+final  value -451.121094 
+converged
+iter   10 value -475.914940
+final  value -475.914966 
+converged
+final  value -475.914966 
+converged
+final  value -485.237803 
+converged
+final  value -485.237803 
+converged
+iter   10 value -517.327649
+final  value -517.327649 
+converged
+iter   10 value -517.505841
+iter   20 value -517.682421
+iter   30 value -517.706068
+iter   40 value -517.713866
+iter   50 value -517.715234
+final  value -517.715344 
+converged
+iter   10 value -560.412614
+final  value -560.412641 
+converged
+final  value -560.412641 
+converged
+iter   10 value -392.437502
+iter   20 value -392.524313
+iter   30 value -392.536936
+iter   40 value -392.629663
+iter   50 value -392.637478
+iter   60 value -392.638283
+final  value -392.638346 
+converged
+iter   10 value -392.447388
+iter   20 value -392.642169
+final  value -392.706855 
+stopped after 28 iterations
+<simpleError in solve.default(opt.result$hessian): system is computationally singular: reciprocal condition number = 2.01993e-19>
+iter   10 value -392.693183
+iter   20 value -392.716980
+iter   30 value -392.747303
+iter   40 value -392.748080
+final  value -392.748135 
+converged
+iter   10 value 15412.078551
+iter   20 value 15227.128717
+iter   30 value 10938.460319
+iter   40 value 2710.649405
+iter   50 value 2705.865607
+iter   60 value 2705.083046
+iter   70 value 2704.864028
+iter   80 value 2644.997245
+iter   90 value 2640.889094
+iter  100 value 2622.864130
+final  value 2622.726770 
+stopped after 101 iterations
+iter   10 value -398.907467
+iter   20 value -398.921313
+iter   30 value -398.978278
+iter   40 value -398.983145
+final  value -398.987485 
+converged
+iter   10 value -396.397695
+iter   20 value -398.739640
+iter   30 value -398.748383
+final  value -398.748898 
+converged
+iter   10 value -410.087734
+iter   20 value -410.119311
+iter   30 value -410.205043
+iter   40 value -410.225066
+iter   50 value -410.240151
+iter   60 value -410.241131
+final  value -410.241131 
+converged
+final  value -409.997527 
+converged
+iter   10 value -427.446342
+iter   20 value -427.475388
+final  value -427.475399 
+converged
+iter   10 value -426.584822
+iter   20 value -427.222908
+iter   30 value -427.409365
+iter   40 value -427.482441
+final  value -427.482443 
+converged
+iter   10 value -444.707234
+final  value -444.719658 
+converged
+final  value -444.484483 
+converged
+iter   10 value -477.114678
+iter   20 value -477.121962
+final  value -477.121963 
+converged
+final  value -476.976422 
+converged
+iter   10 value -469.252722
+iter   20 value -469.267356
+iter   30 value -469.310294
+final  value -469.310346 
+converged
+final  value -468.658075 
+converged
+final  value -511.877036 
+converged
+iter   10 value -511.694206
+final  value -511.694262 
+converged
+iter   10 value -561.286977
+final  value -561.326395 
+converged
+final  value -561.299210 
+converged
+iter   10 value -389.507327
+iter   20 value -389.623741
+iter   30 value -389.640797
+iter   40 value -389.642437
+final  value -389.642612 
+converged
+final  value -388.087400 
+stopped after 6 iterations
+iter   10 value -400.906646
+iter   20 value -400.917891
+iter   30 value -400.921486
+iter   40 value -400.924821
+final  value -400.924838 
+converged
+iter   10 value -400.632496
+iter   20 value -400.847376
+iter   30 value -400.900357
+iter   40 value -400.922187
+final  value -400.922619 
+converged
+iter   10 value -408.634386
+final  value -408.638002 
+converged
+iter   10 value -406.354271
+iter   20 value -408.516884
+iter   30 value -408.619935
+iter   40 value -408.637089
+iter   50 value -408.641393
+final  value -408.641752 
+converged
+iter   10 value -418.436206
+final  value -418.462229 
+converged
+iter   10 value -418.519923
+iter   20 value -418.623274
+final  value -418.627200 
+converged
+iter   10 value -446.559253
+iter   20 value -446.613155
+final  value -446.613156 
+converged
+iter   10 value -446.278762
+iter   20 value -446.383310
+iter   30 value -446.398235
+iter   40 value -446.399338
+final  value -446.399431 
+converged
+final  value -473.738446 
+converged
+iter   10 value -473.517150
+iter   20 value -473.764670
+iter   30 value -473.786044
+final  value -473.804528 
+converged
+iter   10 value -474.744911
+iter   20 value -474.751942
+iter   30 value -474.855079
+iter   40 value -474.874023
+iter   50 value -474.877958
+final  value -474.878043 
+converged
+final  value -474.413270 
+converged
+iter   10 value -513.302650
+iter   20 value -513.401098
+final  value -513.401098 
+converged
+iter   10 value -512.773941
+iter   20 value -513.418730
+iter   30 value -513.435151
+iter   40 value -513.436466
+iter   50 value -513.552485
+iter   60 value -513.566013
+iter   70 value -513.567363
+final  value -513.567487 
+converged
+iter   10 value -562.627801
+iter   20 value -562.665399
+final  value -562.666678 
+converged
+final  value -562.420865 
+converged
+
+Attaching package: ‘TruncatedNormal’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    pmvnorm, pmvt
+
+Loading required package: Rcpp
+Loading required package: RcppZiggurat
+Loading required package: RcppParallel
+
+Attaching package: ‘RcppParallel’
+
+The following object is masked from ‘package:Rcpp’:
+
+    LdFlags
+
+
+Rfast: 2.1.0
+ ___ __ __ __ __    __ __ __ __ __ _             _               __ __ __ __ __     __ __ __ __ __ __   
+|  __ __ __ __  |  |  __ __ __ __ _/            / \             |  __ __ __ __ /   /__ __ _   _ __ __\  
+| |           | |  | |                         / _ \            | |                        / /          
+| |           | |  | |                        / / \ \           | |                       / /          
+| |           | |  | |                       / /   \ \          | |                      / /          
+| |__ __ __ __| |  | |__ __ __ __           / /     \ \         | |__ __ __ __ _        / /__/\          
+|    __ __ __ __|  |  __ __ __ __|         / /__ _ __\ \        |_ __ __ __ _   |      / ___  /           
+|   \              | |                    / _ _ _ _ _ _ \                     | |      \/  / /       
+| |\ \             | |                   / /           \ \                    | |         / /          
+| | \ \            | |                  / /             \ \                   | |        / /          
+| |  \ \           | |                 / /               \ \                  | |       / /          
+| |   \ \__ __ _   | |                / /                 \ \     _ __ __ __ _| |      / /          
+|_|    \__ __ __\  |_|               /_/                   \_\   /_ __ __ __ ___|      \/             team
+
+Attaching package: ‘Rfast’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    Crossprod, dmvnorm, dmvt, rmvnorm, rmvt, Tcrossprod
+
+
+Attaching package: ‘matrixStats’
+
+The following objects are masked from ‘package:Rfast’:
+
+    colMads, colMaxs, colMedians, colMins, colRanks, colVars, rowMads,
+    rowMaxs, rowMedians, rowMins, rowRanks, rowVars
+
+final  value -393.261414 
+converged
+final  value -393.261414 
+converged
+iter   10 value -401.834444
+final  value -401.834444 
+converged
+final  value -401.834444 
+converged
+final  value -410.705387 
+converged
+final  value -410.705387 
+converged
+final  value -428.047524 
+converged
+final  value -428.047524 
+converged
+iter   10 value -450.006203
+final  value -450.006203 
+converged
+final  value -450.006203 
+converged
+iter   10 value -473.406252
+final  value -473.406259 
+converged
+final  value -473.406259 
+converged
+final  value -480.503921 
+converged
+final  value -480.503921 
+converged
+final  value -518.117506 
+converged
+final  value -518.117506 
+converged
+final  value -562.394709 
+converged
+final  value -562.395045 
+converged
+iter   10 value -393.778489
+iter   20 value -393.804104
+final  value -393.804104 
+converged
+iter   10 value -393.725216
+iter   20 value -393.809024
+iter   30 value -393.814561
+iter   40 value -393.815700
+final  value -393.815700 
+converged
+iter   10 value -400.669551
+iter   20 value -400.693921
+iter   30 value -400.718546
+final  value -400.719269 
+converged
+iter   10 value -398.065312
+iter   20 value -399.034272
+iter   30 value -399.135806
+iter   40 value -400.601197
+iter   50 value -400.722559
+iter   60 value -400.730940
+iter   70 value -400.735587
+final  value -400.736022 
+converged
+iter   10 value -409.660270
+iter   20 value -409.674715
+iter   30 value -409.676702
+iter   40 value -409.691981
+iter   50 value -409.696005
+iter   60 value -409.710061
+iter   70 value -409.712453
+final  value -409.712977 
+converged
+iter   10 value -409.182925
+final  value -409.186483 
+converged
+iter   10 value -424.431801
+final  value -424.434314 
+converged
+iter   10 value -415.035141
+iter   20 value -424.237221
+iter   30 value -424.428152
+iter   40 value -424.436778
+iter   50 value -424.443349
+iter   60 value -424.443804
+final  value -424.443853 
+converged
+iter   10 value -445.718135
+iter   20 value -445.741127
+iter   30 value -445.762935
+iter   40 value -445.764859
+iter   50 value -445.776921
+iter   60 value -445.779947
+iter   70 value -445.780184
+final  value -445.780184 
+converged
+iter   10 value -154.469353
+iter   20 value -435.354903
+iter   30 value -445.425850
+final  value -445.535249 
+stopped after 36 iterations
+iter   10 value -473.534339
+final  value -473.539205 
+converged
+iter   10 value -470.942092
+iter   20 value -472.988879
+iter   30 value -473.137864
+iter   40 value -473.351095
+iter   50 value -473.406242
+final  value -473.406242 
+converged
+iter   10 value -475.769784
+iter   20 value -475.790759
+iter   30 value -475.801830
+final  value -475.801902 
+converged
+iter   10 value -474.277249
+iter   20 value -475.397074
+iter   30 value -475.404207
+iter   40 value -475.419897
+iter   50 value -475.443989
+iter   60 value -475.518371
+iter   70 value -475.815358
+final  value -475.815996 
+converged
+iter   10 value -517.562286
+iter   20 value -517.568035
+iter   30 value -517.570314
+final  value -517.578913 
+converged
+iter   10 value -515.716435
+iter   20 value -517.545861
+iter   30 value -517.564572
+iter   40 value -517.569627
+final  value -517.569980 
+converged
+iter   10 value -561.557963
+iter   20 value -561.566749
+final  value -561.566770 
+converged
+iter   10 value -559.560496
+iter   20 value -559.832875
+iter   30 value -561.296161
+final  value -561.298007 
+converged
+iter   10 value -393.388919
+iter   20 value -393.395719
+iter   30 value -393.395852
+final  value -393.395856 
+converged
+iter   10 value -384.468959
+iter   20 value -389.039133
+iter   30 value -392.799906
+iter   40 value -393.202394
+iter   50 value -393.223646
+final  value -393.223646 
+converged
+iter   10 value -399.893732
+iter   20 value -399.900996
+iter   30 value -399.905998
+iter   40 value -399.907634
+final  value -399.907634 
+converged
+iter   10 value -394.370186
+iter   20 value -397.241505
+iter   30 value -399.440400
+iter   40 value -399.892183
+iter   50 value -399.906060
+final  value -399.908638 
+converged
+final  value -409.303923 
+converged
+iter   10 value -408.631401
+iter   20 value -408.801297
+iter   30 value -408.927482
+iter   40 value -409.041686
+iter   50 value -409.114559
+final  value -409.114559 
+converged
+iter   10 value -422.393344
+final  value -422.394169 
+converged
+iter   10 value -399.991300
+iter   20 value -419.632465
+iter   30 value -422.392083
+iter   40 value -422.398088
+iter   50 value -422.399657
+final  value -422.399823 
+converged
+iter   10 value -447.276383
+final  value -447.276383 
+converged
+iter   10 value -436.549514
+iter   20 value -446.978781
+iter   30 value -447.267345
+iter   40 value -447.269718
+iter   50 value -447.280047
+iter   60 value -447.281164
+iter   70 value -447.281342
+final  value -447.281349 
+converged
+final  value -473.087600 
+converged
+iter   10 value -470.880419
+iter   20 value -471.191814
+iter   30 value -472.160796
+iter   40 value -472.426210
+iter   50 value -472.601165
+iter   60 value -472.727943
+iter   70 value -472.787682
+final  value -472.788811 
+converged
+iter   10 value -474.393623
+iter   20 value -474.396323
+iter   30 value -474.404686
+final  value -474.404686 
+converged
+iter   10 value -467.654365
+iter   20 value -467.885353
+iter   30 value -472.787247
+iter   40 value -473.480914
+iter   50 value -473.820546
+iter   60 value -474.197286
+final  value -474.200847 
+converged
+iter   10 value -515.164246
+iter   20 value -515.176596
+iter   30 value -515.249058
+final  value -515.250189 
+converged
+iter   10 value -514.509479
+iter   20 value -514.921261
+iter   30 value -514.924550
+iter   40 value -515.048249
+final  value -515.048830 
+converged
+iter   10 value -559.916917
+iter   20 value -559.923264
+iter   30 value -559.932213
+iter   40 value -559.955065
+iter   50 value -559.958356
+final  value -559.958506 
+converged
+iter   10 value 31416.091324
+iter   20 value -261.711589
+iter   30 value -554.945537
+iter   40 value -556.740268
+final  value -556.741043 
+converged
+
+Attaching package: ‘TruncatedNormal’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    pmvnorm, pmvt
+
+Loading required package: Rcpp
+Loading required package: RcppZiggurat
+Loading required package: RcppParallel
+
+Attaching package: ‘RcppParallel’
+
+The following object is masked from ‘package:Rcpp’:
+
+    LdFlags
+
+
+Rfast: 2.1.0
+ ___ __ __ __ __    __ __ __ __ __ _             _               __ __ __ __ __     __ __ __ __ __ __   
+|  __ __ __ __  |  |  __ __ __ __ _/            / \             |  __ __ __ __ /   /__ __ _   _ __ __\  
+| |           | |  | |                         / _ \            | |                        / /          
+| |           | |  | |                        / / \ \           | |                       / /          
+| |           | |  | |                       / /   \ \          | |                      / /          
+| |__ __ __ __| |  | |__ __ __ __           / /     \ \         | |__ __ __ __ _        / /__/\          
+|    __ __ __ __|  |  __ __ __ __|         / /__ _ __\ \        |_ __ __ __ _   |      / ___  /           
+|   \              | |                    / _ _ _ _ _ _ \                     | |      \/  / /       
+| |\ \             | |                   / /           \ \                    | |         / /          
+| | \ \            | |                  / /             \ \                   | |        / /          
+| |  \ \           | |                 / /               \ \                  | |       / /          
+| |   \ \__ __ _   | |                / /                 \ \     _ __ __ __ _| |      / /          
+|_|    \__ __ __\  |_|               /_/                   \_\   /_ __ __ __ ___|      \/             team
+
+Attaching package: ‘Rfast’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    Crossprod, dmvnorm, dmvt, rmvnorm, rmvt, Tcrossprod
+
+
+Attaching package: ‘matrixStats’
+
+The following objects are masked from ‘package:Rfast’:
+
+    colMads, colMaxs, colMedians, colMins, colRanks, colVars, rowMads,
+    rowMaxs, rowMedians, rowMins, rowRanks, rowVars
+
+final  value -394.594979 
+converged
+final  value -394.594979 
+converged
+iter   10 value -401.173707
+final  value -401.173707 
+converged
+final  value -401.173707 
+converged
+iter   10 value -410.503134
+final  value -410.503236 
+converged
+final  value -410.503236 
+converged
+final  value -426.439805 
+converged
+final  value -426.439805 
+converged
+final  value -449.514748 
+converged
+final  value -449.514748 
+converged
+iter   10 value -474.542573
+final  value -474.542573 
+converged
+final  value -474.542573 
+converged
+final  value -478.545233 
+converged
+final  value -478.545233 
+converged
+final  value -519.143419 
+converged
+final  value -519.143419 
+stopped after 0 iterations
+iter   10 value -562.211598
+final  value -562.211598 
+converged
+final  value -562.211598 
+converged
+iter   10 value -393.969751
+final  value -393.970205 
+converged
+iter   10 value -389.281860
+iter   20 value -393.944982
+iter   30 value -393.967110
+iter   40 value -393.982694
+iter   50 value -393.987820
+final  value -393.988022 
+converged
+iter   10 value -399.576146
+final  value -399.578001 
+converged
+iter   10 value -395.193006
+iter   20 value -399.019075
+iter   30 value -399.524977
+iter   40 value -399.565403
+iter   50 value -399.569166
+iter   60 value -399.577416
+iter   70 value -399.578178
+final  value -399.578179 
+converged
+iter   10 value -409.842053
+iter   20 value -409.847652
+iter   30 value -409.853533
+iter   40 value -409.854024
+iter   50 value -409.858330
+final  value -409.858396 
+converged
+iter   10 value -408.728312
+iter   20 value -409.484418
+iter   30 value -409.608830
+iter   40 value -409.610282
+iter   50 value -409.618619
+final  value -409.618619 
+converged
+iter   10 value -424.594469
+iter   20 value -424.605207
+iter   30 value -424.608015
+final  value -424.608018 
+converged
+iter   10 value -423.654093
+iter   20 value -423.960923
+iter   30 value -424.413729
+final  value -424.419880 
+converged
+iter   10 value -447.354349
+iter   20 value -447.375732
+iter   30 value -447.387078
+iter   40 value -447.394494
+iter   50 value -447.401111
+final  value -447.401157 
+converged
+iter   10 value -446.092141
+iter   20 value -446.750610
+iter   30 value -447.345149
+iter   40 value -447.392268
+iter   50 value -447.400571
+iter   60 value -447.401157
+final  value -447.401157 
+converged
+iter   10 value -473.112167
+iter   20 value -473.117476
+final  value -473.117534 
+converged
+iter   10 value -472.892470
+iter   20 value -473.039997
+iter   30 value -473.121468
+final  value -473.121472 
+converged
+iter   10 value -474.748759
+iter   20 value -474.751136
+iter   30 value -474.757720
+final  value -474.757777 
+converged
+iter   10 value -472.889865
+iter   20 value -474.476446
+iter   30 value -474.752667
+final  value -474.752723 
+converged
+final  value -516.625772 
+converged
+iter   10 value -515.957345
+iter   20 value -516.610594
+iter   30 value -516.632992
+iter   40 value -516.634743
+final  value -516.634831 
+converged
+iter   10 value -562.496345
+final  value -562.496345 
+converged
+iter   10 value -561.681374
+iter   20 value -562.110428
+iter   30 value -562.212692
+iter   40 value -562.216877
+iter   50 value -562.220368
+final  value -562.220368 
+converged
+iter   10 value -393.420200
+iter   20 value -393.425311
+final  value -393.425731 
+converged
+iter   10 value -378.543739
+iter   20 value -392.039694
+iter   30 value -393.379751
+iter   40 value -393.399693
+iter   50 value -393.406475
+final  value -393.407729 
+converged
+iter   10 value -401.009684
+iter   20 value -401.017464
+final  value -401.017468 
+converged
+iter   10 value -393.536453
+iter   20 value -399.750843
+iter   30 value -399.945804
+iter   40 value -400.857546
+final  value -400.858265 
+converged
+iter   10 value -411.157042
+final  value -411.159119 
+converged
+iter   10 value -404.552739
+iter   20 value -405.449654
+iter   30 value -410.154856
+iter   40 value -410.238714
+iter   50 value -411.119764
+iter   60 value -411.165304
+iter   70 value -411.170368
+iter   80 value -411.171732
+final  value -411.171917 
+converged
+iter   10 value -425.682887
+iter   20 value -425.746268
+final  value -425.752705 
+converged
+iter   10 value -422.867683
+iter   20 value -424.735114
+iter   30 value -424.963714
+iter   40 value -425.001667
+iter   50 value -425.587924
+iter   60 value -425.690704
+iter   70 value -425.701251
+iter   80 value -425.705949
+final  value -425.705949 
+converged
+iter   10 value -446.595487
+iter   20 value -446.600319
+iter   30 value -446.621358
+final  value -446.621358 
+converged
+iter   10 value -430.566276
+iter   20 value -444.856989
+iter   30 value -445.148659
+iter   40 value -446.353250
+iter   50 value -446.409706
+final  value -446.409706 
+converged
+iter   10 value -473.435352
+final  value -473.435572 
+converged
+iter   10 value -472.480156
+iter   20 value -473.329510
+iter   30 value -473.371598
+iter   40 value -473.380613
+final  value -473.381807 
+converged
+iter   10 value -477.700651
+iter   20 value -477.724454
+iter   30 value -477.729520
+final  value -477.729538 
+converged
+iter   10 value -416.375098
+iter   20 value -468.013356
+iter   30 value -471.118876
+iter   40 value -475.060854
+iter   50 value -477.068759
+iter   60 value -477.435465
+final  value -477.435564 
+converged
+iter   10 value -516.366976
+iter   20 value -516.381575
+final  value -516.382328 
+converged
+iter   10 value -500.772327
+iter   20 value -500.911206
+iter   30 value -501.239141
+iter   40 value -516.257076
+iter   50 value -516.384401
+iter   60 value -516.384819
+iter   70 value -516.385277
+iter   80 value -516.385418
+final  value -516.385427 
+converged
+iter   10 value -560.230986
+final  value -560.231200 
+converged
+iter   10 value -554.957502
+iter   20 value -559.829583
+iter   30 value -559.969935
+iter   40 value -560.028947
+final  value -560.028958 
+converged
+
+Attaching package: ‘TruncatedNormal’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    pmvnorm, pmvt
+
+Loading required package: Rcpp
+Loading required package: RcppZiggurat
+Loading required package: RcppParallel
+
+Attaching package: ‘RcppParallel’
+
+The following object is masked from ‘package:Rcpp’:
+
+    LdFlags
+
+
+Rfast: 2.1.0
+ ___ __ __ __ __    __ __ __ __ __ _             _               __ __ __ __ __     __ __ __ __ __ __   
+|  __ __ __ __  |  |  __ __ __ __ _/            / \             |  __ __ __ __ /   /__ __ _   _ __ __\  
+| |           | |  | |                         / _ \            | |                        / /          
+| |           | |  | |                        / / \ \           | |                       / /          
+| |           | |  | |                       / /   \ \          | |                      / /          
+| |__ __ __ __| |  | |__ __ __ __           / /     \ \         | |__ __ __ __ _        / /__/\          
+|    __ __ __ __|  |  __ __ __ __|         / /__ _ __\ \        |_ __ __ __ _   |      / ___  /           
+|   \              | |                    / _ _ _ _ _ _ \                     | |      \/  / /       
+| |\ \             | |                   / /           \ \                    | |         / /          
+| | \ \            | |                  / /             \ \                   | |        / /          
+| |  \ \           | |                 / /               \ \                  | |       / /          
+| |   \ \__ __ _   | |                / /                 \ \     _ __ __ __ _| |      / /          
+|_|    \__ __ __\  |_|               /_/                   \_\   /_ __ __ __ ___|      \/             team
+
+Attaching package: ‘Rfast’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    Crossprod, dmvnorm, dmvt, rmvnorm, rmvt, Tcrossprod
+
+
+Attaching package: ‘matrixStats’
+
+The following objects are masked from ‘package:Rfast’:
+
+    colMads, colMaxs, colMedians, colMins, colRanks, colVars, rowMads,
+    rowMaxs, rowMedians, rowMins, rowRanks, rowVars
+
+final  value -393.875355 
+converged
+final  value -393.875355 
+converged
+iter   10 value -401.963651
+final  value -401.963651 
+converged
+final  value -401.963651 
+converged
+iter   10 value -412.010336
+final  value -412.010345 
+converged
+final  value -412.010345 
+converged
+final  value -428.165943 
+converged
+final  value -428.165943 
+converged
+final  value -447.514963 
+converged
+final  value -447.514963 
+converged
+final  value -475.990470 
+converged
+final  value -475.990470 
+stopped after 0 iterations
+final  value -478.542480 
+converged
+final  value -478.542480 
+converged
+final  value -518.289955 
+converged
+final  value -518.289955 
+converged
+final  value -561.914616 
+converged
+final  value -561.914616 
+converged
+iter   10 value -393.836721
+iter   20 value -393.956998
+iter   30 value -393.987040
+iter   40 value -393.988513
+final  value -393.988536 
+converged
+iter   10 value -392.640669
+iter   20 value -393.806210
+iter   30 value -393.808882
+final  value -393.808884 
+converged
+iter   10 value -401.693256
+iter   20 value -401.694274
+iter   30 value -401.697871
+iter   40 value -401.701975
+final  value -401.701975 
+converged
+iter   10 value -400.431070
+iter   20 value -401.424620
+iter   30 value -401.456782
+final  value -401.457360 
+converged
+iter   10 value -410.466095
+iter   20 value -410.473112
+iter   30 value -410.481786
+iter   40 value -410.488993
+iter   50 value -410.489392
+iter   60 value -410.490015
+final  value -410.490509 
+converged
+iter   10 value -409.932328
+iter   20 value -410.155828
+iter   30 value -410.290578
+iter   40 value -410.296919
+final  value -410.296952 
+converged
+iter   10 value -424.226688
+iter   20 value -424.229119
+final  value -424.229865 
+converged
+iter   10 value -422.722102
+iter   20 value -423.736686
+iter   30 value -424.049432
+final  value -424.049432 
+converged
+iter   10 value -446.155065
+final  value -446.155175 
+converged
+iter   10 value -438.577441
+iter   20 value -445.582477
+iter   30 value -445.868983
+iter   40 value -445.947124
+final  value -445.947149 
+converged
+iter   10 value -473.623873
+iter   20 value -473.632600
+final  value -473.632600 
+converged
+iter   10 value -470.565813
+iter   20 value -472.668007
+iter   30 value -473.629160
+iter   40 value -473.629485
+iter   50 value -473.629698
+iter   60 value -473.632673
+final  value -473.632679 
+converged
+iter   10 value -472.755263
+iter   20 value -472.810742
+iter   30 value -472.816951
+iter   40 value -472.817464
+final  value -472.817824 
+converged
+iter   10 value -472.126677
+final  value -472.619994 
+converged
+iter   10 value -516.254781
+final  value -516.256374 
+converged
+iter   10 value -515.206539
+iter   20 value -515.945355
+iter   30 value -516.063903
+final  value -516.063964 
+converged
+iter   10 value -561.986808
+final  value -561.986808 
+converged
+iter   10 value -560.010212
+iter   20 value -561.709762
+iter   30 value -561.884764
+iter   40 value -561.910392
+iter   50 value -561.913939
+final  value -561.913977 
+converged
+iter   10 value -394.485954
+iter   20 value -394.494685
+iter   30 value -394.503044
+iter   40 value -394.505975
+iter   50 value -394.509050
+final  value -394.509069 
+converged
+iter   10 value -389.061276
+iter   20 value -394.184615
+iter   30 value -394.334735
+iter   40 value -394.465941
+iter   50 value -394.476612
+final  value -394.476612 
+converged
+iter   10 value -401.180443
+iter   20 value -401.187991
+iter   30 value -401.198846
+iter   40 value -401.205255
+final  value -401.205902 
+converged
+iter   10 value -398.934807
+iter   20 value -400.553555
+iter   30 value -400.701476
+iter   40 value -400.982531
+iter   50 value -400.995772
+final  value -400.995772 
+converged
+iter   10 value -410.938002
+iter   20 value -410.941446
+iter   30 value -410.951631
+final  value -410.951632 
+converged
+iter   10 value -407.759872
+iter   20 value -410.657889
+final  value -410.790845 
+converged
+iter   10 value -425.951191
+iter   20 value -426.228308
+iter   30 value -426.461750
+iter   40 value -426.472883
+final  value -426.479726 
+converged
+iter   10 value -425.465841
+iter   20 value -426.315241
+final  value -426.333357 
+converged
+iter   10 value -445.839554
+iter   20 value -445.881525
+iter   30 value -445.901669
+final  value -445.904395 
+converged
+iter   10 value -444.416772
+iter   20 value -445.827094
+iter   30 value -445.897341
+iter   40 value -445.904391
+final  value -445.904394 
+converged
+iter   10 value -473.496664
+final  value -473.499819 
+converged
+iter   10 value -464.550960
+iter   20 value -465.668973
+iter   30 value -473.131171
+iter   40 value -473.503445
+final  value -473.505223 
+converged
+iter   10 value -472.401735
+iter   20 value -473.442951
+final  value -473.647632 
+converged
+iter   10 value -473.376504
+iter   20 value -473.647125
+final  value -473.647189 
+converged
+iter   10 value -516.512559
+final  value -516.512559 
+converged
+iter   10 value -498.619380
+iter   20 value -501.461265
+iter   30 value -516.417202
+iter   40 value -516.516659
+final  value -516.524531 
+converged
+iter   10 value -561.357482
+final  value -561.357482 
+converged
+iter   10 value -555.955450
+iter   20 value -556.534910
+iter   30 value -561.008567
+iter   40 value -561.342549
+iter   50 value -561.357181
+iter   60 value -561.364550
+iter   70 value -561.366453
+final  value -561.366577 
+converged
+
+Attaching package: ‘TruncatedNormal’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    pmvnorm, pmvt
+
+Loading required package: Rcpp
+Loading required package: RcppZiggurat
+Loading required package: RcppParallel
+
+Attaching package: ‘RcppParallel’
+
+The following object is masked from ‘package:Rcpp’:
+
+    LdFlags
+
+
+Rfast: 2.1.0
+ ___ __ __ __ __    __ __ __ __ __ _             _               __ __ __ __ __     __ __ __ __ __ __   
+|  __ __ __ __  |  |  __ __ __ __ _/            / \             |  __ __ __ __ /   /__ __ _   _ __ __\  
+| |           | |  | |                         / _ \            | |                        / /          
+| |           | |  | |                        / / \ \           | |                       / /          
+| |           | |  | |                       / /   \ \          | |                      / /          
+| |__ __ __ __| |  | |__ __ __ __           / /     \ \         | |__ __ __ __ _        / /__/\          
+|    __ __ __ __|  |  __ __ __ __|         / /__ _ __\ \        |_ __ __ __ _   |      / ___  /           
+|   \              | |                    / _ _ _ _ _ _ \                     | |      \/  / /       
+| |\ \             | |                   / /           \ \                    | |         / /          
+| | \ \            | |                  / /             \ \                   | |        / /          
+| |  \ \           | |                 / /               \ \                  | |       / /          
+| |   \ \__ __ _   | |                / /                 \ \     _ __ __ __ _| |      / /          
+|_|    \__ __ __\  |_|               /_/                   \_\   /_ __ __ __ ___|      \/             team
+
+Attaching package: ‘Rfast’
+
+The following objects are masked from ‘package:mvtnorm’:
+
+    Crossprod, dmvnorm, dmvt, rmvnorm, rmvt, Tcrossprod
+
+
+Attaching package: ‘matrixStats’
+
+The following objects are masked from ‘package:Rfast’:
+
+    colMads, colMaxs, colMedians, colMins, colRanks, colVars, rowMads,
+    rowMaxs, rowMedians, rowMins, rowRanks, rowVars
+
+final  value -394.679808 
+converged
+final  value -394.679808 
+converged
+iter   10 value -402.724857
+final  value -402.724907 
+converged
+final  value -402.724907 
+converged
+iter   10 value -412.684294
+final  value -412.684385 
+converged
+final  value -412.684385 
+converged
+final  value -427.270550 
+converged
+final  value -427.270550 
+converged
+final  value -449.386832 
+converged
+final  value -449.386832 
+converged
+iter   10 value -475.065735
+final  value -475.065744 
+converged
+final  value -475.065744 
+converged
+final  value -477.500302 
+converged
+final  value -477.500302 
+converged
+final  value -517.868825 
+converged
+final  value -517.868825 
+converged
+final  value -561.197522 
+converged
+final  value -561.197522 
+converged
+iter   10 value -394.623223
+iter   20 value -394.624020
+final  value -394.624388 
+converged
+iter   10 value -392.727285
+iter   20 value -394.607528
+final  value -394.608069 
+converged
+iter   10 value -402.234382
+iter   20 value -402.239629
+iter   30 value -402.243229
+final  value -402.243731 
+converged
+iter   10 value -397.278739
+iter   20 value -400.991647
+iter   30 value -401.661820
+iter   40 value -401.767230
+final  value -401.775849 
+converged
+iter   10 value -410.794081
+iter   20 value -410.828479
+iter   30 value -410.829082
+iter   40 value -410.831411
+final  value -410.832460 
+converged
+iter   10 value -409.844634
+iter   20 value -410.491608
+iter   30 value -410.824298
+iter   40 value -410.831360
+iter   50 value -410.832553
+final  value -410.832571 
+converged
+iter   10 value -424.135899
+iter   20 value -424.148622
+iter   30 value -424.179746
+iter   40 value -424.181247
+iter   50 value -424.181338
+final  value -424.181338 
+converged
+iter   10 value -423.585770
+iter   20 value -423.936732
+iter   30 value -423.957790
+final  value -423.957790 
+converged
+iter   10 value -448.222228
+final  value -448.225882 
+converged
+iter   10 value -444.101863
+iter   20 value -446.476947
+iter   30 value -447.493325
+iter   40 value -447.957540
+final  value -448.005982 
+converged
+iter   10 value -472.410500
+final  value -472.410545 
+converged
+iter   10 value -470.311771
+iter   20 value -472.350557
+iter   30 value -472.411819
+final  value -472.411820 
+converged
+iter   10 value -473.298463
+iter   20 value -473.428955
+iter   30 value -473.483210
+iter   40 value -473.488712
+final  value -473.488761 
+converged
+iter   10 value -473.160314
+iter   20 value -473.269269
+iter   30 value -473.410773
+iter   40 value -473.488757
+final  value -473.488758 
+converged
+iter   10 value -513.825300
+iter   20 value -513.829570
+iter   30 value -513.840058
+final  value -513.840058 
+converged
+iter   10 value -513.363426
+iter   20 value -513.606661
+final  value -513.611240 
+converged
+final  value -561.496981 
+converged
+iter   10 value -557.730015
+iter   20 value -560.693622
+iter   30 value -560.998626
+iter   40 value -561.241410
+iter   50 value -561.245010
+iter   60 value -561.250769
+iter   70 value -561.255769
+iter   80 value -561.258214
+final  value -561.258230 
+converged
+iter   10 value -394.162146
+iter   20 value -394.172023
+final  value -394.172330 
+converged
+iter   10 value -379.716405
+iter   20 value -393.985169
+iter   30 value -394.160552
+final  value -394.173176 
+converged
+iter   10 value -401.939283
+iter   20 value -401.998650
+iter   30 value -402.010843
+iter   40 value -402.016934
+final  value -402.016943 
+converged
+iter   10 value -401.184740
+iter   20 value -401.940669
+iter   30 value -401.976146
+iter   40 value -402.002168
+iter   50 value -402.016110
+final  value -402.016941 
+converged
+iter   10 value -411.125922
+final  value -411.127982 
+converged
+iter   10 value -409.989701
+iter   20 value -410.947593
+iter   30 value -411.129957
+final  value -411.134443 
+converged
+iter   10 value -424.216786
+iter   20 value -424.226772
+iter   30 value -424.230661
+final  value -424.230671 
+converged
+iter   10 value -396.254770
+iter   20 value -423.689264
+iter   30 value -423.992403
+final  value -423.996395 
+converged
+iter   10 value -446.582648
+iter   20 value -446.590478
+iter   30 value -446.638601
+iter   40 value -446.650483
+iter   50 value -446.651448
+final  value -446.651449 
+converged
+iter   10 value -444.661300
+iter   20 value -446.148691
+iter   30 value -446.413879
+iter   40 value -446.446334
+final  value -446.446339 
+converged
+iter   10 value -474.538171
+final  value -474.542678 
+converged
+iter   10 value -468.986420
+iter   20 value -469.222510
+iter   30 value -474.496528
+iter   40 value -474.502003
+iter   50 value -474.508776
+iter   60 value -474.510367
+iter   70 value -474.513897
+iter   80 value -474.546431
+final  value -474.557338 
+converged
+iter   10 value -474.539350
+iter   20 value -474.751163
+iter   30 value -474.776164
+iter   40 value -474.787643
+iter   50 value -474.794645
+final  value -474.794902 
+converged
+iter   10 value -471.972216
+iter   20 value -474.544304
+iter   30 value -474.583371
+iter   40 value -474.584649
+final  value -474.584649 
+converged
+iter   10 value -515.022420
+iter   20 value -515.127990
+iter   30 value -515.215569
+final  value -515.223898 
+converged
+iter   10 value -513.800557
+iter   20 value -514.509545
+iter   30 value -514.928464
+iter   40 value -514.955797
+final  value -514.989583 
+converged
+iter   10 value -561.217857
+iter   20 value -561.229052
+iter   30 value -561.240727
+iter   40 value -561.242401
+final  value -561.242427 
+converged
+iter   10 value -560.063503
+iter   20 value -561.088267
+iter   30 value -561.140394
+iter   40 value -561.163963
+iter   50 value -561.228175
+iter   60 value -561.242187
+final  value -561.242490 
+converged
+
+================================================================================
+                     Resource Usage on 07/02/2024 11:44:30                      
+
+Job Id: 5126455[81] 
+Queue: MATHS
+Walltime: 02:42:48  (requested 12:00:00)
+Job execution was successful. Exit Status 0. 
+
+--------------------------------------------------------------------------------
+|              |             CPUs              |            Memory             |
+--------------------------------------------------------------------------------
+| Node         | Requested   Used   Efficiency | Requested   Used   Efficiency |
+| k248         |    16       4.91      31.0%   |  124.0gb   3.55gb     2.9%    |
+--------------------------------------------------------------------------------

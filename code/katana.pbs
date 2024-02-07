@@ -1,12 +1,21 @@
 #!/bin/bash
 
-#PBS -l select=16:ncpus=1:mem=124gb
-#PBS -l walltime=11:59:59 ## ideal
-#PBS -j oe ##merge output and error into a single file
-#PBS -J 1-100 ## array jobs 
-#PBS -M peng.zhong@unsw.edu.au ## notify me via email when job ends (a) or terminated because of error (e)
-#PBS -m ae ## 
+#PBS -l ncpus=16
+#PBS -l mem=124gb
+#PBS -l walltime=12:00:00
+#PBS -j oe 
+#PBS -J 1-300
+##PBS -m ae 
+##PBS -M peng.zhong@unsw.edu.au 
 
 cd ${PBS_O_WORKDIR}
 
-./myprogram ${PBS_ARRAY_INDEX}.dat
+module load gsl/2.7.1 
+module load gmp/6.2.1 
+module load r/4.3.1
+
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.99"
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.95"
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.9"
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.85"
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.8"
