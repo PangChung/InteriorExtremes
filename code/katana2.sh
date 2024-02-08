@@ -14,5 +14,5 @@ module load gsl/2.7.1
 module load gmp/6.2.1 
 module load r/4.3.1
 
-Rscript $script "${inputs};id=${PBS_ARRAY_INDEX}" > output.${PBS_JOBID}_${PBS_ARRAY_INDEX} 2>&1  
+Rscript $script "${inputs};id=${PBS_ARRAY_INDEX}" 
 
