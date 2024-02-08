@@ -14,8 +14,8 @@ module load gsl/2.7.1
 module load gmp/6.2.1 
 module load r/4.3.1
 
-Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.99;m=1000" > ${PBS_ARRAY_INDEX}.out 2>&1  
-Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.95;m=1000" > ${PBS_ARRAY_INDEX}.out 2>&1  
-Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.9;m=1000" > ${PBS_ARRAY_INDEX}.out 2>&1  
-Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.85;m=1000" > ${PBS_ARRAY_INDEX}.out 2>&1  
-Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.8;m=1000" > ${PBS_ARRAY_INDEX}.out 2>&1  
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.99;m=1000" > output.${PBS_JOBID}_${PBS_ARRAY_INDEX} 2>&1  
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.95;m=1000" > output.${PBS_JOBID}_${PBS_ARRAY_INDEX} 2>&1  
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.9;m=1000" > output.${PBS_JOBID}_${PBS_ARRAY_INDEX} 2>&1  
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.85;m=1000" > output.${PBS_JOBID}_${PBS_ARRAY_INDEX} 2>&1  
+Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};thres=0.8;m=1000" > output.${PBS_JOBID}_${PBS_ARRAY_INDEX} 2>&1  
