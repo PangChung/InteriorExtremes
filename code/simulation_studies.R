@@ -1,23 +1,9 @@
 args <- commandArgs(TRUE)
-.libPaths("../src")
-library(parallel)
-library(mvtnorm)
-library(TruncatedNormal)
-library(evd)
-#library(gridExtra)
-library(partitions)
-#library(ggplot2)
-library(Rfast)
-library(matrixStats)
-library(splines)
-source("code/simulation.R")
-source("code/exponent_functions.R")
-source("code/likelihood_inference.R")
-
+# settings 
 id = 1
 ncores=detectCores()
-d <- 10 ## 10 * 10 grid on [0,1]^2
-m <- 10000 ## number of samples
+d <- 25 ## 10 * 10 grid on [0,1]^2
+m <- 200 ## number of samples
 set.seed(1342342)
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
@@ -28,10 +14,32 @@ para.alpha = rbind(c(0,0,0),c(-1,2,3),c(-2,-1,4)) ## slant parameter for skewed 
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
+thres = 0.9
+computer = "local"
+# loading library and setting path
 for (arg in args) eval(parse(text = arg))
-file2save = paste0("/srv/scratch/z3536974/data/simulation_study_",id,"_",thres*100,"_",m,".RData")
+library(parallel)
+library(mvtnorm)
+library(TruncatedNormal)
+library(evd)
+#library(gridExtra)
+library(partitions)
+#library(ggplot2)
+library(Rfast)
+library(matrixStats)
+library(splines)
+switch(computer,
+    "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
+    "hpc" = {DataPath<-"/srv/scratch/z3536974/";.libPaths("../src")},
+    "local" = {DataPath<-"~/Documents/Github/InteriorExtremes/"}
+)
+source("code/simulation.R")
+source("code/exponent_functions.R")
+source("code/likelihood_inference.R")
+file2save = paste0(DataPath,"data/simulation_study_",id,"_",thres*100,"_",m,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
+
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
@@ -48,7 +56,7 @@ for(i in 1:nrow(par.skew.normal)){
     # ec.logskew[[i]] <- lapply(all.pairs,empirical_extcoef,data=samples.skew.normal[[i]])
     # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
     tryCatch(fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=par.skew.normal[i,],fixed=c(F,F,F,F,F),thres=thres,model="logskew",ncores=ncores,maxit=100,lb=c(0.01,0.01,-Inf,-Inf,-Inf),ub=c(10,2.0,Inf,Inf,Inf),bootstrap=FALSE,hessian=TRUE,opt=TRUE),
-             error=function(e){print(e);fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(0.5,1.5,-0.1,0.1,0.1),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,maxit=100,lb=c(0.01,0.01,-Inf,-Inf,-Inf),ub=c(10,2.0,Inf,Inf,Inf),bootstrap=FALSE,hessian=TRUE,opt=TRUE)})    
+             error=function(e){print(e);fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(0.5,1.5,-0.1,0.1,0.1),fixed=c(F,F,F,F,F),thres=thres,model="logskew",ncores=ncores,maxit=100,lb=c(0.01,0.01,-Inf,-Inf,-Inf),ub=c(10,2.0,Inf,Inf,Inf),bootstrap=FALSE,hessian=TRUE,opt=TRUE)})    
 }
 
 save(fit.logskew.angular,file=file2save)
