@@ -14,7 +14,7 @@ source("code/likelihood_inference.R")
 
 id = 1
 ncores=detectCores()
-d <- 10 ## 10 * 10 grid on [0,1]^2
+d <- 25 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
 set.seed(1342342)
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
