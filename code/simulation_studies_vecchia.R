@@ -1,5 +1,14 @@
 args <- commandArgs(TRUE)
-.libPaths("../src")
+computer = "local"
+d <- 25 ## 10 * 10 grid on [0,1]^2
+m <- 1000 ## number of samples
+# loading library and setting path
+for (arg in args) eval(parse(text = arg))
+switch(computer,
+    "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
+    "hpc" = {DataPath<-"/srv/scratch/z3536974/";.libPaths("../src")},
+    "local" = {DataPath<-"~/Documents/Github/InteriorExtremes/"}
+)
 library(parallel)
 library(mvtnorm)
 library(TruncatedNormal)
@@ -14,9 +23,6 @@ source("code/likelihood_inference.R")
 
 id = 1
 ncores=detectCores()
-d <- 25 ## 10 * 10 grid on [0,1]^2
-m <- 1000 ## number of samples
-set.seed(1342342)
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
@@ -26,8 +32,7 @@ para.alpha = rbind(c(0,0,0),c(-1,2,3),c(-2,-1,4)) ## slant parameter for skewed 
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-for (arg in args) eval(parse(text = arg))
-file2save = paste0("/srv/scratch/z3536974/data/simulation_study_vecchia_",id,".RData")
+file2save = paste0(DataPath,"data/simulation_study_vecchia_",id,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 vecchia.seq <- 1:nrow(coord)#sample(1:nrow(coord),size=nrow(coord),replace=FALSE)
