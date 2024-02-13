@@ -1,7 +1,7 @@
 args <- commandArgs(TRUE)
 # settings 
 id = 1
-ncores=detectCores()
+ncores=ceiling(detectCores()/2)
 d <- 25 ## 10 * 10 grid on [0,1]^2
 m <- 200 ## number of samples
 m <- 1000 ## number of samples
@@ -72,12 +72,14 @@ for(i in 1:nrow(par.skew.normal)){
     samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
     # ec.logskew[[i]] <- lapply(all.pairs,empirical_extcoef,data=samples.skew.normal[[i]])
     # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
-    tryCatch(fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=par.skew.normal[i,],fixed=c(F,F,F,F,F),thres=thres,model="logskew",ncores=ncores,maxit=100,lb=c(0.01,0.01,-Inf,-Inf,-Inf),ub=c(10,2.0,Inf,Inf,Inf),bootstrap=FALSE,hessian=TRUE,opt=TRUE),
-             error=function(e){print(e);fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(0.5,1.5,-0.1,0.1,0.1),fixed=c(F,F,F,F,F),thres=thres,model="logskew",ncores=ncores,maxit=100,lb=c(0.01,0.01,-Inf,-Inf,-Inf),ub=c(10,2.0,Inf,Inf,Inf),bootstrap=FALSE,hessian=TRUE,opt=TRUE)})    
+    fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(0.5,0.5,0.5,-0.5,0.5),fixed=c(F,F,F,F,F),thres=thres,model="logskew",ncores=ncores,maxit=100,lb=c(0.01,0.01,-Inf,-Inf,-Inf),ub=c(10,2.0,Inf,Inf,Inf),bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+    print(i)
 }
 
 save(fit.logskew.angular,par.skew.normal,file=file2save)
 
+idx.case = 1
+fit.logskew.angular[[idx.case]]$par - par.skew.normal[idx.case,]
 ## trainning the model with the log-skew normal based max-stable process ##
 # idx.case = 11
 # fit.logskew.comp <- MCLE(data=samples.skew.normal[[idx.case]],init=c(0.5,1,0,0,0),fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,sample(1:ncol(all.pairs),1000,replace=FALSE)],ncores=ncores,maxit=200,model="logskew",lb=c(0.1,0.1,-Inf,-Inf,-Inf),ub=c(10,2.5,Inf,Inf,Inf), alpha.func=alpha.func,hessian=TRUE)
