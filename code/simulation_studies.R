@@ -3,6 +3,7 @@ computer = "local"
 id = 1
 d <- 25 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
+thres = 0.9
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -19,7 +20,6 @@ para.alpha = rbind(c(0,0,0),c(-1,2,3),c(-2,-1,4)) ## slant parameter for skewed 
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-thres = 0.9
 lb=c(0.01,0.01,-Inf,-Inf,-Inf)
 ub=c(10,2.0,Inf,Inf,Inf)
 init = c(1,0.5,-0.1,0.1,0.1)
