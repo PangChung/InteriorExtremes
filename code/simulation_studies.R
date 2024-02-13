@@ -1,7 +1,6 @@
 args <- commandArgs(TRUE)
 # settings 
 id = 1
-ncores=ceiling(detectCores()/2)
 d <- 25 ## 10 * 10 grid on [0,1]^2
 m <- 200 ## number of samples
 m <- 1000 ## number of samples
@@ -37,21 +36,7 @@ switch(computer,
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
-
-id = 1
 ncores=detectCores()
-d <- 25 ## 10 * 10 grid on [0,1]^2
-m <- 1000 ## number of samples
-set.seed(1342342)
-coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
-diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
-diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(1,2)#c(0.5,1,2) ## range for the correlation function ##
-para.nu = c(0.5,1)#c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0,0),c(-1,2,3),c(-2,-1,4)) ## slant parameter for skewed norm model ##
-para.deg = 2 ## degree of the freedom for the truncated t model ##
-all.pairs = combn(1:nrow(coord),2)
-all.pairs.list = split(all.pairs,col(all.pairs))
 for (arg in args) eval(parse(text = arg))
 file2save = paste0("/srv/scratch/z3536974/data/simulation_study_",id,"_",thres*100,"_",m,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
