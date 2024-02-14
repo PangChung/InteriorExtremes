@@ -1,4 +1,5 @@
 args <- commandArgs(TRUE)
+id = 1
 computer = "local"
 d <- 25 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
@@ -21,7 +22,6 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 
-id = 1
 ncores=detectCores()
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
