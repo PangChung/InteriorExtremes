@@ -83,7 +83,7 @@ V_truncT <- function(x,par,ncores=NULL){
         T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
     }
     a_j = rep(1,n)
-    a_j[idx.finite] = T_j/phi*2^(nu/2-1)*gamma_1/sqrt(pi)    
+    a_j[idx.finite] = T_j[idx.finite]/phi*2^(nu/2-1)*gamma_1/sqrt(pi)    
     func <- function(idx){
         x_j = x[idx,] * a_j
         idx.finite.j = which(is.finite(x_j))
