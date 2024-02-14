@@ -21,6 +21,7 @@ para.alpha = rbind(c(0,0,0),c(-1,2,3),c(-2,-1,4)) ## slant parameter for skewed 
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
+thres = c(0.99,0.95,0.9,0.85,0.8)
 # loading library and setting path
 library(parallel)
 library(mvtnorm)
@@ -55,18 +56,19 @@ if(model == "logskew"){
     tc.logskew <- list()
     fit.logskew.angular <- list()
     for(i in 1:nrow(par.skew.normal)){
+        fit.logskew <- list()
         par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(coord,par.skew.normal[i,-c(1:2)]))
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
-        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(0.5,0.5,0.5,-0.5,0.5),fixed=c(F,F,F,F,F),thres=thres,model="logskew",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+        for(j in 1:length(thres)){
+            fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=(F,F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+        }
+        fit.logskew.angular[[i]] <- fit.logskew
         print(i)
     }
 
     save(fit.logskew.angular,par.skew.normal,file=file2save)
-
-    idx.case = 1
-    fit.logskew.angular[[idx.case]]$par - par.skew.normal[idx.case,]
 }
 
 if(model == "truncT"){
@@ -75,11 +77,15 @@ if(model == "truncT"){
     par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.deg))
     samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
     for(i in 1:nrow(par.truncT)){
+        fit.truncT <- list()
         par.truncT.list[[i]] <- list(sigma=cov.func(coord,par.truncT[i,1:2]),nu=par.truncT[i,3])
         samples.truncT[[i]] <- simu_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
         # ec.truncT[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.truncT[[i]]))
         # tc.truncT[[i]] <- true_extcoef(all.pairs,par=par.truncT.list[[i]],model="truncT2")
-        fit.truncT.angular[[i]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(0.5,0.5,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres,model="truncT",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+        for(i in 1:length(thres){
+            fit.truncT[[i]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(0.5,0.5,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+        }
+        fit.truncT.angular[[i]] <- fit.truncT
         print(i)
     }
     save(fit.truncT.angular,par.truncT,file=file2save)
