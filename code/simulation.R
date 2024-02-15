@@ -8,6 +8,7 @@
     # @par[[1]] : nu: degrees of freedom
     # @par[[2]] : sigma: correlation matrix
 simu_truncT <- function(m,par,ncores=NULL){    
+    message("start computing matrices")
     nu = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
@@ -18,6 +19,7 @@ simu_truncT <- function(m,par,ncores=NULL){
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[[1]]
         return(list(val,sigma.j))
     }
+    browser()
     if(!is.null(ncores)) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])
@@ -60,6 +62,7 @@ simu_truncT <- function(m,par,ncores=NULL){
         z = mapply(func,idx.j=idx.loc.sum,j=1:n,SIMPLIFY=FALSE)
     }
     
+    message("start simulation")
     z = do.call(rbind,z) 
     z = z *  r.hat
     idx.loc[,2] = 2
