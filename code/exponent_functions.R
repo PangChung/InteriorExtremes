@@ -507,6 +507,7 @@ alpha.func <- function(coord,par=rep(1,1,1)){
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit=100,
                     ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE){
+    t0 <- proc.time()
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
@@ -574,6 +575,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     }
     par2 = init; par2[!fixed] = opt.result$par
     opt.result$par = par2
+    opt.result$time <- proc.time() - t0
     return(opt.result)
 }
 

@@ -1,7 +1,7 @@
 args <- commandArgs(TRUE)
-computer = "local"
+computer = "ws"
 id = 1
-d <- 25 ## 10 * 10 grid on [0,1]^2
+d <- 8 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
 thres = 0.9
 model = "truncT"; # "logskew" or "truncT"
@@ -191,4 +191,9 @@ if(model == "truncT"){
 # idx.case = 11
 # fit.logskew.angular[[idx.case]]$par
 # par.skew.normal[idx.case,]
+
+
+
+
+
 
