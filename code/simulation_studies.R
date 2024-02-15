@@ -82,8 +82,8 @@ if(model == "truncT"){
         samples.truncT[[i]] <- simu_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
         # ec.truncT[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.truncT[[i]]))
         # tc.truncT[[i]] <- true_extcoef(all.pairs,par=par.truncT.list[[i]],model="truncT2")
-        for(i in 1:length(thres){
-            fit.truncT[[i]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(0.5,0.5,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+        for(j in 1:length(thres)){
+            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(0.5,0.5,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
         }
         fit.truncT.angular[[i]] <- fit.truncT
         print(i)
