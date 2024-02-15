@@ -58,10 +58,12 @@ if(model == "logskew"){
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
         par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(coord,par.skew.normal[i,-c(1:2)]))
+        set.seed(init.seed)
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
+            set.seed(1)
             fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
         }
         fit.logskew.angular[[i]] <- fit.logskew
@@ -79,11 +81,13 @@ if(model == "truncT"){
     for(i in 1:nrow(par.truncT)){
         fit.truncT <- list()
         par.truncT.list[[i]] <- list(sigma=cov.func(coord,par.truncT[i,1:2]),nu=par.truncT[i,3])
+        set.seed(init.seed)
         samples.truncT[[i]] <- simu_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
         # ec.truncT[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.truncT[[i]]))
         # tc.truncT[[i]] <- true_extcoef(all.pairs,par=par.truncT.list[[i]],model="truncT2")
-        for(j in 1:length(thres)){
-            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(0.5,0.5,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+        for(j in 3:length(thres)){
+            set.seed(1)
+            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(0.5,1,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
         }
         fit.truncT.angular[[i]] <- fit.truncT
         print(i)
