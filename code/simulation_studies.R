@@ -37,7 +37,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
-file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",thres*100,"_",m,".RData")
+file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 
@@ -77,7 +77,7 @@ if(model == "truncT"){
     ub=c(10,2.0,Inf)
     par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.deg))
     samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
-    for(i in 5:nrow(par.truncT)){
+    for(i in 6:nrow(par.truncT)){
         fit.truncT <- list()
         par.truncT.list[[i]] <- list(sigma=cov.func(coord,par.truncT[i,1:2]),nu=par.truncT[i,3])
         set.seed(init.seed)
