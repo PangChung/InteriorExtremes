@@ -1,5 +1,5 @@
 args <- commandArgs(TRUE)
-computer = "local"
+computer = "ws"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples

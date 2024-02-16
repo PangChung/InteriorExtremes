@@ -487,8 +487,8 @@ cov.func <- function(loc,par){
     return(cov.mat)
 }
 
-alpha.func <- function(par=rep(1,1,1),basis=basis){
-    alpha <- c(par %*% t(basis))
+alpha.func <- function(par=rep(1,1,1),b.mat=basis){
+    alpha <- c(par %*% t(b.mat))
     return(alpha)
 }
 
