@@ -92,3 +92,8 @@ if(model == "truncT"){
     }
     save(fit.truncT.angular,par.truncT,file=file2save)
 }
+
+
+# for(idx in 1:nrow(par.skew.normal)){
+#     print(fit.logskew.angular[[idx]][[1]]$par - par.skew.normal[idx,])
+# }
