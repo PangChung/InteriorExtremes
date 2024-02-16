@@ -1,7 +1,7 @@
 args <- commandArgs(TRUE)
-computer = "ws"
+computer = "local"
 id = 1
-d <- 8 ## 10 * 10 grid on [0,1]^2
+d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
 thres = 0.9
 model = "truncT"; # "logskew" or "truncT"
