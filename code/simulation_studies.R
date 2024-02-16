@@ -68,7 +68,6 @@ if(model == "logskew"){
         fit.logskew.angular[[i]] <- fit.logskew
         print(i)
     }
-
     save(fit.logskew.angular,par.skew.normal,file=file2save)
 }
 
