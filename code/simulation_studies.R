@@ -3,7 +3,6 @@ computer = "local"
 id = 1
 d <- 25 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
-thres = 0.9
 model = "truncT"; # "logskew" or "truncT"
 for (arg in args) eval(parse(text = arg))
 switch(computer,
