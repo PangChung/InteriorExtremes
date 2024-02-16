@@ -1,10 +1,10 @@
 args <- commandArgs(TRUE)
-computer = "local"
+computer = "ws"
 id = 1
 d <- 25 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
 thres = 0.9
-model = "truncT"; # "logskew" or "truncT"
+model = "logskew"; # "logskew" or "truncT"
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -21,7 +21,7 @@ para.alpha = rbind(c(0,0,0),c(-1,2,3),c(-2,-1,4)) ## slant parameter for skewed 
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-thres = c(0.99,0.95,0.9,0.85,0.8)
+thres = c(0.95,0.9)
 # loading library and setting path
 library(parallel)
 library(mvtnorm)
@@ -64,6 +64,7 @@ if(model == "logskew"){
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
             fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+            print(fit.logskew[[j]]$par - par.skew.normal[i,])
         }
         fit.logskew.angular[[i]] <- fit.logskew
         print(i)

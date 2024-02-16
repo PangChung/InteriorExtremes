@@ -532,9 +532,9 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     }
     if(opt){
         if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+            opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=hessian)
         }else{
-            opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+            opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=hessian)
         }
         # if(model=="logskew" & any(!fixed[-c(1:2)])){
         #     init2 = init
