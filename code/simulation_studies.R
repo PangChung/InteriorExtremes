@@ -1,7 +1,7 @@
 args <- commandArgs(TRUE)
 computer = "local"
 id = 1
-d <- 15 ## 10 * 10 grid on [0,1]^2
+d <- 25 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
 thres = 0.9
 model = "truncT"; # "logskew" or "truncT"
@@ -91,8 +91,3 @@ if(model == "truncT"){
     }
     save(fit.truncT.angular,par.truncT,file=file2save)
 }
-
-
-
-
-

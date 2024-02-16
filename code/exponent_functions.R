@@ -487,14 +487,6 @@ cov.func <- function(loc,par){
     return(cov.mat)
 }
 
-# alpha.func <- function(coord,par=1){
-#     n = nrow(coord)
-#     alpha = rep(exp(par)/(1+exp(par)),n)
-#     alpha[ceiling(n/2):n] = - alpha[ceiling(n/2):n]
-#     return(alpha)
-#     #alpha = rep(par,nrow(coord))
-# }
-
 alpha.func <- function(coord,par=rep(1,1,1)){
     n = nrow(coord)
     basis <- bs(x=coord[,1],df = length(par)) # no intercept
