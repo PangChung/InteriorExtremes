@@ -497,7 +497,7 @@ cov.func <- function(loc,par){
 
 alpha.func <- function(coord,par=rep(1,1,1)){
     n = nrow(coord)
-    basis <- bs(x=1:n,degree = length(par))
+    basis <- bs(x=coord[,1],df = length(par)) # no intercept
     basis <- sweep(basis,2,apply(basis,2,mean),FUN="-")
     alpha <- c(par %*% t(basis))
     return(alpha)
