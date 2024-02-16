@@ -487,10 +487,7 @@ cov.func <- function(loc,par){
     return(cov.mat)
 }
 
-alpha.func <- function(coord,par=rep(1,1,1)){
-    n = nrow(coord)
-    basis <- bs(x=coord[,1],df = length(par)) # no intercept
-    basis <- sweep(basis,2,apply(basis,2,mean),FUN="-")
+alpha.func <- function(par=rep(1,1,1),basis=basis){
     alpha <- c(par %*% t(basis))
     return(alpha)
 }
@@ -511,7 +508,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
             cov.mat = cov.func(loc,par.1)
-            alpha = alpha.func(loc,par.2)
+            alpha = alpha.func(par=par.2)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
             val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore)
