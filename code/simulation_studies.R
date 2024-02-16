@@ -63,7 +63,7 @@ if(model == "logskew"){
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
-            fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=100,lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
+            fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=500,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=TRUE,opt=TRUE)
         }
         fit.logskew.angular[[i]] <- fit.logskew
         print(i)
