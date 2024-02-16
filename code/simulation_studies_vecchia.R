@@ -42,6 +42,11 @@ lb=c(0.01,0.01,-Inf,-Inf,-Inf)
 ub=c(10,2.0,Inf,Inf,Inf)
 init = c(1,0.5,-0.1,0.1,0.1)
 
+##compute the basis ###
+centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
+idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
+basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y=y-mean(y) })
+
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################

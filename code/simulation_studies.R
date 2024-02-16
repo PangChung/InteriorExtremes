@@ -1,5 +1,5 @@
 args <- commandArgs(TRUE)
-computer = "ws"
+computer = "local"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
@@ -40,6 +40,10 @@ ncores=detectCores()
 file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
+##compute the basis ###
+centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
+idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
+basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y=y-mean(y) })
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
