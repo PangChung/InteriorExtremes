@@ -497,7 +497,7 @@ alpha.func <- function(coord,par=rep(1,1,1)){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit=100,
-                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE){
+                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE,trace=FALSE){
     t0 <- proc.time()
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
@@ -532,9 +532,9 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     }
     if(opt){
         if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=hessian)
+            opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
         }else{
-            opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=hessian)
+            opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
         }
         # if(model=="logskew" & any(!fixed[-c(1:2)])){
         #     init2 = init
