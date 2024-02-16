@@ -1,7 +1,7 @@
 args <- commandArgs(TRUE)
 computer = "local"
 id = 1
-d <- 25 ## 10 * 10 grid on [0,1]^2
+d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
 model = "truncT"; # "logskew" or "truncT"
 for (arg in args) eval(parse(text = arg))
