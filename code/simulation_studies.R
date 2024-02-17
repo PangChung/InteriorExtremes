@@ -17,7 +17,7 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(1,2) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(0.5,1) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0,0),c(-1,2,3),c(-2,-1,4)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0,0),c(1,1,1),c(-1,-1,-1),c(1,2,-3)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -41,7 +41,7 @@ file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,".RData"
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 ##compute the basis ###
-centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
+centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
 basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y=y-mean(y) })
 
@@ -51,7 +51,7 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y
 if(model == "logskew"){
     lb=c(0.01,0.01,-Inf,-Inf,-Inf)
     ub=c(10,2.0,Inf,Inf,Inf)
-    init = c(1,0.5,-0.1,0.1,0.1)
+    init = c(0.5,0.5,0,0,0)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
     samples.skew.normal <- list()
@@ -96,7 +96,6 @@ if(model == "truncT"){
     }
     save(fit.truncT.angular,par.truncT,file=file2save)
 }
-
 
 # for(idx in 1:nrow(par.skew.normal)){
 #     print(fit.logskew.angular[[idx]][[1]]$par - par.skew.normal[idx,])
