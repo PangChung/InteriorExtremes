@@ -37,10 +37,10 @@ init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 vecchia.seq <- 1:nrow(coord)#sample(1:nrow(coord),size=nrow(coord),replace=FALSE)
 neighbours.mat <- sapply(1:nrow(coord),FUN=neighbours,vecchia.seq=vecchia.seq,
-					q=3,loc=diff.mat)
+					q=2,loc=diff.mat)
 lb=c(0.01,0.01,-Inf,-Inf,-Inf)
 ub=c(10,2.0,Inf,Inf,Inf)
-init = c(1,0.5,-0.1,0.1,0.1)
+init = c(1,0.5,0,0,0)
 
 ##compute the basis ###
 centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
@@ -56,12 +56,14 @@ samples.skew.normal <- list()
 par.skew.list <- list()
 ec.logskew <- list()
 tc.logskew <- list()
-fit.logskew.vecchia <- list()
+#fit.logskew.vecchia <- list()
+fit.logskew.comp <- list()
 for(i in 1:nrow(par.skew.normal)){
     par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
     samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-    fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=500,model="logskew",lb=lb,ub=ub,ncores=ncores)
+    #fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=500,model="logskew",lb=lb,ub=ub,ncores=ncores)
+    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,sample(1:length(all.pairs.list), 300, replace = FALSE)],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=500)
 }
 
-save(fit.logskew.vecchia,par.skew.normal,file=file2save)
+save(fit.logskew.comp,par.skew.normal,file=file2save)
 
