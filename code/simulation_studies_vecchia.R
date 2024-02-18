@@ -1,7 +1,7 @@
 args <- commandArgs(TRUE)
 id = 1
 computer = "local"
-d <- 25 ## 10 * 10 grid on [0,1]^2
+d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
 # loading library and setting path
 for (arg in args) eval(parse(text = arg))
@@ -27,9 +27,9 @@ coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(0.5,1,2) ## range for the correlation function ##
-para.nu = c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0,0),c(-1,2,3),c(-2,-1,4)) ## slant parameter for skewed norm model ##
-para.deg = 2 ## degree of the freedom for the truncated t model ##
+para.nu = c(0.5,1) ## smoothness parameter for the correlation function ##
+para.alpha = rbind(c(0,0,0),c(1,1,1),c(-1,-1,-1),c(1,2,-3)) ## slant parameter for skewed norm model ##
+para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 file2save = paste0(DataPath,"data/simulation_study_vecchia_",id,".RData")
@@ -63,5 +63,5 @@ for(i in 1:nrow(par.skew.normal)){
     fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=500,model="logskew",lb=lb,ub=ub,ncores=ncores)
 }
 
-save(fit.logskew.vecchia,file=file2save)
+save(fit.logskew.vecchia,par.skew.normal,file=file2save)
 
