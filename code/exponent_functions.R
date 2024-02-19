@@ -576,3 +576,13 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     return(opt.result)
 }
 
+# function to create list of lists: 
+# x: number of lists in each layer 
+# n: number of layers
+create_lists <- function(x){
+    if(length(x)==0){
+        return(list())
+    }else{
+        return(lapply(1:x[1],function(i){create_lists(x[-1])}))
+    }
+}

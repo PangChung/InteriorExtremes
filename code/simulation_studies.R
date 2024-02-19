@@ -81,7 +81,7 @@ if(model == "truncT"){
     ub=c(10,2.0,Inf)
     par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.deg))
     samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
-    for(i in 6:nrow(par.truncT)){
+    for(i in 1:nrow(par.truncT)){
         fit.truncT <- list()
         par.truncT.list[[i]] <- list(sigma=cov.func(coord,par.truncT[i,1:2]),nu=par.truncT[i,3])
         set.seed(init.seed)
