@@ -1,6 +1,6 @@
 args <- commandArgs(TRUE)
 id = 1
-computer = "local"
+computer = "ws"
 d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 100 ## number of samples
 # loading library and setting path
