@@ -17,7 +17,7 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(1,2) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(0.5,1) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0,0),c(1,1,1),c(-1,-1,-1),c(1,2,-3)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0,0),c(-1,-2,-3),c(-2,-1,4),c(2,1,4)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -43,7 +43,7 @@ set.seed(init.seed)
 ##compute the basis ###
 centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y=y-mean(y) })
+basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-mean(y)})
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
@@ -51,7 +51,7 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y
 if(model == "logskew"){
     lb=c(0.01,0.01,-Inf,-Inf,-Inf)
     ub=c(10,2.0,Inf,Inf,Inf)
-    init = c(0.5,0.5,0,0,0)
+    init = c(1,1,1,1,1)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
     samples.skew.normal <- list()
@@ -89,7 +89,7 @@ if(model == "truncT"){
         # ec.truncT[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.truncT[[i]]))
         # tc.truncT[[i]] <- true_extcoef(all.pairs,par=par.truncT.list[[i]],model="truncT2")
         for(j in 1:length(thres)){
-            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(0.5,1,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="Nelder-Mead",bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=TRUE)
+            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(1,1,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="Nelder-Mead",bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=TRUE)
         }
         fit.truncT.angular[[i]] <- fit.truncT
         print(i)
