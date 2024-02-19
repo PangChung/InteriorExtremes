@@ -2,7 +2,7 @@ args <- commandArgs(TRUE)
 id = 1
 computer = "local"
 d <- 15 ## 10 * 10 grid on [0,1]^2
-m <- 1000 ## number of samples
+m <- 100 ## number of samples
 # loading library and setting path
 for (arg in args) eval(parse(text = arg))
 switch(computer,
@@ -47,6 +47,7 @@ centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
 basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y=y-mean(y) })
 
+pairs.idx = rank(diff.mat[t(all.pairs)]) < 2000
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
@@ -58,11 +59,13 @@ ec.logskew <- list()
 tc.logskew <- list()
 #fit.logskew.vecchia <- list()
 fit.logskew.comp <- list()
+diff.mat[all.pairs]
 for(i in 1:nrow(par.skew.normal)){
     par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
     samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
     #fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=500,model="logskew",lb=lb,ub=ub,ncores=ncores)
-    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,sample(1:length(all.pairs.list), 300, replace = FALSE)],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=500)
+    print(par.skew.normal[i,])
+    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=500)
 }
 
 save(fit.logskew.comp,par.skew.normal,file=file2save)
