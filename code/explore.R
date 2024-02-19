@@ -17,7 +17,8 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(1,2) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = 1 #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0,0),c(-1,-2,-3),c(-2,-1,4),c(2,1,4)) ## slant parameter for skewed norm model ##
+#para.alpha = rbind(c(0,0,0),c(-1,-2,-3),c(-2,-1,4),c(2,1,4)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0,0),c(1,1,1),c(-1,-1,-1),c(1,2,-3))
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -50,7 +51,8 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y
 alphas = apply(para.alpha,1,function(x){c(basis %*% x)})
 
 idx=4
-df = data.frame(x = coord[,1], y = coord[,2], z = alphas[,idx])
+beta = alpha2delta(list(cov.func(coord,c(0.5,1)),alphas[,idx]))[[2]]
+df = data.frame(x = coord[,1], y = coord[,2], z = beta)
 library(ggplot2)
 p <- ggplot(df, aes(x = x, y = y, fill = z)) +
   geom_tile() +
