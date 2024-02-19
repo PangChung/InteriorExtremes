@@ -31,19 +31,6 @@ library(tidyr)
 
 variable.names <- c(expression(lambda), expression(nu), expression(alpha[1]), expression(alpha[2]), expression(alpha[3]))
 
-# p.list <- list(list(),list(),list(),list(),list())
-# for(idx.thres in 1:5){
-#     for(idx.case in 1:12){
-#         data = as.data.frame(est.mat.list[[idx.thres]][[idx.case]])
-#         data.true <- pivot_longer(par.skew.normal[idx.case,], everything(), names_to = "Variable", values_to = "Value")
-#         data_long <- pivot_longer(data, everything(), names_to = "Variable", values_to = "Value")
-#         p<- ggplot(data_long, aes(x = Variable, y = Value)) +
-#         geom_boxplot() + scale_x_discrete(labels=variable.names) +
-#         theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 10000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(max(-10,min(data_long$Value)),min(10,max(data_long$Value)))
-#         p.list[[idx.thres]][[idx.case]] <- p
-#     }
-# }
-
 n1 = length(est.mat.list[[1]]);n2 = length(est.mat.list)
 p.list = create_lists(c(n2,n1))
 for(idx.thres in 1:n2){
