@@ -75,14 +75,17 @@ t0 <- proc.time()
 fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(0.5,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
 print(t0 <- proc.time()- t0)
 
-init = c(1,1,0.5,-0.5,0.5)
-fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="Nelder-Mead",trace=TRUE,maxit=1000)
+init = c(1,1,1,-1,1)
+init[-c(1:2)] <- para.alpha[idx,]
+fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="L-BFGS-B",trace=FALSE,maxit=1000)
 fit.result$par
-# Library
+
+alpha.grid.list[[which.min(unlist(fit.values))]]
+para.alpha[idx,]
+
+
 library(plotly)
-
 # Data: volcano is provided by plotly
-
 # Plot
 data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=unlist(fit.values))
 z=matrix(unlist(fit.values),nrow=length(alpha.1),ncol=length(alpha.1))
@@ -90,5 +93,3 @@ p <- plot_ly(z=~z, type = "surface")
 p 
 
 
-alpha.grid.list[[which.min(unlist(fit.values))]]
-para.alpha[idx,]
