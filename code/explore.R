@@ -48,7 +48,7 @@ set.seed(init.seed)
 centers <- rbind(c(0.5,0.5),c(0.25,0.75),c(0.25,0.25),c(0.75,0.75))
 #centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y=y-mean(y) })
+basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-mean(y) })
 
 ## plot the basis functions
 alphas = apply(para.alpha,1,alpha.func)
@@ -76,7 +76,7 @@ fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=sa
 print(t0 <- proc.time()- t0)
 
 init = c(1,1,0.5,-0.5,0.5)
-fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="Nelder-Mead",trace=TRUE,maxit=500)
+fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="Nelder-Mead",trace=TRUE,maxit=1000)
 fit.result$par
 # Library
 library(plotly)
