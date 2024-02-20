@@ -68,7 +68,9 @@ if(model == "logskew"){
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
-            alphas = c(-1,0,1)#seq(-1,1,length.out=n)
+            #alphas = c(-1,0,1)#seq(-1,1,length.out=n)
+            n=10
+            alphas = c(0,seq(-1,1,length.out=n))
             alphas = matrix(alphas,ncol=ncol(para.alpha),nrow=length(alphas))
             alphas.grid = as.matrix(do.call(expand.grid,split(alphas,col(alphas))))
             alphas.grid.list <- split(alphas.grid,row(alphas.grid))
