@@ -54,7 +54,7 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-m
 # basis <- apply(basis,2,function(x){x-mean(x)})
 alphas = apply(para.alpha,1,alpha.func)
 
-idx=3
+idx=1
 beta = alpha2delta(list(cov.func(coord,c(0.5,1)),alphas[,idx]))[[2]]
 df = data.frame(x = coord[,1], y = coord[,2], z = beta)
 library(ggplot2)
@@ -87,9 +87,9 @@ p
 
 
 n=3#ceiling(100^(1/ncol(para.alpha)))
-alphas = seq(-2,2,length.out=n)
-alphas = matrix(alphas,ncol=ncol(para.alpha),nrow=n)
-alphas.grid = as.matrix(do.call(expand.grid,split(alphas,col(alphas))))
+alpha.vec = c(-1,0,1)#seq(-2,2,length.out=n)
+alpha.vec = matrix(alpha.vec,ncol=ncol(para.alpha),nrow=length(alpha.vec))
+alphas.grid = as.matrix(do.call(expand.grid,split(alpha.vec,col(alpha.vec))))
 alphas.grid.list <- split(alphas.grid,row(alphas.grid))
 fit.values <- unlist(mclapply(alphas.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(1,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
 init = c(1,1,alphas.grid.list[[which.min(unlist(fit.values))]])
