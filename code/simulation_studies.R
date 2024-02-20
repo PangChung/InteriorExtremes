@@ -51,7 +51,7 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-m
 if(model == "logskew"){
     lb=c(0.01,0.01,-Inf,-Inf,-Inf)
     ub=c(10,2.0,Inf,Inf,Inf)
-    init = c(1,1,0.1,-0.1,0.1)
+    init = c(1,1,0.5,-0.5,0.5)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
     samples.skew.normal <- list()
