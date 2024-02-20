@@ -17,8 +17,8 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(1,2) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = 1 #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0,0),c(-1,-2,-3),c(-2,-1,4),c(2,1,4)) ## slant parameter for skewed norm model ##
-#para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1),c(-1,2))
+#para.alpha = rbind(c(0,0,0),c(-1,-2,-3),c(-2,-1,4),c(2,1,4)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1),c(-1,2))
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -44,13 +44,14 @@ file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,".RData"
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 
-##compute the basis ###
-centers <- rbind(c(0.5,0.5),c(0.25,0.75),c(0.25,0.25),c(0.75,0.75))
-#centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))
+#compute the basis ###
+#centers <- rbind(c(0.5,0.5),c(0,0),c(0.25,0.25),c(0.75,0.75))
+centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
 basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-mean(y) })
-
-## plot the basis functions
+# ## plot the basis functions
+# basis <- bs(1:nrow(coord),df=4)
+# basis <- apply(basis,2,function(x){x-mean(x)})
 alphas = apply(para.alpha,1,alpha.func)
 
 idx=3
@@ -65,27 +66,16 @@ p
 
 samples.skew.normal <- simu_logskew(m=m,par=alpha2delta(list(cov.func(coord,c(0.5,1)),alphas[,idx])),ncores=ncores)
 
-alpha.1 = seq(-4,4,0.3)
+alpha.1 = seq(-4,4,0.1)
 length(alpha.1)
-alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1,alpha.1))
+alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))
 alpha.grid.list <- split(alpha.grid,row(alpha.grid))
 t0 <- proc.time()
-fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(0.5,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
+fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(1,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
 print(t0 <- proc.time()- t0)
 alpha.grid.list[[which.min(unlist(fit.values))]]
 para.alpha[idx,]
-
-
-
-alpha.grid = as.matrix(expand.grid(c(-1,1),c(-1,1),c(-1,1)))
-alpha.grid.list <- split(alpha.grid,row(alpha.grid))
-t0 <- proc.time()
-fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(0.5,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
-print(t0 <- proc.time()- t0)
-init = c(1,1,alpha.grid.list[[which.min(unlist(fit.values))]])
-fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="L-BFGS-B",trace=FALSE,maxit=1000)
-fit.result$par
-
+min(unlist(fit.values))
 
 library(plotly)
 # Data: volcano is provided by plotly
@@ -94,5 +84,18 @@ data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=unlist(fit.values))
 z=matrix(unlist(fit.values),nrow=length(alpha.1),ncol=length(alpha.1))
 p <- plot_ly(z=~z, type = "surface")
 p 
+
+
+n=3#ceiling(100^(1/ncol(para.alpha)))
+alphas = seq(-2,2,length.out=n)
+alphas = matrix(alphas,ncol=ncol(para.alpha),nrow=n)
+alphas.grid = as.matrix(do.call(expand.grid,split(alphas,col(alphas))))
+alphas.grid.list <- split(alphas.grid,row(alphas.grid))
+fit.values <- unlist(mclapply(alphas.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(1,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
+init = c(1,1,alphas.grid.list[[which.min(unlist(fit.values))]])
+print(init)
+fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F),thres=0.95,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="Nelder-Mead",trace=FALSE,maxit=1000)
+fit.result$par
+para.alpha[idx,]
 
 

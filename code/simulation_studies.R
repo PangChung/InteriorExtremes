@@ -1,5 +1,6 @@
+rm(list=ls())
 args <- commandArgs(TRUE)
-computer = "ws"
+computer = "local"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
@@ -15,9 +16,9 @@ switch(computer,
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(1,2) #c(0.5,1,2) ## range for the correlation function ##      
+para.range = c(0.5,1) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(0.5,1) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0,0),c(-1,-2,-3),c(-2,-1,4),c(2,1,4)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -41,17 +42,17 @@ file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,".RData"
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 ##compute the basis ###
-centers <- rbind(c(0.5,0.5),c(0.25,0.75),c(0.25,0.25),c(0.75,0.75))
+centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-mean(y)})
+basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y/max(abs(y));y=y-mean(y)})
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
 if(model == "logskew"){
-    lb=c(0.01,0.01,-Inf,-Inf,-Inf)
-    ub=c(10,2.0,Inf,Inf,Inf)
-    init = c(1,1,0.5,-0.5,0.5)
+    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
+    ub=c(10,2.0,rep(Inf,ncol(para.alpha)))
+    #init = c(1,1,0,0,0)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
     samples.skew.normal <- list()
@@ -67,7 +68,14 @@ if(model == "logskew"){
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
-            fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=TRUE)
+            n=20#ceiling(100^(1/ncol(para.alpha)))
+            alphas = seq(-10,10,length.out=n)
+            alphas = matrix(alphas,ncol=ncol(para.alpha),nrow=n)
+            alphas.grid = as.matrix(do.call(expand.grid,split(alphas,col(alphas))))
+            alphas.grid.list <- split(alphas.grid,row(alphas.grid))
+            fit.values <- unlist(mclapply(alphas.grid.list,function(x){mean(fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(1,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
+            init = c(1,1,alphas.grid.list[[which.min(unlist(fit.values))]])
+            fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
             print(fit.logskew[[j]]$par - par.skew.normal[i,])
         }
         fit.logskew.angular[[i]] <- fit.logskew

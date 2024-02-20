@@ -533,19 +533,19 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
         }else{
             opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
         }
-        if(model=="logskew" & any(!fixed[-c(1:2)])){
-            init2 = init
-            init2[!fixed] = opt.result$par
-            init2[-c(1:2)] = -init2[-c(1:2)] * 5
-            if(method=="L-BFGS-B"){
-                opt.result2 = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
-            }else{
-                opt.result2 = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
-            }
-            if(opt.result2$value < opt.result$value){
-                opt.result = opt.result2
-            }
-        }
+        # if(model=="logskew" & any(!fixed[-c(1:2)])){
+        #     init2 = init
+        #     init2[!fixed] = opt.result$par
+        #     init2[-c(1:2)] = -init2[-c(1:2)] * 5
+        #     if(method=="L-BFGS-B"){
+        #         opt.result2 = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+        #     }else{
+        #         opt.result2 = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+        #     }
+        #     if(opt.result2$value < opt.result$value){
+        #         opt.result = opt.result2
+        #     }
+        # }
     }else{
         return(object.func(init[!fixed],opt,ncores))
     }
