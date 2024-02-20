@@ -23,7 +23,7 @@ para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 thres = c(0.95,0.9)
-lb=c(0.01,0.01,rep(-Inf,nrow(para.alpha)))
+lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
 ub=c(10,2.0,rep(Inf,ncol(para.alpha)))
 # loading library and setting path
 library(parallel)
@@ -76,7 +76,8 @@ fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=sa
 print(t0 <- proc.time()- t0)
 
 init = c(1,1,0.5,-0.5,0.5)
-fit.values <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="Nelder-Mead",trace=TRUE,maxit=500)
+fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="Nelder-Mead",trace=TRUE,maxit=500)
+fit.result$par
 # Library
 library(plotly)
 

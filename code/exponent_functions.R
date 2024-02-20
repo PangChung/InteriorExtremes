@@ -488,7 +488,7 @@ cov.func <- function(loc,par){
 }
 
 alpha.func <- function(par=rep(1,1,1),b.mat=basis){
-    alpha <- c(c(1,par %*% t(b.mat))
+    alpha <- c(c(1,par) %*% t(b.mat))
     return(alpha)
 }
 
@@ -540,7 +540,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
             if(method=="L-BFGS-B"){
                 opt.result2 = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
             }else{
-                opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+                opt.result2 = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=TRUE),hessian=hessian)
             }
             if(opt.result2$value < opt.result$value){
                 opt.result = opt.result2
