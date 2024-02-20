@@ -1,6 +1,7 @@
 #files.list <- list()
     #files.list[[i]] <- list.files(path = "data/simulation_25_25_1000/", pattern = paste0("simulation_study_\\d+_",thres.list[[i]],".RData"), full.names = TRUE, recursive = FALSE)
-files.list <- list.files(path="data/simulation_2_1000",pattern="simulation_study_truncT_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
+source("code/exponent_functions.R")
+files.list <- list.files(path="data/simulation_3_1000",pattern="simulation_study_logskew_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
 
 extract_results <- function(files){
@@ -14,7 +15,7 @@ extract_results <- function(files){
     est.mat.list <- lapply(1:n2,function(x){  lapply(1:n1,function(x1){list()})})
     for(i in 1:n1){
         for(j in 1:n2){
-            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par})),ncol=length(fit.results[1]$par),byrow=TRUE)
+            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par})),ncol=ncol(par.skew),byrow=TRUE)
         }
     }
     return(list(est.mat.list,par.skew))
@@ -23,7 +24,7 @@ extract_results <- function(files){
 est.mat.list <- extract_results(files.list)
 par.skew.normal = est.mat.list[[2]];est.mat.list = est.mat.list[[1]]
 par.skew.normal = as.data.frame(par.skew.normal)
-save(est.mat.list,files.list,file="data/simulation_study_logskew_results_2_1000.RData")
+save(est.mat.list,files.list,file="data/simulation_study_logskew_results_3_1000.RData")
 
 library(ggplot2)
 library(gridExtra)
@@ -46,7 +47,7 @@ for(idx.thres in 1:n2){
     }
 }
 
-pdf(file="figures/simulation_est_boxplots_2_1000.pdf",width=4*n2,height = 5,onefile = TRUE)
+pdf(file="figures/simulation_est_boxplots_3_1000.pdf",width=4*n2,height = 5,onefile = TRUE)
 for(idx.case in 1:n1){
     do.call(grid.arrange, c(lapply(p.list,function(x){x[[idx.case]]}), ncol = n2,nrow=1))
 }

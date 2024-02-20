@@ -51,7 +51,7 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-m
 if(model == "logskew"){
     lb=c(0.01,0.01,-Inf,-Inf,-Inf)
     ub=c(10,2.0,Inf,Inf,Inf)
-    init = c(1,1,1,1,1)
+    init = c(1,1,0.1,-0.1,0.1)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
     samples.skew.normal <- list()
@@ -89,7 +89,7 @@ if(model == "truncT"){
         # ec.truncT[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.truncT[[i]]))
         # tc.truncT[[i]] <- true_extcoef(all.pairs,par=par.truncT.list[[i]],model="truncT2")
         for(j in 1:length(thres)){
-            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(1,1,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="Nelder-Mead",bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=TRUE)
+            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(1,1,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="L-BFGS-B",bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=TRUE)
         }
         fit.truncT.angular[[i]] <- fit.truncT
         print(i)

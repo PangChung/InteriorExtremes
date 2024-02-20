@@ -52,8 +52,8 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y
 ## plot the basis functions
 alphas = apply(para.alpha,1,alpha.func)
 
-idx=5
-beta = alpha2delta(list(cov.func(coord,c(0.5,1)),alphas[,idx]))[[2]]
+idx=3
+beta = alpha2delta(list(cov.func(coord,c(0.5,1)),2*alphas[,idx]))[[2]]
 df = data.frame(x = coord[,1], y = coord[,2], z = beta)
 library(ggplot2)
 p <- ggplot(df, aes(x = x, y = y, fill = z)) +
