@@ -69,19 +69,22 @@ alpha.1 = seq(-4,4,0.3)
 length(alpha.1)
 alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1,alpha.1))
 alpha.grid.list <- split(alpha.grid,row(alpha.grid))
-
-
 t0 <- proc.time()
 fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(0.5,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
 print(t0 <- proc.time()- t0)
-
-init = c(1,1,1,-1,1)
-init[-c(1:2)] <- para.alpha[idx,]
-fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="L-BFGS-B",trace=FALSE,maxit=1000)
-fit.result$par
-
 alpha.grid.list[[which.min(unlist(fit.values))]]
 para.alpha[idx,]
+
+
+
+alpha.grid = as.matrix(expand.grid(c(-1,1),c(-1,1),c(-1,1)))
+alpha.grid.list <- split(alpha.grid,row(alpha.grid))
+t0 <- proc.time()
+fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(0.5,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
+print(t0 <- proc.time()- t0)
+init = c(1,1,alpha.grid.list[[which.min(unlist(fit.values))]])
+fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F,F),thres=0.9,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="L-BFGS-B",trace=FALSE,maxit=1000)
+fit.result$par
 
 
 library(plotly)
