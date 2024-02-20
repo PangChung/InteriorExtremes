@@ -54,8 +54,8 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-m
 # basis <- apply(basis,2,function(x){x-mean(x)})
 alphas = apply(para.alpha,1,alpha.func)
 
-idx=1
-beta = alpha2delta(list(cov.func(coord,c(0.5,1)),alphas[,idx]))[[2]]
+idx=5
+beta = alpha2delta(list(cov.func(coord,c(0.5,1)),2*alphas[,idx]))[[2]]
 df = data.frame(x = coord[,1], y = coord[,2], z = beta)
 library(ggplot2)
 p <- ggplot(df, aes(x = x, y = y, fill = z)) +
