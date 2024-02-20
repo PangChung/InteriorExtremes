@@ -15,4 +15,4 @@ module load gmp/6.2.1
 module load r/4.3.1
 
 Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};m=1000;computer=\"hpc\";model=\"logskew\";d=15" 
-Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};m=1000;computer=\"hpc\";model=\"truncT\";d=10" 
+#Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};m=1000;computer=\"hpc\";model=\"truncT\";d=10" 
