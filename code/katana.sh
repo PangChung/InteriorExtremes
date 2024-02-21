@@ -5,7 +5,7 @@
 #PBS -l walltime=12:00:00
 #PBS -j oe 
 #PBS -J 1-200
-#PBS -m a
+#PBS -m ae
 #PBS -M peng.zhong@unsw.edu.au 
 
 cd ${PBS_O_WORKDIR}
