@@ -73,12 +73,13 @@ if(model == "logskew"){
         for(j in 1:length(thres)){
             #alphas = c(-1,0,1)#seq(-1,1,length.out=n)
             fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-            n=10
-            alphas = c(0,seq(-1,1,length.out=n))
-            alphas = matrix(alphas,ncol=ncol(para.alpha),nrow=length(alphas))
-            alphas.grid = as.matrix(do.call(expand.grid,split(alphas,col(alphas))))
+            r = sqrt(sum(fit.logskew[[j]]$par[-c(1:2)]^2))
+            n=100
+            alphas.grid =  cbind(r*sin(seq(0,2*pi,length.out=n)),r*cos(seq(0,2*pi,length.out=n)))
+            # alphas = c(0,seq(-1,1,length.out=n))
+            # alphas = matrix(alphas,ncol=ncol(para.alpha),nrow=length(alphas))
+            # alphas.grid = as.matrix(do.call(expand.grid,split(alphas,col(alphas))))
             alphas.grid.list <- split(alphas.grid,row(alphas.grid))
-            
             fit.values <- unlist(mclapply(alphas.grid.list,function(x){mean(fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(fit.logskew[[j]]$par[1:2],x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
 
             init = c(fit.logskew[[j]]$par[1:2],alphas.grid.list[[which.min(unlist(fit.values))]])
