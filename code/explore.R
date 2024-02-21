@@ -30,12 +30,13 @@ library(parallel)
 library(mvtnorm)
 library(TruncatedNormal)
 library(evd)
-#library(gridExtra)
+library(gridExtra)
 library(partitions)
-#library(ggplot2)
+library(ggplot2)
 library(Rfast)
 library(matrixStats)
 library(splines)
+library(plotly)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
@@ -54,15 +55,34 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-m
 # basis <- apply(basis,2,function(x){x-mean(x)})
 alphas = apply(para.alpha,1,alpha.func)
 
-idx=3
-beta = alpha2delta(list(cov.func(coord,c(0.5,1)),2*alphas[,idx]))[[2]]
-df = data.frame(x = coord[,1], y = coord[,2], z = beta)
-library(ggplot2)
-p <- ggplot(df, aes(x = x, y = y, fill = z)) +
-  geom_tile() +
-  scale_fill_gradient(low = "white", high = "red") +
-  theme_minimal()
-p
+basis[,1] <- rep(0,nrow(basis))
+
+# 1: fixing the first one, 2: unfixing the first one
+pdf("figures/delta_basis_2.pdf",width=5*3,height = 5,onefile = TRUE)
+for(idx in 1:nrow(para.alpha)){
+    beta1 = alpha2delta(list(cov.func(coord,c(0.5,1)),alpha.func(para.alpha[idx,])))[[2]]
+    df = data.frame(x = coord[,1], y = coord[,2], z = beta1)
+    p1 <- ggplot(df, aes(x = x, y = y, fill = z)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "blue",mid="white" ,high = "red",limits=c(-1,1)) +
+    theme_minimal()
+    #p1
+    beta2 = alpha2delta(list(cov.func(coord,c(0.5,1)),alpha.func(2*para.alpha[idx,])))[[2]]
+    df = data.frame(x = coord[,1], y = coord[,2], z = beta2)
+    p2 <- ggplot(df, aes(x = x, y = y, fill = z)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "blue",mid="white",high = "red",limits=c(-1,1)) +
+    theme_minimal()
+    #p2
+    df = data.frame(x = coord[,1], y = coord[,2], z = beta1-beta2)
+    p3 <- ggplot(df, aes(x = x, y = y, fill = z)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "blue",mid="white",high = "red",limits=c(-1,1)) +
+    theme_minimal()
+    #p3
+    grid.arrange(p1,p2,p3,ncol=3)
+}
+dev.off()
 
 samples.skew.normal <- simu_logskew(m=m,par=alpha2delta(list(cov.func(coord,c(0.5,1)),alphas[,idx])),ncores=ncores)
 
@@ -77,7 +97,7 @@ alpha.grid.list[[which.min(unlist(fit.values))]]
 para.alpha[idx,]
 min(unlist(fit.values))
 
-library(plotly)
+
 # Data: volcano is provided by plotly
 # Plot
 data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=unlist(fit.values))
