@@ -1,7 +1,7 @@
 #files.list <- list()
     #files.list[[i]] <- list.files(path = "data/simulation_25_25_1000/", pattern = paste0("simulation_study_\\d+_",thres.list[[i]],".RData"), full.names = TRUE, recursive = FALSE)
 source("code/exponent_functions.R")
-idx.file = 6
+idx.file = 7 
 files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
 
