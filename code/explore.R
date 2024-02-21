@@ -55,30 +55,34 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-m
 # basis <- apply(basis,2,function(x){x-mean(x)})
 alphas = apply(para.alpha,1,alpha.func)
 
-basis[,1] <- rep(0,nrow(basis))
+basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-1,1);y})
 
+
+
+basis[,1] <- rep(0,nrow(basis))
 # 1: fixing the first one, 2: unfixing the first one
-pdf("figures/delta_basis_2.pdf",width=5*3,height = 5,onefile = TRUE)
+#pdf("figures/delta_basis_1.pdf",width=5*3,height = 5,onefile = TRUE)
+pdf("figures/delta_basis_4.pdf",width=5*3,height = 5,onefile = TRUE)
 for(idx in 1:nrow(para.alpha)){
     beta1 = alpha2delta(list(cov.func(coord,c(0.5,1)),alpha.func(para.alpha[idx,])))[[2]]
     df = data.frame(x = coord[,1], y = coord[,2], z = beta1)
     p1 <- ggplot(df, aes(x = x, y = y, fill = z)) +
-    geom_tile() +
+    geom_tile() + ggtitle(paste(c("alpha:",para.alpha[idx,]),collapse = " ")) + 
     scale_fill_gradient2(low = "blue",mid="white" ,high = "red",limits=c(-1,1)) +
-    theme_minimal()
+    theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5))
     #p1
     beta2 = alpha2delta(list(cov.func(coord,c(0.5,1)),alpha.func(2*para.alpha[idx,])))[[2]]
     df = data.frame(x = coord[,1], y = coord[,2], z = beta2)
     p2 <- ggplot(df, aes(x = x, y = y, fill = z)) +
-    geom_tile() +
+    geom_tile() + ggtitle(paste(c("alpha:",2*para.alpha[idx,]),collapse = " ")) + 
     scale_fill_gradient2(low = "blue",mid="white",high = "red",limits=c(-1,1)) +
-    theme_minimal()
+    theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5))
     #p2
     df = data.frame(x = coord[,1], y = coord[,2], z = beta1-beta2)
     p3 <- ggplot(df, aes(x = x, y = y, fill = z)) +
-    geom_tile() +
+    geom_tile() + ggtitle(paste("Max difference: ",max(abs(df$z)))) +
     scale_fill_gradient2(low = "blue",mid="white",high = "red",limits=c(-1,1)) +
-    theme_minimal()
+    theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5))
     #p3
     grid.arrange(p1,p2,p3,ncol=3)
 }
