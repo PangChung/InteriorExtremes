@@ -65,7 +65,7 @@ for(i in 1:nrow(par.skew.normal)){
     #fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=500,model="logskew",lb=lb,ub=ub,ncores=ncores)
     print(par.skew.normal[i,])
     init = par.skew.normal[i,]
-    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=rep(F,length(init)),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=500)
+    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=rep(F,length(init)),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=500,trace=FALSE)
 }
 
 save(fit.logskew.comp,par.skew.normal,init.seed,file=file2save)
