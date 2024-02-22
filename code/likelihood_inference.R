@@ -259,7 +259,7 @@ nlogcomplik <- function(par,data,index,ncores,model){
 # loc: coordinates
 # sigmaFUN: function returns covariance matrix
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
-MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,...){
+MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,trace =FALSE,...){
     t <- proc.time()
     object.func <- function(par2,opt=TRUE){
         par1 <- init
@@ -277,9 +277,9 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         return(val)
     }
     if(sum(!fixed)==1){
-        opt <- optim(par=init[!fixed],fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method="Brent",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+        opt <- optim(par=init[!fixed],fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method="Brent",control=list(maxit=maxit,trace=trace),hessian=hessian)
     }else{
-        opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=TRUE),hessian=hessian)
+        opt <- optim(par=init[!fixed],fn=object.func,method="Nelder-Mead",control=list(maxit=maxit,trace=trace),hessian=hessian)
     }
     if(hessian){
         h = 1e-4
