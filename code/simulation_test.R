@@ -55,7 +55,8 @@ legend("topleft",legend=c("Empirical","Theoretical"),col=c("black","red"),
 dev.off()
 
 # Simulate a log-skew normal based max-stable process
-alpha = alpha.func(coord,-3)
+#alpha = alpha.func(coord,-3)
+alpha = rep(0,nrow(coord))
 #par2 <- list(sigma=sd.mat %*% cov.mat %*% sd.mat,alpha=alpha)
 par2 <- list(sigma=cov.mat,alpha=alpha)
 system.time(Z.logskew <- simu_logskew(m=m,par=alpha2delta(par2),ncores=ncores))
@@ -71,6 +72,7 @@ abline(0,1,col="red")
 }
 dev.off()
 
+set.seed(1)
 ec.logskew <- apply(all.pairs,2,empirical_extcoef,data=Z.logskew)
 tc.logskew1 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par2),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
 tc.logskew2 <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=par2,model="BR"),mc.cores=ncores,mc.set.seed=FALSE)

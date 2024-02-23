@@ -18,6 +18,7 @@ library(partitions)
 library(Rfast)
 library(matrixStats)
 library(splines)
+library(SpatialExtremes)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
@@ -46,7 +47,7 @@ init = c(1,1,0,0)
 ##compute the basis ###
 centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y=y-mean(y) })
+basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-mean(y) })
 basis[,1] <- rep(0,nrow(coord))
 
 pairs.idx = rank(diff.mat[t(all.pairs)]) < 2000
@@ -70,6 +71,7 @@ for(i in 1:nrow(par.skew.normal)){
     # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=500,trace=FALSE)
     fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
     fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,maxit=1000,model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,trace=FALSE)
+    fit.logskew.comp2[[i]] <- SpatialExtremes::fitmaxstab(data=samples.skew.normal[[i]],coord,cov.mod="brown",fit.marge = FALSE)
 }
 
 save(fit.logskew.comp,par.skew.normal,init.seed,file=file2save)

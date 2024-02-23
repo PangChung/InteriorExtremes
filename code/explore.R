@@ -55,7 +55,7 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-m
 # basis <- apply(basis,2,function(x){x-mean(x)})
 alphas = apply(para.alpha,1,alpha.func)
 
-basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-1,1);y})
+#basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-1,1);y})
 
 
 
@@ -88,6 +88,7 @@ for(idx in 1:nrow(para.alpha)){
 }
 dev.off()
 
+idx = 3
 samples.skew.normal <- simu_logskew(m=m,par=alpha2delta(list(cov.func(coord,c(0.5,1)),alphas[,idx])),ncores=ncores)
 
 alpha.1 = seq(-4,4,0.1)
@@ -100,8 +101,6 @@ print(t0 <- proc.time()- t0)
 alpha.grid.list[[which.min(unlist(fit.values))]]
 para.alpha[idx,]
 min(unlist(fit.values))
-
-
 # Data: volcano is provided by plotly
 # Plot
 data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=unlist(fit.values))
