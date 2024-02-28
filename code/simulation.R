@@ -247,7 +247,9 @@ simu_logskew2 <- function(m,par,ncores=NULL){
         idx.new.r = idx.new.r & !idx.finish
         idx.r.old = !idx.new.r & !idx.finish
         count = count + 1
-        print(paste0(c(count,sum(idx.finish),m),collapse = "/"))
+        if(sum(idx.finish) %% 1000 == 0){
+            print(paste0(c(count,sum(idx.finish),m),collapse = "/"))
+        }
     }
     return(Z)
 }

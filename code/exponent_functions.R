@@ -11,7 +11,7 @@ intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
     if(n==1) return(1/(x^2))
-    chol.sigma = chol(sigma)
+    tryCatch(chol.sigma <- chol(sigma),error=function(e) browser())
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
 
@@ -505,6 +505,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,ncore=ncores){
+            if(trace) print(par)
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
             cov.mat = cov.func(loc,par.1)
@@ -518,12 +519,14 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     if(model == "truncT"){
     ## 3 parameters: 2 for the covariance function; 1 for the df parameter
         object.func <- function(par,opt=TRUE,ncore=ncores){
+            if(trace) print(par)
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
             val = intensity_truncT(data,par=para.temp,log=TRUE,ncores=ncore) 
+            
             if(opt) return(-mean(val)) else return(-val)
         }
     }
