@@ -17,9 +17,9 @@ coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(0.5,1) #c(0.5,1,2) ## range for the correlation function ##      
-para.nu = c(1,2) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
+para.nu = c(1,2,3) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
 para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1)) ## slant parameter for skewed norm model ##
-para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
+para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 thres = c(0.95,0.9)
@@ -54,7 +54,7 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y/m
 ########################################################################
 if(model == "logskew"){
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
-    ub=c(10,2.0,rep(Inf,ncol(para.alpha)))
+    ub=c(10,10,rep(Inf,ncol(para.alpha)))
     init = c(1,1,0,0)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
@@ -95,7 +95,7 @@ if(model == "logskew"){
 
 if(model == "truncT"){
     lb=c(0.01,0.01,-Inf)
-    ub=c(10,2.0,Inf)
+    ub=c(10,10,Inf)
     par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.deg))
     samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
     for(i in 1:nrow(par.truncT)){
