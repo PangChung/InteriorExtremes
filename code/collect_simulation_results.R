@@ -1,6 +1,10 @@
 #files.list <- list()
     #files.list[[i]] <- list.files(path = "data/simulation_25_25_1000/", pattern = paste0("simulation_study_\\d+_",thres.list[[i]],".RData"), full.names = TRUE, recursive = FALSE)
 source("code/exponent_functions.R")
+library(ggplot2)
+library(gridExtra)
+library(tidyr)
+
 idx.file = 9
 files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
@@ -27,9 +31,6 @@ par.skew.normal = est.mat.list[[2]];est.mat.list = est.mat.list[[1]]
 par.skew.normal = as.data.frame(par.skew.normal)
 save(est.mat.list,files.list,file=paste0("data/simulation_study_logskew_results_",idx.file,"_1000.RData"))
 
-library(ggplot2)
-library(gridExtra)
-library(tidyr)
 
 variable.names <- c(expression(lambda), expression(nu), expression(alpha[1]), expression(alpha[2]), expression(alpha[3]))
 
@@ -55,6 +56,10 @@ for(idx.case in 1:n1){
 dev.off()
 
 
+idx.file = "8_8"
+files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_truncT_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
+thres.list = c(0.95,0.9)
+
 extract_results_truncT <- function(files){
     fit.results <- list()
     for(i in 1:length(files)){
@@ -64,7 +69,7 @@ extract_results_truncT <- function(files){
     par.truncT <- e$par.truncT
     n1 = nrow(par.truncT);n2 = length(e$fit.truncT.angular[[7]])
     est.mat.list <- lapply(1:n2,function(x){  lapply(1:n1,function(x1){list()})})
-    for(i in 6:n1){
+    for(i in 1:n1){
         for(j in 1:n2){
             est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par})),ncol=3,byrow=TRUE)
         }
@@ -80,7 +85,7 @@ variable.names <- c(expression(lambda), expression(nu), expression(deg))
 n1 = length(est.mat.list[[1]]);n2 = length(est.mat.list)
 p.list = create_lists(c(n2,n1))
 for(idx.thres in 1:n2){
-    for(idx.case in 6:n1){
+    for(idx.case in 1:n1){
         data = as.data.frame(est.mat.list[[idx.thres]][[idx.case]])
         data.true <- pivot_longer(par.truncT[idx.case,], everything(), names_to = "Variable", values_to = "Value")
         data.true$Variable <- paste0("V",1:3)
@@ -93,8 +98,8 @@ for(idx.thres in 1:n2){
     }
 }
 
-pdf(file="figures/simulation_est_boxplots_truncT_2_1000.pdf",width=4*n2,height = 5,onefile = TRUE)
-for(idx.case in 6:n1){
+pdf(file="figures/simulation_est_boxplots_truncT_3_1000.pdf",width=4*n2,height = 5,onefile = TRUE)
+for(idx.case in 1:n1){
     do.call(grid.arrange, c(lapply(p.list,function(x){x[[idx.case]]}), ncol = n2,nrow=1))
 }
 dev.off()
