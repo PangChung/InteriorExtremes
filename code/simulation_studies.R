@@ -16,7 +16,7 @@ switch(computer,
 coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(0.5,1) #c(0.5,1,2) ## range for the correlation function ##      
+para.range = c(0.5,1,2) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(1,1.5) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
 para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
@@ -106,7 +106,7 @@ if(model == "truncT"){
         # ec.truncT[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.truncT[[i]]))
         # tc.truncT[[i]] <- true_extcoef(all.pairs,par=par.truncT.list[[i]],model="truncT2")
         for(j in 1:length(thres)){
-            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(1,0.5,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="L-BFGS-B",bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=TRUE)
+            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(1,0.5,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="L-BFGS-B",bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
         }
         fit.truncT.angular[[i]] <- fit.truncT
         print(i)
