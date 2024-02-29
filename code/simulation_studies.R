@@ -22,7 +22,7 @@ para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1)) ## slant parameter for skewe
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-thres = c(0.95,0.9)
+thres = c(0.98,0.95,0.9)
 # loading library and setting path
 library(parallel)
 library(mvtnorm)
