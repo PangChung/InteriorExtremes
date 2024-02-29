@@ -75,7 +75,8 @@ if(model == "logskew"){
             fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
             r = min(sqrt(sum(fit.logskew[[j]]$par[-c(1:2)]^2))+rnorm(1,sd=0.5),5)
             n=100
-            alphas.grid =  cbind(r*sin(seq(0,2*pi,length.out=n)),r*cos(seq(0,2*pi,length.out=n)))
+            a = matrix(rnorm(n*ncol(para.alpha)),ncol=ncol(para.alpha),nrow=n)
+            alphas.grid = sweep(a,FUN="/",MARGIN=1,STATS=apply(a,1,function(x){sqrt(sum(x^2))}))*r
             # alphas = c(0,seq(-1,1,length.out=n))
             # alphas = matrix(alphas,ncol=ncol(para.alpha),nrow=length(alphas))
             # alphas.grid = as.matrix(do.call(expand.grid,split(alphas,col(alphas))))
