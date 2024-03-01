@@ -52,6 +52,7 @@ basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-m
 basis[,1] <- rep(0,nrow(coord))
 
 pairs.idx = rank(diff.mat[t(all.pairs)]) < 4000
+
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
