@@ -64,22 +64,16 @@ tc.logskew <- list()
 fit.logskew.vecchia <- list()
 fit.logskew.comp <- fit.logskew.comp2 <- list()
 for(i in 1:nrow(par.skew.normal)){
-    par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
+    # par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
+    par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
     samples.skew.normal1[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-    
-    #fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=500,model="logskew",lb=lb,ub=ub,ncores=ncores)
+
     print(par.skew.normal[i,])
     samples.skew.normal2[[i]]  = simu_extrfcts(model="brownresnick",N=nrow(coord),no.simu=m,coord=coord,cov.mat=par.skew.list[[i]]$sigma)$res
     
-    # init = c(par.skew.normal[i,1:2],0,0)
-    # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=500,trace=FALSE)
+    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal1[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
     
-    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal1[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
-
-    fit.logskew.comp2[[i]] <- MCLE(data=samples.skew.normal2[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
-
-#     fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,maxit=1000,model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,trace=FALSE)
-# #    fit.logskew.comp2[[i]] <- SpatialExtremes::fitmaxstab(data=samples.skew.normal[[i]],coord,cov.mod="brown",fit.marge = FALSE)
+    fit.logskew.comp2[[i]] <- MCLE(data=samples.skew.normal2[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
 }
 
 save(fit.logskew.comp,fit.logskew.comp2,par.skew.normal,init.seed,file=file2save)
