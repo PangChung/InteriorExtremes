@@ -588,3 +588,22 @@ create_lists <- function(x){
         return(lapply(1:x[1],function(i){create_lists(x[-1])}))
     }
 }
+
+vario.func <- function(loc,par){ ##return a covariance matrix
+    lambda = par[1];alpha = par[2]
+    if(is.matrix(loc)){loc = matrix(loc,nrow=1)}
+    n = nrow(loc)
+    if(n==1){
+        val=2*(sqrt(sum(loc[1,]^2))/lambda)^alpha
+        return(val)
+    }
+    vario <- function(coord){
+        n.i = nrow(coord)
+        if(n.i==1) {val <- 2*(sqrt(sum(loc[1,]^2))/lambda)^alpha}
+        else {val= 2*(sqrt(sum((loc[1,]-loc[2,])^2))/lambda)^alpha}
+
+    }
+    cov.mat <- sapply(1:n, function(i) sapply(1:n, function(j) 
+                        vario(coord[i,]) + vario(coord[j,]) - vario(coord[c(i,j),])))
+    return(val.mat + .Machine$double.eps * diag(n))
+}
