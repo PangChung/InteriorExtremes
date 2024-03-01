@@ -74,9 +74,9 @@ for(i in 1:nrow(par.skew.normal)){
     print(par.skew.normal[i,])
     samples.skew.normal2[[i]]  = simu_extrfcts(model="brownresnick",N=nrow(coord),no.simu=m,coord=coord,cov.mat=par.skew.list[[i]]$sigma)$res
     
-    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal1[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=500,trace=FALSE)
+    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal1[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
     
-    fit.logskew.comp2[[i]] <- MCLE(data=samples.skew.normal2[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=500,trace=FALSE)
+    fit.logskew.comp2[[i]] <- MCLE(data=samples.skew.normal2[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
 }
 
 save(fit.logskew.comp,fit.logskew.comp2,par.skew.normal,init.seed,file=file2save)
