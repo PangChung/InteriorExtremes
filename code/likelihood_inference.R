@@ -7,40 +7,40 @@
 ## Variogram functions ####
 ###########################
 ## semivariogram function but returns a covariance matrix
-vario.func <- function(loc,par){ 
-    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
-    set.seed(747380)    
-    alpha = par[1];lambda = par[2];a = par[3]; theta = par[4]
-    #Sigma <- matrix(c(par[3],-par[4],-par[4],1),2,2)
-    A = matrix(c(cos(theta),sin(theta),-sin(theta),cos(theta)),2,2)
-    Sigma <- A%*%diag(c(1,a),2)%*%t(A)
-    loc = matrix(loc,ncol=2)
-    n = nrow(loc)
-    if(n==1){
-        val=2*(sqrt(t(loc[1,])%*%Sigma%*%loc[1,])/lambda)^alpha
-        return(val)
-    }
-    fun <- function(idx){
-        loc.temp <- loc[idx,]
-        if(idx[1]==idx[2]){
-            h <- loc.temp[1,]
-            val = 2*(sqrt(t(h)%*%Sigma%*%h)/lambda)^alpha
-        }else{
-            h <- loc.temp[1,]-loc.temp[2,]
-            val <- (sqrt(t(loc.temp[1,])%*%Sigma%*%(loc.temp[1,]))/lambda)^alpha+
-            (sqrt(t(loc.temp[2,])%*%Sigma%*%(loc.temp[2,]))/lambda)^alpha-
-            (sqrt(t(h)%*%Sigma%*%h)/lambda)^alpha 
-      }
-      return(val)
-    }
-    idx <- cbind(rep(1:n, times = n:1),unlist(lapply(1:n, function(x){x:n})))
-    val <- apply(idx,1,fun)
-    val.mat <- matrix(1,n,n)
-    val.mat[idx]<-val;
-    val.mat[idx[,c(2,1)]]<-val
-    assign(".Random.seed", oldSeed, envir=globalenv())
-    return(val.mat + .Machine$double.eps * diag(n))
-}
+# vario.func <- function(loc,par){ 
+#     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+#     set.seed(747380)    
+#     alpha = par[1];lambda = par[2];a = par[3]; theta = par[4]
+#     #Sigma <- matrix(c(par[3],-par[4],-par[4],1),2,2)
+#     A = matrix(c(cos(theta),sin(theta),-sin(theta),cos(theta)),2,2)
+#     Sigma <- A%*%diag(c(1,a),2)%*%t(A)
+#     loc = matrix(loc,ncol=2)
+#     n = nrow(loc)
+#     if(n==1){
+#         val=2*(sqrt(t(loc[1,])%*%Sigma%*%loc[1,])/lambda)^alpha
+#         return(val)
+#     }
+#     fun <- function(idx){
+#         loc.temp <- loc[idx,]
+#         if(idx[1]==idx[2]){
+#             h <- loc.temp[1,]
+#             val = 2*(sqrt(t(h)%*%Sigma%*%h)/lambda)^alpha
+#         }else{
+#             h <- loc.temp[1,]-loc.temp[2,]
+#             val <- (sqrt(t(loc.temp[1,])%*%Sigma%*%(loc.temp[1,]))/lambda)^alpha+
+#             (sqrt(t(loc.temp[2,])%*%Sigma%*%(loc.temp[2,]))/lambda)^alpha-
+#             (sqrt(t(h)%*%Sigma%*%h)/lambda)^alpha 
+#       }
+#       return(val)
+#     }
+#     idx <- cbind(rep(1:n, times = n:1),unlist(lapply(1:n, function(x){x:n})))
+#     val <- apply(idx,1,fun)
+#     val.mat <- matrix(1,n,n)
+#     val.mat[idx]<-val;
+#     val.mat[idx[,c(2,1)]]<-val
+#     assign(".Random.seed", oldSeed, envir=globalenv())
+#     return(val.mat + .Machine$double.eps * diag(n))
+# }
 
 ### Exponent function V for the Brown-Resnick model
 # data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
@@ -87,13 +87,13 @@ nVI <- function(data,sigma,I){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     if(!is.matrix(data)) data <- matrix(data,nrow=1)
-  D <- ncol(data)
-  nI <- length(I)
-  if(nI==0){ ## If the index set is empty
-    return(-V(data,sigma))
-  }else if(nI==D){ ## full derivative
-    if(D==1){
-      return(1/data^2)
+    D <- ncol(data)
+    nI <- length(I)
+    if(nI==0){ ## If the index set is empty
+        return(-V(data,sigma))
+    }else if(nI==D){ ## full derivative
+        if(D==1){
+        return(1/data^2)
     } else{
       sigma.DD <- diag(sigma)
       sigma.inv <- chol2inv(chol(sigma))
@@ -138,6 +138,7 @@ nVI <- function(data,sigma,I){
         log.data.I <- matrix(log.data[,I],ncol=nI)
         
         gamma.inv <- t(K01)%*%A%*%K01
+        tryCatch({
         gamma <- chol2inv(chol(gamma.inv))
         mu <- -gamma%*%(t(K01)%*%A%*%K10%*%t(log.data.I) + c(t(K01)%*%( (q + 1/2*q%*%t(q)%*%sigma.DD )/sum(q)-1/2*sigma.inv%*%sigma.DD )) )
         eval.x <- log(data[,-I])-t(mu)
@@ -149,7 +150,7 @@ nVI <- function(data,sigma,I){
         log.Part3 <- c(-(1/2)*( 1/4*t(sigma.II)%*%sigma.I.inv%*%sigma.II -1/4*(sigma.q.II)^2/q.I.sum + sigma.q.II/q.I.sum - 1/q.I.sum))
         log.Part4 <- c(-(1/2)*(apply(log.data.I,1,function(x){return(t(x)%*%A.I%*%x)}) + log.data.I%*%(q.I%*%(2-sigma.q.II)/q.I.sum + sigma.I.inv%*%sigma.II)))
         res <- drop(log.Part1*exp(-log.Part2+log.Part3+log.Part4))
-        assign(".Random.seed", oldSeed, envir=globalenv())
+        assign(".Random.seed", oldSeed, envir=globalenv())},error=function(e){browser()})
       return(drop(res))
     }
   }

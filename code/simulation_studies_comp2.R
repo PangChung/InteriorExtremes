@@ -64,8 +64,10 @@ ec.logskew <- list()
 tc.logskew <- list()
 fit.logskew.vecchia <- list()
 fit.logskew.comp <- fit.logskew.comp2 <- list()
+coord = coord + 0.1
 for(i in 1:nrow(par.skew.normal)){
     # par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
+    
     par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
     samples.skew.normal1[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
 
