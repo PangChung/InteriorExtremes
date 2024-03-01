@@ -7,7 +7,7 @@ library(tidyr)
 
 idx.file = 9
 files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
-thres.list = c(0.95,0.9)
+thres.list = c(0.98,0.95,0.9)
 
 extract_results <- function(files){
     fit.results <- list()
@@ -57,7 +57,7 @@ dev.off()
 
 
 idx.file = "8_8"
-files.list <- list.files(path=paste0("data/simulation_",idx.file,"_5000"),pattern="simulation_study_truncT_\\d+",full.names=TRUE,recursive=FALSE)
+files.list <- list.files(path=paste0("data/simulation2_",idx.file,"_5000"),pattern="simulation_study_truncT_\\d+",full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
 
 extract_results_truncT <- function(files){
@@ -93,12 +93,12 @@ for(idx.thres in 1:n2){
         
         p<- ggplot(data_long, aes(x = Variable, y = Value)) +
         geom_boxplot() + scale_x_discrete(labels=variable.names) +
-        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 5000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(0,5)
+        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 5000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(0,3)
         p.list[[idx.thres]][[idx.case]] <- p
     }
 }
 
-pdf(file="figures/simulation_est_boxplots_truncT_3_5000.pdf",width=4*n2,height = 5,onefile = TRUE)
+pdf(file="figures/simulation_est_boxplots_truncT2_3_5000.pdf",width=4*n2,height = 5,onefile = TRUE)
 for(idx.case in 1:n1){
     do.call(grid.arrange, c(lapply(p.list,function(x){x[[idx.case]]}), ncol = n2,nrow=1))
 }
