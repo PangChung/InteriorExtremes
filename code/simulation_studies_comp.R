@@ -67,12 +67,5 @@ for(i in 1:nrow(par.skew.normal)){
     init = par.skew.normal[i,]
     fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=rep(F,length(init)),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=500,trace=FALSE)
 }
-
-# val_1 = nlogcomplik(par=par.skew.list[[i]],data=samples.skew.normal[[i]],index=all.pairs[,pairs.idx],ncores=ncores,model="logskew")
-
-# val_2 = nlogcomplik(par=par.skew.list[[i]],data=samples.skew.normal[[i]],index=all.pairs[,pairs.idx],ncores=ncores,model="BR")
-
-# max(abs(val_1 - val_2))
-
 save(fit.logskew.comp,par.skew.normal,init.seed,file=file2save)
 
