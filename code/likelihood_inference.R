@@ -220,7 +220,7 @@ nloglik <- function(par,data,model="BR"){
     }
     get.nVI <- function(I){
       nI <- length(I)
-      return(all_nVI[[nI]][which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
+      return(all_nVI[[nI]][,which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
     }
     parts <- listParts(D) ## using package `partitions'
     contribution.partition <- function(partition){

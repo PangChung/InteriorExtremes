@@ -1,8 +1,8 @@
 args <- commandArgs(TRUE)
 id = 1
 computer = "hpc"
-d <- 8 ## 10 * 10 grid on [0,1]^2
-m <- 1000 ## number of samples
+d <- 4## 10 * 10 grid on [0,1]^2
+m <- 50 ## number of samples
 # loading library and setting path
 for (arg in args) eval(parse(text = arg))
 switch(computer,
@@ -51,7 +51,7 @@ idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){s
 basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y-mean(y) })
 basis[,1] <- rep(0,nrow(coord))
 
-pairs.idx = rank(diff.mat[t(all.pairs)]) < 4000
+pairs.idx = (diff.mat[t(all.pairs)])<2
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
@@ -68,12 +68,12 @@ coord = coord + 0.1
 for(i in 1:nrow(par.skew.normal)){
     # par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
     
-    par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
+    par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
     samples.skew.normal1[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
 
     print(par.skew.normal[i,])
     samples.skew.normal2[[i]]  = simu_extrfcts(model="brownresnick",N=nrow(coord),no.simu=m,coord=coord,cov.mat=par.skew.list[[i]]$sigma)$res
-    
+
     fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal1[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
     
     fit.logskew.comp2[[i]] <- MCLE(data=samples.skew.normal2[[i]],init=par.skew.normal[i,1:2],fixed=c(F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
@@ -82,4 +82,4 @@ for(i in 1:nrow(par.skew.normal)){
 save(fit.logskew.comp,fit.logskew.comp2,par.skew.normal,init.seed,file=file2save)
 
 
-
+fit.result = MCLE(data=data,init=init[1:2],fixed=c(F,F),loc=loc,FUN=cov.func,index=all.pairs,model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
