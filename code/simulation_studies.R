@@ -80,7 +80,7 @@ if(model == "logskew"){
             alphas.grid.list <- split(alphas.grid,row(alphas.grid))
             fit.values <- unlist(mclapply(alphas.grid.list,function(x){mean(fit.model(data=samples.skew.normal[[i]],loc=coord,init=c(fit.logskew[[j]]$par[1:2],x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
             opt.value2 = min(unlist(fit.values))
-            while(opt.values2 < fit.logskew[[j]]$value - 1e-5){
+            while(opt.value2 < fit.logskew[[j]]$value - 1e-5){
                 init = c(fit.logskew[[j]]$par[1:2],alphas.grid.list[[which.min(unlist(fit.values))]])                
                 fit.logskew[[j]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
                 r = min(sqrt(sum(fit.logskew[[j]]$par[-c(1:2)]^2))+rnorm(1,sd=0.5),5)
