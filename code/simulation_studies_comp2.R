@@ -82,4 +82,4 @@ for(i in 1:nrow(par.skew.normal)){
 save(fit.logskew.comp,fit.logskew.comp2,par.skew.normal,init.seed,file=file2save)
 
 
-fit.result = MCLE(data=data,init=init[1:2],fixed=c(F,F),loc=loc,FUN=cov.func,index=all.pairs,model="BR",lb=lb[1:2],ub=ub[1:2],ncores=ncores,maxit=1000,trace=FALSE)
+
