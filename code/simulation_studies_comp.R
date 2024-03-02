@@ -28,7 +28,7 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(0.5,1) ## range for the correlation function ##
 para.nu = c(0.5,1) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1)) 
+para.alpha = rbind(c(0,0),c(-1,-2),c(-2,1),c(2,1)) 
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -47,7 +47,7 @@ centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
 basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=0.125);y=y-mean(y) })
 
-pairs.idx = rank(diff.mat[t(all.pairs)]) < 3000
+pairs.idx = rank(diff.mat[t(all.pairs)]) < 2000
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
