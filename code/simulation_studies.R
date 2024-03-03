@@ -43,11 +43,11 @@ init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 
 #compute the basis ###
-centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
-idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y/max(abs(y));y=y-mean(y)})
+# centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))
+# idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
+# basis <- sapply(idx.centers,function(x){ y=dnorm(diff.mat[x,],mean=0,sd=1);y=y/max(abs(y));y=y-mean(y)})
 
-#basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-1,1);y})
+basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-1,1);y})
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
@@ -71,18 +71,18 @@ if(model == "logskew"){
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
-            #alphas = c(-1,0,1)#seq(-1,1,length.out=n)
-            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
+            init = par.skew.normal[i,]
+            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
             a = rnorm(ncol(para.alpha));a <- a/sqrt(sum(a^2))
             init = c(fit.result1$par[1:2],a)                
-            fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
+            fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
             cond1 = sum(abs(c(fit.result1$par-fit.result2$par,fit.result1$value-fit.result2$value))) > 1e-1
             cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
             while(cond1 & cond2 ){
                 fit.result1 = fit.result2
                 a = rnorm(ncol(para.alpha));a <- a/sqrt(sum(a^2))
                 init = c(fit.result2$par[1:2],a)            
-                fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
+                fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
                 cond1 = sum(abs(c(fit.result1$par-fit.result2$par,fit.result1$value-fit.result2$value))) > 1e-1
                 cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
                 print(fit.result2$par - par.skew.normal[i,])
