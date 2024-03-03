@@ -13,12 +13,12 @@ switch(computer,
     "local" = {DataPath<-"~/Documents/Github/InteriorExtremes/"}
 )
 # settings 
-coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
+coord = as.matrix(expand.grid(0:(d-1),0:(d-1)))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(0.5,1,2) #c(0.5,1,2) ## range for the correlation function ##      
+para.range = c(2,4) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(1,1.5) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0),c(-1,-2),c(2,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
