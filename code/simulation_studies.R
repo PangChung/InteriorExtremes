@@ -22,7 +22,7 @@ para.alpha = rbind(c(0,0),c(-1,-2),c(-2,-1),c(2,1)) ## slant parameter for skewe
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-thres = c(0.98,0.95,0.9)
+thres = c(0.95,0.9)
 # loading library and setting path
 library(parallel)
 library(mvtnorm)
@@ -76,16 +76,18 @@ if(model == "logskew"){
             a = rnorm(ncol(para.alpha));a <- a/sqrt(sum(a^2))
             init = c(fit.result1$par[1:2],a)                
             fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-            error = sum(abs(c(fit.result1$par-fit.results2$par,fit.result1$value-fit.results2$value)))
-            while(error > 1e-1){
+            cond1 = sum(abs(c(fit.result1$par-fit.result2$par,fit.result1$value-fit.result2$value))) > 1e-1
+            cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
+            while(cond1 & cond2 ){
                 fit.result1 = fit.result2
                 a = rnorm(ncol(para.alpha));a <- a/sqrt(sum(a^2))
                 init = c(fit.result2$par[1:2],a)            
                 fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-                error = sum(abs(c(fit.result1$par-fit.results2$par,fit.result1$value-fit.results2$value)))
-                print(fit.logskew[[j]]$par - par.skew.normal[i,])
+                cond1 = sum(abs(c(fit.result1$par-fit.result2$par,fit.result1$value-fit.result2$value))) > 1e-1
+                cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
+                print(fit.result2$par - par.skew.normal[i,])
             }
-            fit.logskew[[j]] <- fit.result2 
+            fit.logskew[[j]] <- fit.result2
             print(c(i,j))
         }
         fit.logskew.angular[[i]] <- fit.logskew

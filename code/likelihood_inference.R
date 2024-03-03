@@ -273,7 +273,7 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
         if(opt){ 
             val = mean(val,na.rm=TRUE)
-            print(c(par2,val))
+            #print(c(par2,val))
         }
         return(val)
     }
@@ -361,7 +361,7 @@ MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
         if(opt){
             val = mean(val,na.rm=TRUE)
-            print(c(par2, val))
+            #print(c(par2, val))
         } 
         return(val)
     }
