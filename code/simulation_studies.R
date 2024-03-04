@@ -74,16 +74,15 @@ if(model == "logskew"){
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
-            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
+            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
             a = matrix(rnorm(ncol(para.alpha)*ncores),nrow=ncores)
             a <- sweep(a,2,sqrt(colSums(a^2)),FUN="/")
             init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
             init.list = split(init.mat,row(init.mat))
-            fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
-            results.mat <- matrix(unlist(lapply(fit.result,function(x){c(x$value,x$par)})),nrow=ncores,byrow=TRUE)
-            #dist.mat <- as.matrix(dist(results.mat))
-            #fit.logskew[[j]] = fit.result[[which.min(colSums(dist.mat))]]
-            fit.logskew[[j]] = fit.result[[which.min(results.mat[,1])]]
+            fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=NULL,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
+            results.mat <- matrix(unlist(lapply(fit.result,function(x){c(x$value)})),nrow=ncores,byrow=TRUE)
+            dist.mat <- as.matrix(dist(results.mat))
+            fit.logskew[[j]] = fit.result[[which.min(colSums(dist.mat))]]
             fit.logskew2[[j]] = fit.result 
             print(c(i,j))
         }
