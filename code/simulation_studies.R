@@ -52,6 +52,7 @@ basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sam
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
+t0 <- proc.time()
 if(model == "logskew"){
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
     ub=c(10,1.99,rep(Inf,ncol(para.alpha)))
@@ -77,7 +78,7 @@ if(model == "logskew"){
             init = c(fit.result1$par[1:2],a)                
             fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
             cond1 = sum(abs(c(fit.result1$par-fit.result2$par,fit.result1$value-fit.result2$value))) > 1e-1
-            cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
+            #cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
             while(cond1 & cond2 ){
                 fit.result1 = fit.result2
                 a = rnorm(ncol(para.alpha));a <- a/sqrt(sum(a^2))
@@ -95,6 +96,8 @@ if(model == "logskew"){
     }
     save(fit.logskew.angular,par.skew.normal,file=file2save)
 }
+
+print(t0 <- proc.time() - t0)
 
 if(model == "truncT"){
     lb=c(0.01,0.01,-Inf)
@@ -116,6 +119,7 @@ if(model == "truncT"){
     }
     save(fit.truncT.angular,par.truncT,file=file2save)
 }
+
 
 # for(idx in 1:nrow(par.skew.normal)){
 #     print(fit.logskew.angular[[idx]][[1]]$par - par.skew.normal[idx,])
