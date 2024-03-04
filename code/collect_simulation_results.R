@@ -13,7 +13,8 @@ extract_results <- function(files){
     fit.results <- list()
     for(i in 1:length(files)){
         load(files[[i]],e<-new.env())
-        fit.results[[i]] <- e$fit.logskew.angular
+        fit.logskew.angular2 <- lapply(e$fit.logskew.angular2,function(x){values = lapply(x,function(x1){unlist(lapply(x1, function(x2){x2$value}))});return(lapply(1:length(values),function(i){x[[i]][[which.min(values[[i]])]]}))})
+        fit.results[[i]] <- fit.logskew.angular2
     }
     par.skew <- e$par.skew.normal
     n1 = nrow(par.skew);n2 = length(e$fit.logskew.angular[[1]])
