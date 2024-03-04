@@ -72,10 +72,9 @@ if(model == "logskew"){
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
-            init = par.skew.normal[i,]
+            #init = par.skew.normal[i,]
             fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-            a = rnorm(ncol(para.alpha));a <- a/sqrt(sum(a^2))
-            init = c(fit.result1$par[1:2],a)                
+            a = matrix(rnorm(ncol(para.alpha)*10),nrow=10)
             fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
             cond1 = sum(abs(c(fit.result1$par-fit.result2$par,fit.result1$value-fit.result2$value))) > 1e-1
             #cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
