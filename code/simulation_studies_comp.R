@@ -23,7 +23,7 @@ source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 
 ncores=detectCores()
-coord = as.matrix(expand.grid(0:(d-1),0:(d-1))/d)
+coord = as.matrix(expand.grid(0:(d-1),0:(d-1)))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(0.5,1) ## range for the correlation function ##
