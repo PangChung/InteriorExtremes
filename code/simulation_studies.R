@@ -82,8 +82,8 @@ if(model == "logskew"){
             fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
             results.mat <- matrix(unlist(lapply(fit.result,function(x){c(x$value,x$par)})),nrow=ncores,byrow=TRUE)
             dist.mat <- as.matrix(dist(results.mat))
-            fit.logskew[[1]] = fit.result[[which.min(colSums(dist.mat))]]
-            fit.logskew2[[1]] = fit.result 
+            fit.logskew[[j]] = fit.result[[which.min(colSums(dist.mat))]]
+            fit.logskew2[[j]] = fit.result 
             print(c(i,j))
         }
         fit.logskew.angular[[i]] <- fit.logskew
