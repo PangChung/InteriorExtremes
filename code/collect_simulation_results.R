@@ -5,7 +5,7 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = 9
+idx.file = 10
 files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
 thres.list = c(0.98,0.95,0.9)
 
