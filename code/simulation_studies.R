@@ -64,36 +64,33 @@ if(model == "logskew"){
     ec.logskew <- list()
     tc.logskew <- list()
     fit.logskew.angular <- list()
+    fit.logskew.angular2 <- list()
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
+        fit.logskew2 <- list()
         par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
         set.seed(init.seed)
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
-            #init = par.skew.normal[i,]
             fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-            a = matrix(rnorm(ncol(para.alpha)*10),nrow=10)
-            fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-            cond1 = sum(abs(c(fit.result1$par-fit.result2$par,fit.result1$value-fit.result2$value))) > 1e-1
-            #cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
-            while(cond1 & cond2 ){
-                fit.result1 = fit.result2
-                a = rnorm(ncol(para.alpha));a <- a/sqrt(sum(a^2))
-                init = c(fit.result2$par[1:2],a)            
-                fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-                cond1 = sum(abs(c(fit.result1$par-fit.result2$par,fit.result1$value-fit.result2$value))) > 1e-1
-                cond2 = !(sum(abs(fit.result1$par-fit.result2$par)) > 1e-1 & fit.result2$value < fit.result1$value)
-                print(fit.result2$par - par.skew.normal[i,])
-            }
-            fit.logskew[[j]] <- fit.result2
+            a = matrix(rnorm(ncol(para.alpha)*ncores),nrow=ncores)
+            a <- sweep(a,2,sqrt(colSums(a^2)),FUN="/")
+            init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
+            init.list = split(init.mat,row(init.mat))
+            fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(T,T,F,F),thres=thres[j],model="logskew",ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
+            results.mat <- matrix(unlist(lapply(fit.result,function(x){c(x$value,x$par)})),nrow=ncores,byrow=TRUE)
+            dist.mat <- as.matrix(dist(results.mat))
+            fit.logskew[[1]] = fit.result[[which.min(colSums(dist.mat))]]
+            fit.logskew2[[1]] = fit.result 
             print(c(i,j))
         }
         fit.logskew.angular[[i]] <- fit.logskew
+        fit.logskew.angular2[[i]] <- fit.logskew2
         print(i)
     }
-    save(fit.logskew.angular,par.skew.normal,file=file2save)
+    save(fit.logskew.angular,fit.logskew.angular2,par.skew.normal,file=file2save)
 }
 
 print(t0 <- proc.time() - t0)
