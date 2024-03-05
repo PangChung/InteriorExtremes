@@ -34,9 +34,21 @@ mse.max = matrix(NA,nrow=length(files.list),ncol=24)
 for(k in 1:length(files.list)){
     load(files.list[k],e<-new.env())    
     fit.result <- lapply(1:nrow(par.skew.normal),function(i){values = lapply(1:2,function(j){matrix(unlist(lapply(e$fit.logskew.angular2[[i]][[j]], function(x2){x2$par-par.skew.normal[i,]})),ncol=4,byrow=TRUE)})})
-    fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,-c(1:2)]),2,mean);min(mse)})}))
+    fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,-c(1:2)]),1,mean);min(mse)})}))
     mse.max[k,] <- fit.result
+    print(k)
 }
+
+boxplot(mse.max)
+summary(mse.max)
+idx=11
+max(mse.max[,idx])
+#apply(mse.max,2,function(x) which(x>1))
+error.idx = which.max(mse.max[,idx])
+load(files.list[error.idx],e<-new.env())
+e$fit.logskew.angular2[[(idx-1) %/% 2 + 1]][[(idx-1) %% 2 + 1]]
+e$fit.logskew.angular[[(idx-1) %/% 2 + 1]][[(idx-1) %% 2 + 1]]
+par.skew.normal[(idx-1) %/% 2 + 1,]
 
 est.mat.list <- extract_results(files.list)
 par.skew.normal = est.mat.list[[2]];est.mat.list = est.mat.list[[1]]
