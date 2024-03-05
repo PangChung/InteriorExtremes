@@ -53,7 +53,7 @@ par.skew.normal[(idx-1) %/% 2 + 1,]
 est.mat.list <- extract_results(files.list)
 par.skew.normal = est.mat.list[[2]];est.mat.list = est.mat.list[[1]]
 par.skew.normal = as.data.frame(par.skew.normal)
-save(est.mat.list,files.list,file=paste0("data/simulation_study_logskew_results_",idx.file,"_1000.RData"))
+save.image(file=paste0("data/simulation_study_logskew_results_",idx.file,"_1000.RData"))
 
 
 variable.names <- c(expression(lambda), expression(nu), expression(alpha[1]), expression(alpha[2]), expression(alpha[3]))
