@@ -493,7 +493,7 @@ alpha.func <- function(par=rep(1,1,1),b.mat=basis){
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit=100,
+fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit=100,FUN=NULL,alpha.func=NULL,
                     ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,bootstrap=FALSE,opt=FALSE,trace=FALSE){
     t0 <- proc.time()
     data.sum = apply(data,1,sum)
@@ -508,7 +508,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
             if(trace) print(par)
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
-            cov.mat = cov.func(loc,par.1)
+            cov.mat = FUN(loc,par.1)
             alpha = alpha.func(par=par.2)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
