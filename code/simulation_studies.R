@@ -54,8 +54,8 @@ basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d);y=y/ma
 ########################################################################
 t0 <- proc.time()
 if(model == "logskew"){
-    lb=c(0.01,0.01,rep(-10,ncol(para.alpha)))
-    ub=c(10,1.99,rep(10,ncol(para.alpha)))
+    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
+    ub=c(10,1.99,rep(Inf,ncol(para.alpha)))
     init = c(1,1,0,0)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
@@ -75,7 +75,7 @@ if(model == "logskew"){
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
             fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-            a = matrix(rnorm(ncol(para.alpha)*ncores),nrow=ncores)*2
+            a = matrix(rnorm(ncol(para.alpha)*ncores),nrow=ncores)
             a <- sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
             init.list = split(init.mat,row(init.mat))
