@@ -1,11 +1,12 @@
 #files.list <- list()
     #files.list[[i]] <- list.files(path = "data/simulation_25_25_1000/", pattern = paste0("simulation_study_\\d+_",thres.list[[i]],".RData"), full.names = TRUE, recursive = FALSE)
+rm(list=ls())
 source("code/exponent_functions.R")
 library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = 11
+idx.file = 12
 files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
 thres.list = c(0.98,0.95,0.9)
 load(files.list[[1]],e<-new.env())
@@ -41,7 +42,7 @@ for(k in 1:length(files.list)){
 
 boxplot(mse.max)
 summary(mse.max)
-idx=20
+idx=9
 max(mse.max[,idx])
 #apply(mse.max,2,function(x) which(x>1))
 error.idx = which.max(mse.max[,idx])
