@@ -68,7 +68,7 @@ if(model == "logskew"){
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
         fit.logskew2 <- list()
-        par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
+        par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
         set.seed(init.seed)
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
