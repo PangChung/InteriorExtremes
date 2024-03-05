@@ -41,7 +41,7 @@ for(k in 1:length(files.list)){
 
 boxplot(mse.max)
 summary(mse.max)
-idx=11
+idx=20
 max(mse.max[,idx])
 #apply(mse.max,2,function(x) which(x>1))
 error.idx = which.max(mse.max[,idx])
