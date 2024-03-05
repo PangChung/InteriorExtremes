@@ -45,7 +45,7 @@ set.seed(init.seed)
 ## compute the basis ###
 centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))*d
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d);y=y;y=y-mean(y)})
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d);y=y/max(abs(y))/(ncol(para.alpha)+1);y=y-mean(y)})
 
 #basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-2,2);y})
 
