@@ -93,6 +93,8 @@ if(model == "logskew"){
     save(fit.logskew.angular,fit.logskew.angular2,par.skew.normal,file=file2save)
 }
 
+save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=paste("data/samples/simulation_logskew_",id,"_",m,".RData"))
+
 print(t0 <- proc.time() - t0)
 
 if(model == "truncT"){
