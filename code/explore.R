@@ -43,28 +43,31 @@ set.seed(init.seed)
 ## compute the basis ###
 centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))*d
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d);y=y-mean(y)})
-basis <- basis * 1000
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d);y=y-mean(y);y/max(abs(y))})
+# basis <- basis * 100
+basis[,1] = basis[,1]*2
 summary(basis)
 
 basis <- cbind(bs(coord[,1],degree = 1),coord)
 basis <- apply(basis,2,function(x){x-mean(x)})
+basis[,1] = basis[,1]*20
+summary(basis)
 
-basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-1,1);y})
-
+basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-2,2);y})
+summary(basis)
 #basis[,1] <- rep(0,nrow(basis))
 # 1: fixing the first one, 2: unfixing the first one
 #pdf("figures/delta_basis_1.pdf",width=5*3,height = 5,onefile = TRUE)
 pdf("figures/delta_basis_5.pdf",width=5*3,height = 5,onefile = TRUE)
 for(idx in 1:nrow(para.alpha)){
-    beta1 = alpha2delta(list(cov.func(coord,c(0.5,1)),alpha.func(para.alpha[idx,])))[[2]]
+    beta1 = alpha2delta(list(cov.func(coord,c(4,1)),alpha.func(para.alpha[idx,])))[[2]]
     df = data.frame(x = coord[,1], y = coord[,2], z = beta1)
     p1 <- ggplot(df, aes(x = x, y = y, fill = z)) +
     geom_tile() + ggtitle(paste(c("alpha:",para.alpha[idx,]),collapse = " ")) + 
     scale_fill_gradient2(low = "blue",mid="white" ,high = "red",limits=c(-1,1)) +
     theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5))
     #p1
-    beta2 = alpha2delta(list(cov.func(coord,c(0.5,1)),alpha.func(2*para.alpha[idx,])))[[2]]
+    beta2 = alpha2delta(list(cov.func(coord,c(4,1)),alpha.func(2*para.alpha[idx,])))[[2]]
     df = data.frame(x = coord[,1], y = coord[,2], z = beta2)
     p2 <- ggplot(df, aes(x = x, y = y, fill = z)) +
     geom_tile() + ggtitle(paste(c("alpha:",2*para.alpha[idx,]),collapse = " ")) + 
@@ -86,36 +89,38 @@ alpha.1 = seq(-5,5,0.1)
 alpha.addon = 4
 alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))
 alpha.grid.list <- split(alpha.grid,row(alpha.grid))
+
 delta.grid <- lapply(alpha.grid.list,function(x){alpha2delta(list(cov.func(coord[1:3,],c(2,1)),c(x,-sum(x))+c(0.5,0,-0.5)*alpha.addon))[[2]]})
 delta.grid2 <- lapply(alpha.grid.list,function(x){alpha2delta(list(cov.func(coord[1:3,],c(2,1)),c(x,-sum(x))+c(0.5,0,-0.5)*alpha.addon*2))[[2]]})
 delta.diff <- lapply(1:length(delta.grid),function(x){sum(abs(delta.grid[[x]]-delta.grid2[[x]]))})
 
+biv.ext <- lapply(alpha.grid.list,function(x){V_logskew(c(1,1),par=list(matrix(c(1,0.5,0.5,1),2,2),x),alpha.para=TRUE)})
+
+
 #data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=unlist(delta.diff))
-z=matrix(unlist(delta.diff),length(alpha.1),length(alpha.1),byrow = TRUE)
+z=matrix(matrix(unlist(delta.grid),ncol=3,byrow=TRUE)[,3],length(alpha.1),length(alpha.1),byrow = TRUE)
+z=matrix(unlist(biv.ext),length(alpha.1),length(alpha.1),byrow = TRUE)
 p <- plotly::plot_ly(z=~z, type = "surface")
 p 
 
 
 
 ## explore the likelihood surface ##
-idx = 3
-samples.skew.normal <- simu_logskew(m=m,par=alpha2delta(list(cov.func(coord,c(0.5,1)),alphas[,idx])),ncores=ncores)
+samples.skew.normal <- simu_logskew(m=m,par=alpha2delta(list(cov.func(coord,c(4,1)),alpha.func(c(2,1)))),ncores=ncores)
 
-alpha.1 = seq(-4,4,0.1)
+alpha.1 = seq(-5,5,0.1)
 length(alpha.1)
 alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))
 alpha.grid.list <- split(alpha.grid,row(alpha.grid))
 t0 <- proc.time()
-fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(1,1,x),fixed=c(F,F,F,F),thres=0.9,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE))},mc.cores=ncores,mc.set.seed = FALSE))
+fit.values <- unlist(mclapply(alpha.grid.list,function(x){mean(fit.model(data=samples.skew.normal,loc=coord,init=c(4,1,x),fixed=c(F,F,F,F),thres=0.95,model="logskew",ncores=NULL,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=FALSE,alpha.func=alpha.func,FUN=cov.func))},mc.cores=ncores,mc.set.seed = FALSE))
 print(t0 <- proc.time()- t0)
 alpha.grid.list[[which.min(unlist(fit.values))]]
 para.alpha[idx,]
 min(unlist(fit.values))
-# Data: volcano is provided by plotly
-# Plot
-data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=unlist(fit.values))
+
 z=matrix(unlist(fit.values),nrow=length(alpha.1),ncol=length(alpha.1))
-p <- plot_ly(z=~z, type = "surface")
+p <- plotly::plot_ly(z=~z, type = "surface")
 p 
 
 

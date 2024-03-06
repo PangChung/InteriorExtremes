@@ -504,22 +504,17 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     if(is.null(ub)){ub=rep(Inf,length(init))}
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
-        init = c(init,2)
-        fixed  = c(fixed,FALSE)
-        lb = c(lb,-Inf)
-        ub = c(ub,Inf)
         object.func <- function(par,opt=TRUE,ncore=ncores){
             if(trace) print(par)
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
             cov.mat = FUN(loc,par.1)
-            alpha = alpha.func(par=par.2[-length(par.2)])
+            alpha = alpha.func(par=par.2)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            omega.inv = 1/sqrt(diag(para.temp[[1]]))
-            lagrange_multiplier = sum(para.temp[[2]] * omega.inv) * par2[length(par2)]
+            regulator = max(abs(para.temp[[2]]))/nrow(loc)
             val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)-lagrange_multiplier) else return(-val)
+            if(opt) return(-mean(val)+regulator) else return(-mean(val)+regulator)
         }
     }
     if(model == "truncT"){
