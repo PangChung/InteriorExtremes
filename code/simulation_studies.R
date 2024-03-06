@@ -78,7 +78,6 @@ if(model == "logskew"){
             a = matrix(rnorm(ncol(para.alpha)*ncores),nrow=ncores)
             a <- sweep(a,1,sqrt(rowSums(a^2)),FUN="/")*3
             init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
-            
             init.list = split(init.mat,row(init.mat))
 
             fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
