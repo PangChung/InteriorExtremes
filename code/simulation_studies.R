@@ -59,17 +59,18 @@ if(model == "logskew"){
     init = c(1,1,0,0)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
-    samples.skew.normal <- list()
+    #samples.skew.normal <- list()
     par.skew.list <- list()
     ec.logskew <- list()
     tc.logskew <- list()
     fit.logskew.angular <- list()
     fit.logskew.angular2 <- list()
+    load(paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,".RData"))
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
         fit.logskew2 <- list()
         par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
-        samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
+        #samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
@@ -91,7 +92,7 @@ if(model == "logskew"){
     save(fit.logskew.angular,fit.logskew.angular2,par.skew.normal,file=file2save)
 }
 
-save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,".RData"))
+#save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,".RData"))
 
 print(t0 <- proc.time() - t0)
 
