@@ -96,13 +96,20 @@ delta.diff <- lapply(1:length(delta.grid),function(x){sum(abs(delta.grid[[x]]-de
 
 biv.ext <- lapply(alpha.grid.list,function(x){V_logskew(c(1,1),par=list(matrix(c(1,0.5,0.5,1),2,2),x),alpha.para=TRUE)})
 
-
 #data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=unlist(delta.diff))
 z=matrix(matrix(unlist(delta.grid),ncol=3,byrow=TRUE)[,3],length(alpha.1),length(alpha.1),byrow = TRUE)
 z=matrix(unlist(biv.ext),length(alpha.1),length(alpha.1),byrow = TRUE)
 p <- plotly::plot_ly(z=~z, type = "surface")
 p 
 
+########
+sigma = cov.func(coord[c(1,50),],c(4,1))
+alpha.1 = seq(-5,5,0.1)
+alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))
+values <- apply(alpha.grid,1,function(x){sqrt(1+t(x) %*% sigma %*% x)})
+z=matrix(values,nrow=length(alpha.1),ncol=length(alpha.1))
+p <- plotly::plot_ly(z=~z, type = "surface")
+p 
 
 
 ## explore the likelihood surface ##
