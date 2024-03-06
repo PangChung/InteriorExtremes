@@ -514,7 +514,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
             para.temp = list(sigma=cov.mat,alpha=alpha)
             regulator = max(abs(para.temp[[2]]))/nrow(loc)
             val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)+regulator) else return(-mean(val)+regulator)
+            if(opt) return(-mean(val)+regulator) else return(-mean(val))
         }
     }
     if(model == "truncT"){
@@ -534,8 +534,10 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     if(opt){
         if(method=="L-BFGS-B"){
             opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+            opt.result$value = object.func(opt.result$par,opt=FALSE,ncore=ncores)
         }else{
             opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+            opt.result$value = object.func(opt.result$par,opt=FALSE,ncore=ncores)
         }
         # if(model=="logskew" & any(!fixed[-c(1:2)])){
         #     init2 = init
