@@ -62,7 +62,7 @@ if(basis.idx == 1){
 t0 <- proc.time()
 if(model == "logskew"){
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
-    ub=c(10,1.99,rep(Inf,ncol(para.alpha)))
+    ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
     init = c(1,1,0,0)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
