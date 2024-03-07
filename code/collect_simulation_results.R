@@ -6,8 +6,8 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = 13
-files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000_1.RData",full.names=TRUE,recursive=FALSE)
+idx.file = 14
+files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000_2.RData",full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
 load(files.list[[1]],e<-new.env())
 par.skew.normal = e$par.skew.normal
@@ -74,7 +74,7 @@ for(idx.thres in 1:n2){
     }
 }
 
-pdf(file=paste0("figures/simulation_est_boxplots_",idx.file,"_1000_1.pdf"),width=4*n2,height = 5,onefile = TRUE)
+pdf(file=paste0("figures/simulation_est_boxplots_",idx.file,"_1000_2.pdf"),width=4*n2,height = 5,onefile = TRUE)
 for(idx.case in 1:n1){
     do.call(grid.arrange, c(lapply(p.list,function(x){x[[idx.case]]}), ncol = n2,nrow=1))
 }
