@@ -17,7 +17,7 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(4,8) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(1,1.5) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0),c(-1,-2),c(2,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -43,7 +43,7 @@ set.seed(init.seed)
 ## compute the basis ###
 centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/sum(abs(y))})
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/max(abs(y))})
 # basis <- basis * 100
 summary(basis)
 
@@ -51,6 +51,58 @@ basis <- cbind(bs(coord[,1],degree = 1),coord)
 basis <- apply(basis,2,function(x){x-mean(x)})
 basis[,1] = basis[,1]*20
 summary(basis)
+
+
+## contour of the bi-variate extremal coefficient ##
+sigma = cov.func(coord,c(16,1))
+coord = as.matrix(expand.grid(1:32,1:32))
+diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
+diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
+
+centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
+idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/max(abs(y))*2})
+
+basis <- cbind(bs(coord[,1],degree = 1),coord)
+basis <- apply(basis,2,function(x){x-mean(x)})
+
+idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
+basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
+
+all.pairs = combn(1:nrow(coord),2)
+all.pairs.list = split(all.pairs,col(all.pairs))
+idx.center = c(16,16)
+
+idx.center = which.min(abs(coord[,1] - idx.center[1]) + abs(coord[,2] - idx.center[2]))
+ind.idx.center = all.pairs[1,] == idx.center |  all.pairs[2,] == idx.center
+bi.extcoef <- list()
+p1.list <- list()
+for(i in 1:nrow(para.alpha)){
+    alpha = alpha.func(par=para.alpha[i,])
+    bi.extcoef[[i]] = mcmapply(true_extcoef,idx=all.pairs.list[ind.idx.center],MoreArgs=list(par=alpha2delta(list(sigma,alpha))),mc.cores=ncores,mc.set.seed = FALSE)
+    
+    data <- data.frame( x = coord[-idx.center,1],
+                    y = coord[-idx.center,2],
+                    z = bi.extcoef[[i]])
+    p1.list[[i]] <- ggplot(data, aes(x = x, y = y, z = z)) +
+    geom_contour(aes(colour = after_stat(level))) +
+    scale_colour_gradient(low = "blue", high = "red") +
+    theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
+    labs(title = paste("Bivariate Extremal Coef.:",paste(para.alpha[i,],collapse = " ")), x = "X", y = "Y", colour = "Z")
+}
+
+grid.arrange(grobs=p1.list,nrow=1)
+
+
+# # plot contours #
+
+# 
+# pdf(file="figures/simulation_samples_extcoef_contours.pdf",width=10,height = 8,onefile = TRUE)
+# do.call(grid.arrange, c(p1.list[1:9], ncol = 3,nrow=3))
+# do.call(grid.arrange, c(p1.list[1:9+9], ncol = 3,nrow=3))
+# do.call(grid.arrange, c(p1.list[1:9+18], ncol = 3,nrow=3))
+# dev.off()
+
 
 idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
 basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
@@ -112,7 +164,7 @@ diff.delta <- function(par,sigma){
         alpha.2 = alpha.func(par=par[i,]*2)
         delta.1 = c(sigma.bar %*% alpha.1)/sqrt(c(1+t(alpha.1) %*% sigma.bar %*% alpha.1))
         delta.2 = c(sigma.bar %*% alpha.2)/sqrt(c(1+alpha.2 %*% sigma.bar %*% alpha.2))
-        sum(abs(delta.1-delta.2))
+        max(abs(delta.1-delta.2))
     }
     return(unlist(mclapply(1:nrow(par),fun,mc.cores=ncores)))
 }
@@ -130,15 +182,18 @@ p
 alpha.1 = seq(-5,5,0.1)
 para.norm = as.matrix(expand.grid(para.range,para.nu))
 p.list = list()
+
 for(i in 1:nrow(para.norm)){
     sigma = cov.func(coord,para.norm[i,])
     alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))
     values <- diff.delta(alpha.grid,sigma)
-    data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=values)[values>4,]
+    data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=values)[values>0.1,]    
     p.list[[i]] <- ggplot(data) + geom_point(aes(x=x, y=y, color=z)) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("sigma:",para.norm[i,])) + xlim(-5,5) + ylim(-5,5)
 }
 
 grid.arrange(p.list[[1]],p.list[[2]],p.list[[3]],p.list[[4]],ncol=2)
+
+
 
 ## explore the likelihood surface ##
 samples.skew.normal <- simu_logskew(m=m,par=alpha2delta(list(cov.func(coord,c(4,1)),alpha.func(c(2,1)))),ncores=ncores)

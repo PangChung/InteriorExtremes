@@ -7,8 +7,8 @@ library(gridExtra)
 library(tidyr)
 
 idx.file = 13
-files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000.RData",full.names=TRUE,recursive=FALSE)
-thres.list = c(0.98,0.95,0.9)
+files.list <- list.files(path=paste0("data/simulation_",idx.file,"_1000"),pattern="simulation_study_logskew_\\d+_1000_1.RData",full.names=TRUE,recursive=FALSE)
+thres.list = c(0.95,0.9)
 load(files.list[[1]],e<-new.env())
 par.skew.normal = e$par.skew.normal
 rm(e)
@@ -69,7 +69,7 @@ for(idx.thres in 1:n2){
         
         p<- ggplot(data_long, aes(x = Variable, y = Value)) +
         geom_boxplot() + scale_x_discrete(labels=variable.names) +
-        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 1000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") #+ ylim(max(-5,min(data_long$Value)),min(5,max(data_long$Value)))
+        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 1000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(max(-10,min(data_long$Value)),min(10,max(data_long$Value)))
         p.list[[idx.thres]][[idx.case]] <- p
     }
 }
