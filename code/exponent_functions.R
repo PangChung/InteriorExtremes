@@ -506,7 +506,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         init = c(init,2)
         lb = c(lb,-Inf)
-        ub = c(lb,Inf)
+        ub = c(ub,Inf)
         fixed = c(fixed,F)
         object.func <- function(par,opt=TRUE,ncore=ncores){
             if(trace) print(par)
