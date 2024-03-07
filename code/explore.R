@@ -41,11 +41,10 @@ init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 
 ## compute the basis ###
-centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))*d
+centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d);y=y-mean(y);y/max(abs(y))})
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/sum(abs(y))})
 # basis <- basis * 100
-basis[,1] = basis[,1]*2
 summary(basis)
 
 basis <- cbind(bs(coord[,1],degree = 1),coord)
@@ -53,7 +52,8 @@ basis <- apply(basis,2,function(x){x-mean(x)})
 basis[,1] = basis[,1]*20
 summary(basis)
 
-basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-2,2);y})
+idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
+basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
 summary(basis)
 #basis[,1] <- rep(0,nrow(basis))
 # 1: fixing the first one, 2: unfixing the first one
@@ -103,14 +103,42 @@ p <- plotly::plot_ly(z=~z, type = "surface")
 p 
 
 ########
-sigma = cov.func(coord[c(1,50),],c(4,1))
+diff.delta <- function(par,sigma){
+    omega = diag(sqrt(diag(sigma)))
+    omega.inv = diag(diag(omega)^(-1))
+    sigma.bar = omega.inv %*% sigma %*% omega.inv
+    fun <- function(i){
+        alpha.1 = alpha.func(par=par[i,])
+        alpha.2 = alpha.func(par=par[i,]*2)
+        delta.1 = c(sigma.bar %*% alpha.1)/sqrt(c(1+t(alpha.1) %*% sigma.bar %*% alpha.1))
+        delta.2 = c(sigma.bar %*% alpha.2)/sqrt(c(1+alpha.2 %*% sigma.bar %*% alpha.2))
+        sum(abs(delta.1-delta.2))
+    }
+    return(unlist(mclapply(1:nrow(par),fun,mc.cores=ncores)))
+}
+
 alpha.1 = seq(-5,5,0.1)
+sigma = cov.func(coord,c(2,1.5))
 alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))
-values <- apply(alpha.grid,1,function(x){sqrt(1+t(x) %*% sigma %*% x)})
+values <- diff.delta(alpha.grid,sigma)
+summary(values)
+
 z=matrix(values,nrow=length(alpha.1),ncol=length(alpha.1))
 p <- plotly::plot_ly(z=~z, type = "surface")
 p 
 
+alpha.1 = seq(-5,5,0.1)
+para.norm = as.matrix(expand.grid(para.range,para.nu))
+p.list = list()
+for(i in 1:nrow(para.norm)){
+    sigma = cov.func(coord,para.norm[i,])
+    alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))
+    values <- diff.delta(alpha.grid,sigma)
+    data = data.frame(x=alpha.grid[,1],y=alpha.grid[,2],z=values)[values>4,]
+    p.list[[i]] <- ggplot(data) + geom_point(aes(x=x, y=y, color=z)) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("sigma:",para.norm[i,])) + xlim(-5,5) + ylim(-5,5)
+}
+
+grid.arrange(p.list[[1]],p.list[[2]],p.list[[3]],p.list[[4]],ncol=2)
 
 ## explore the likelihood surface ##
 samples.skew.normal <- simu_logskew(m=m,par=alpha2delta(list(cov.func(coord,c(4,1)),alpha.func(c(2,1)))),ncores=ncores)

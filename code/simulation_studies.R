@@ -16,9 +16,9 @@ switch(computer,
 coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(2,4) #c(0.5,1,2) ## range for the correlation function ##      
+para.range = c(4,8) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(1,1.5) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0),c(-1,-2),c(2,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0),c(-1,-2),c(1,2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -43,11 +43,14 @@ init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 
 ## compute the basis ###
-centers <- rbind(c(0.5,0.5),c(0.25,0.25),c(0.75,0.75))*d
+centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d);y=y/max(abs(y));y=y-mean(y)})
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/sum(abs(y))})
 
-#basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[sample(1:nrow(coord),2)] <- c(-2,2);y})
+# idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
+# basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
+
+
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##

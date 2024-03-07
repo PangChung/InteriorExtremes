@@ -35,14 +35,14 @@ mse.max = matrix(NA,nrow=length(files.list),ncol=24)
 for(k in 1:length(files.list)){
     load(files.list[k],e<-new.env())    
     fit.result <- lapply(1:nrow(par.skew.normal),function(i){values = lapply(1:2,function(j){matrix(unlist(lapply(e$fit.logskew.angular2[[i]][[j]], function(x2){x2$par[1:4]-par.skew.normal[i,]})),ncol=4,byrow=TRUE)})})
-    fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,-c(1:2,5)]),1,mean);min(mse)})}))
+    fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,3:4]),1,mean);min(mse)})}))
     mse.max[k,] <- fit.result
     print(k)
 }
 
 boxplot(mse.max)
 summary(mse.max)
-idx=9
+idx= 1
 max(mse.max[,idx])
 #apply(mse.max,2,function(x) which(x>1))
 error.idx = which.max(mse.max[,idx])
