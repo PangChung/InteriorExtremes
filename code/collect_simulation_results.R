@@ -54,7 +54,7 @@ par.skew.normal[(idx-1) %/% 2 + 1,]
 est.mat.list <- extract_results(files.list)
 par.skew.normal = est.mat.list[[2]];est.mat.list = est.mat.list[[1]]
 par.skew.normal = as.data.frame(par.skew.normal)
-save.image(file=paste0("data/simulation_study_logskew_results_",idx.file,"_1000.RData"))
+save.image(file=paste0("data/simulation_study_logskew_results_",idx.file,"_1000_1.RData"))
 
 
 variable.names <- c(expression(lambda), expression(nu), expression(alpha[1]), expression(alpha[2]), expression(alpha[3]))
@@ -74,7 +74,7 @@ for(idx.thres in 1:n2){
     }
 }
 
-pdf(file=paste0("figures/simulation_est_boxplots_",idx.file,"_1000.pdf"),width=4*n2,height = 5,onefile = TRUE)
+pdf(file=paste0("figures/simulation_est_boxplots_",idx.file,"_1000_1.pdf"),width=4*n2,height = 5,onefile = TRUE)
 for(idx.case in 1:n1){
     do.call(grid.arrange, c(lapply(p.list,function(x){x[[idx.case]]}), ncol = n2,nrow=1))
 }
