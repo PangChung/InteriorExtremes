@@ -1,9 +1,9 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
-computer = "ws"
+computer = "hpc"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
-m <- 1000 ## number of samples
+m <- 2000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
 #model = "truncT"; # "logskew" or "truncT"
@@ -19,7 +19,7 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(4,8) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(1,1.5) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0),c(-1,-2),c(1,2),c(-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -39,7 +39,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
-file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,".RData")
+file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,"_",basis.idx,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 
@@ -61,10 +61,10 @@ if(basis.idx == 1){
 ########################################################################
 t0 <- proc.time()
 if(model == "logskew"){
-    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
-    ub=c(10,1.99,rep(Inf,ncol(para.alpha)))
+    lb=c(0.01,0.01,rep(-100,ncol(para.alpha)))
+    ub=c(Inf,1.99,rep(100,ncol(para.alpha)))
     init = c(1,1,0,0)
-    par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
+    par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:nrow(para.alpha)))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
     par.skew.list <- list()
     ec.logskew <- list()
@@ -72,14 +72,14 @@ if(model == "logskew"){
     fit.logskew.angular <- list()
     fit.logskew.angular2 <- list()
     file.samples = paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,"_",basis.idx,".RData")
-    if(file.exists(file.samples)) load(file.samples)
-    else samples.skew.normal <- list()
+    if(file.exists(file.samples)){load(file.samples)} else samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
         fit.logskew2 <- list()
         par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
-        if(!file.exists(file.samples)) samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-        else samples.skew.normal <- list()
+        if(!file.exists(file.samples)){
+            samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
+        }
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
