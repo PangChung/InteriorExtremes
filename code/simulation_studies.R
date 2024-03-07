@@ -1,6 +1,6 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
-computer = "ws"
+computer = "hpc"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
@@ -72,14 +72,14 @@ if(model == "logskew"){
     fit.logskew.angular <- list()
     fit.logskew.angular2 <- list()
     file.samples = paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,"_",basis.idx,".RData")
-    if(file.exists(file.samples)) load(file.samples)
-    else samples.skew.normal <- list()
+    if(file.exists(file.samples)){load(file.samples)} else samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
         fit.logskew2 <- list()
         par.skew.list[[i]] <- list(sigma=cov.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
-        if(!file.exists(file.samples)) samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-        else samples.skew.normal <- list()
+        if(!file.exists(file.samples)){
+            samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
+        }
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
