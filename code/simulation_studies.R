@@ -3,7 +3,7 @@ args <- commandArgs(TRUE)
 computer = "hpc"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
-m <- 1000 ## number of samples
+m <- 2000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
 #model = "truncT"; # "logskew" or "truncT"
@@ -61,8 +61,8 @@ if(basis.idx == 1){
 ########################################################################
 t0 <- proc.time()
 if(model == "logskew"){
-    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
-    ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
+    lb=c(0.01,0.01,rep(-100,ncol(para.alpha)))
+    ub=c(Inf,1.99,rep(100,ncol(para.alpha)))
     init = c(1,1,0,0)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
