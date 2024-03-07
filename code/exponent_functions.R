@@ -507,7 +507,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit
         init = c(init,2)
         lb = c(lb,-Inf)
         ub = c(lb,Inf)
-        fixed = c(fixed,FALSE)
+        fixed = c(fixed,F)
         object.func <- function(par,opt=TRUE,ncore=ncores){
             if(trace) print(par)
             par2 = init; par2[!fixed] = par
