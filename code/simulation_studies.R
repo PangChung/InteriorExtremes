@@ -1,6 +1,6 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
-computer = "hpc"
+computer = "ws"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
@@ -72,7 +72,7 @@ if(model == "logskew"){
     fit.logskew.angular <- list()
     fit.logskew.angular2 <- list()
     file.samples = paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,"_",basis.idx,".RData")
-    if(!file.exists(file.samples)) load(file.samples)
+    if(file.exists(file.samples)) load(file.samples)
     else samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
