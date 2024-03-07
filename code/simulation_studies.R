@@ -88,7 +88,7 @@ if(model == "logskew"){
             a <- sweep(a,1,sqrt(rowSums(a^2)),FUN="/")*3
             init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
             init.list = split(init.mat,row(init.mat))
-            fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
+            fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(T,T,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
             results.mat <- unlist(lapply(fit.result,function(x){c(x$value)}))
             fit.logskew[[j]] = fit.result[[which.min(results.mat)]]
             fit.logskew2[[j]] = fit.result 
