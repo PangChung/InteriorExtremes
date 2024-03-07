@@ -19,7 +19,7 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(4,8) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(1,1.5) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0),c(-1,-2),c(1,2),c(-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -64,7 +64,7 @@ if(model == "logskew"){
     lb=c(0.01,0.01,rep(-100,ncol(para.alpha)))
     ub=c(Inf,1.99,rep(100,ncol(para.alpha)))
     init = c(1,1,0,0)
-    par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:3))
+    par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:nrow(para.alpha)))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
     par.skew.list <- list()
     ec.logskew <- list()
