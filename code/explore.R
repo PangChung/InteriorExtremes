@@ -54,14 +54,14 @@ summary(basis)
 
 
 ## contour of the bi-variate extremal coefficient ##
-sigma = cov.func(coord,c(16,1))
 coord = as.matrix(expand.grid(1:32,1:32))
+sigma = cov.func(coord,c(16,1))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 
-centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
+centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*32
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/max(abs(y))*2})
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=32);y=y-mean(y);y/max(abs(y))*2})
 
 basis <- cbind(bs(coord[,1],degree = 1),coord)
 basis <- apply(basis,2,function(x){x-mean(x)})
@@ -71,7 +71,7 @@ basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx
 
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-idx.center = c(16,16)
+idx.center = c(18,18)
 
 idx.center = which.min(abs(coord[,1] - idx.center[1]) + abs(coord[,2] - idx.center[2]))
 ind.idx.center = all.pairs[1,] == idx.center |  all.pairs[2,] == idx.center
