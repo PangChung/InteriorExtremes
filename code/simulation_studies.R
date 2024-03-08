@@ -18,7 +18,7 @@ coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(4,8) #c(0.5,1,2) ## range for the correlation function ##      
-para.nu = c(1,1.5) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
+para.nu = c(1) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
 para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
@@ -40,6 +40,7 @@ source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
 file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,"_",basis.idx,".RData")
+file.samples = paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,"_",basis.idx,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 
@@ -47,7 +48,7 @@ set.seed(init.seed)
 if(basis.idx == 1){
     centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
     idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-    basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/max(abs(y))*2})
+    basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/max(abs(y))})
 }else{
     idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
     basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
@@ -71,7 +72,6 @@ if(model == "logskew"){
     tc.logskew <- list()
     fit.logskew.angular <- list()
     fit.logskew.angular2 <- list()
-    file.samples = paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,"_",basis.idx,".RData")
     if(file.exists(file.samples)){load(file.samples)} else samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
@@ -85,12 +85,12 @@ if(model == "logskew"){
         for(j in 1:length(thres)){
             fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
             #a = matrix(rnorm(ncol(para.alpha)*ncores),nrow=ncores)
-            a = seq(0,2*pi,length.out=ncores)
+            a = seq(0,2*pi,length.out=ncores*5)
             a = cbind(cos(a),sin(a))
             #a <- sweep(a,1,sqrt(rowSums(a^2)),FUN="/")*3
             init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
             init.list = split(init.mat,row(init.mat))
-            fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(T,T,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
+            fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
             results.mat <- unlist(lapply(fit.result,function(x){c(x$value)}))
             fit.logskew[[j]] = fit.result[[which.min(results.mat)]]
             fit.logskew2[[j]] = fit.result 
