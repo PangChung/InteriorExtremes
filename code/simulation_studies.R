@@ -91,7 +91,9 @@ if(model == "logskew"){
             init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
             init.list = split(init.mat,row(init.mat))
             fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
-            results.mat <- unlist(lapply(fit.result,function(x){c(x$value)}))
+            results.mat <- round(unlist(lapply(fit.result,function(x){c(x$value)})),3)
+            scale = unlist(lapply(fit.result,function(x){sum(abs(x$par[3:4]))}))
+            idx = which(results.mat == min(results.mat))
             fit.logskew[[j]] = fit.result[[which.min(results.mat)]]
             fit.logskew2[[j]] = fit.result 
             print(c(i,j))
