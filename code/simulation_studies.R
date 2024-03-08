@@ -94,7 +94,7 @@ if(model == "logskew"){
             results.mat <- round(unlist(lapply(fit.result,function(x){c(x$value)})),1)
             scale = unlist(lapply(fit.result,function(x){max(abs(x$par[3:4]))}))
             idx = which(results.mat == min(results.mat))
-            fit.logskew[[j]] = fit.result[[idx[which.min(results.mat)]]]
+            fit.logskew[[j]] = fit.result[[idx[which.min(scale)]]]
             fit.logskew2[[j]] = fit.result 
             print(c(i,j))
         }
