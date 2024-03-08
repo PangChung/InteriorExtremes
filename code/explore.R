@@ -59,9 +59,9 @@ sigma = cov.func(coord,c(16,1))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 
-centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*32
+centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=32);y=y-mean(y);y/max(abs(y))*2})
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=32);y=y-mean(y)})
 
 basis <- cbind(bs(coord[,1],degree = 1),coord)
 basis <- apply(basis,2,function(x){x-mean(x)})
@@ -169,20 +169,25 @@ diff.delta <- function(par,sigma){
     return(unlist(mclapply(1:nrow(par),fun,mc.cores=ncores)))
 }
 
+centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
+idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
+basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/max(abs(y))})
+#basis <- sapply(idx.centers,function(x){y=exp(-diff.mat[x,]/d/2);y=y-mean(y);y/max(abs(y))})
+
+basis <- cbind(bs(coord[,1],degree = 1),coord)
+basis <- apply(basis,2,function(x){x-mean(x)})
+
+idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
+basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
+
 alpha.1 = seq(-5,5,0.1)
 sigma = cov.func(coord,c(2,1.5))
 alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))
 values <- diff.delta(alpha.grid,sigma)
 summary(values)
 
-z=matrix(values,nrow=length(alpha.1),ncol=length(alpha.1))
-p <- plotly::plot_ly(z=~z, type = "surface")
-p 
-
-alpha.1 = seq(-5,5,0.1)
 para.norm = as.matrix(expand.grid(para.range,para.nu))
 p.list = list()
-
 for(i in 1:nrow(para.norm)){
     sigma = cov.func(coord,para.norm[i,])
     alpha.grid = as.matrix(expand.grid(alpha.1,alpha.1))

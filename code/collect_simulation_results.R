@@ -6,7 +6,7 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = 1;basis.idx=2
+idx.file = 1;basis.idx=1
 files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_\\d+_",basis.idx,".RData"),full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
 load(files.list[[1]],e<-new.env())
@@ -19,8 +19,8 @@ extract_results <- function(files){
         fit.logskew.angular = lapply(1:n1,function(id.1){
             lapply(1:n2,function(id.2){
                 value = round(unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){x$value})),1)
-                scale = unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){sum(abs(x$par[3:4]))}))
-                idx =which(value == min(value))
+                scale = unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){max(x$par[3:4]^2)}))
+                idx = which(value == min(value))
                 return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx[which.min(scale[idx])]]])
             })
         })
@@ -56,7 +56,6 @@ summary(mse.max)
 # e$fit.logskew.angular2[[(idx-1) %/% 2 + 1]][[(idx-1) %% 2 + 1]]
 # e$fit.logskew.angular[[(idx-1) %/% 2 + 1]][[(idx-1) %% 2 + 1]]
 # par.skew.normal[(idx-1) %/% 2 + 1,]
-
 est.mat.list <- extract_results(files.list)
 par.skew.normal = est.mat.list[[2]];est.mat.list = est.mat.list[[1]]
 par.skew.normal = as.data.frame(par.skew.normal)
