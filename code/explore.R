@@ -110,7 +110,7 @@ summary(basis)
 #basis[,1] <- rep(0,nrow(basis))
 # 1: fixing the first one, 2: unfixing the first one
 #pdf("figures/delta_basis_1.pdf",width=5*3,height = 5,onefile = TRUE)
-pdf("figures/delta_basis_5.pdf",width=5*3,height = 5,onefile = TRUE)
+pdf("figures/delta_basis_4.pdf",width=5*3,height = 5,onefile = TRUE)
 for(idx in 1:nrow(para.alpha)){
     beta1 = alpha2delta(list(cov.func(coord,c(4,1)),alpha.func(para.alpha[idx,])))[[2]]
     df = data.frame(x = coord[,1], y = coord[,2], z = beta1)
@@ -230,65 +230,4 @@ print(init)
 fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F,F,F),thres=0.95,model="logskew",ncores=ncores,lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,method="Nelder-Mead",trace=FALSE,maxit=1000)
 fit.result$par
 para.alpha[idx,]
-
-
-
-# # plots using ggplot2 #
-# # Load the ggplot2 package
-# library(ggplot2)
-# library(gridExtra)
-# # Create some data
-# set.seed(123)
-# p.list <- list()
-# for(idx.case in 1:27){
-# data <- data.frame(x = coord[,1],
-#                    y = coord[,2],
-#                    z = samples.skew.normal[[idx.case]][1,])
-
-# # Plot a gridded image
-# p.list[[idx.case]] <- ggplot(data, aes(x = x, y = y, fill = z)) +
-#   geom_tile() +
-#   scale_fill_gradient(low = "blue", high = "red") +
-#   labs(title = paste(par.skew.normal[idx.case,],collapse = " "), x = "X", y = "Y", fill = "Z") + theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot")
-# }
-
-# pdf(file="figures/simulation_samples.pdf",width=10,height = 10,onefile = TRUE)
-# do.call(grid.arrange, c(p.list[1:9], ncol = 3,nrow=3))
-# do.call(grid.arrange, c(p.list[1:9+9], ncol = 3,nrow=3))
-# do.call(grid.arrange, c(p.list[1:9+18], ncol = 3,nrow=3))
-# dev.off()
-
-# p1.list <- list()
-# idx.center = 313
-# ind.idx.center = all.pairs[1,] == idx.center |  all.pairs[2,] == idx.center
-# for(idx.case in 1:27){
-# tc.logskew.idx.center <- tc.logskew[[idx.case]][ind.idx.center]
-# ind.idx = apply(all.pairs[,ind.idx.center],2,function(x) x[x!=idx.center])
-# data <- data.frame( x = coord[-idx.center,1],
-#                     y = coord[-idx.center,2],
-#                     z = tc.logskew.idx.center)
-
-# # plot contours #
-
-# p1.list[[idx.case]] <- ggplot(data, aes(x = x, y = y, z = z)) +
-#     geom_contour(aes(colour = ..level..)) +
-#     scale_colour_gradient(low = "blue", high = "red") +
-#     theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-#     labs(title = paste("Bivariate Extremal Coef.:",paste(par.skew.normal[idx.case,],collapse = " ")), x = "X", y = "Y", colour = "Z")
-
-# }
-
-# pdf(file="figures/simulation_samples_extcoef_contours.pdf",width=10,height = 8,onefile = TRUE)
-# do.call(grid.arrange, c(p1.list[1:9], ncol = 3,nrow=3))
-# do.call(grid.arrange, c(p1.list[1:9+9], ncol = 3,nrow=3))
-# do.call(grid.arrange, c(p1.list[1:9+18], ncol = 3,nrow=3))
-# dev.off()
-
-# save(p1.list,p.list,file="data/simulation_samples_plots.RData")
-
-# # system("say \'your program has finished\' ")
-
-# idx.case = 11
-# fit.logskew.angular[[idx.case]]$par
-# par.skew.normal[idx.case,]
 
