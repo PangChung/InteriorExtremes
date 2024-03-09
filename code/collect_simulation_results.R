@@ -18,7 +18,7 @@ extract_results <- function(files){
         load(files[[i]],e<-new.env())
         fit.logskew.angular = lapply(1:n1,function(id.1){
             lapply(1:n2,function(id.2){
-                value = round(unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){x$value})),3)
+                value = round(unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){x$value})),4)
                 scale = unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){max(x$par[3:4]^2)}))
                 idx = 1:length(value)#which.min(value)
                 #return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx]])
@@ -37,17 +37,17 @@ extract_results <- function(files){
     return(est.mat.list)
 }
 
-# mse.max = matrix(NA,nrow=length(files.list),ncol=nrow(par.skew.normal)*2)
-# for(k in 1:length(files.list)){
-#     load(files.list[k],e<-new.env())    
-#     fit.result <- lapply(1:nrow(par.skew.normal),function(i){values = lapply(1:2,function(j){matrix(unlist(lapply(e$fit.logskew.angular2[[i]][[j]], function(x2){x2$par[1:4]-par.skew.normal[i,]})),ncol=4,byrow=TRUE)})})
-#     fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,3:4]),1,mean);min(mse)})}))
-#     mse.max[k,] <- fit.result
-#     print(k)
-# }
+mse.max = matrix(NA,nrow=length(files.list),ncol=nrow(par.skew.normal)*2)
+for(k in 1:length(files.list)){
+    load(files.list[k],e<-new.env())    
+    fit.result <- lapply(1:nrow(par.skew.normal),function(i){values = lapply(1:2,function(j){matrix(unlist(lapply(e$fit.logskew.angular2[[i]][[j]], function(x2){x2$par[1:4]-par.skew.normal[i,]})),ncol=4,byrow=TRUE)})})
+    fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,3:4]),1,mean);sum(mse<1)/length(mse)})}))
+    mse.max[k,] <- fit.result
+    print(k)
+}
 
-# boxplot(mse.max)
-# summary(mse.max)
+boxplot(mse.max)
+summary(mse.max)
 # idx= 1
 # max(mse.max[,idx])
 # error.idx = which.max(mse.max[,idx])

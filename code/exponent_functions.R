@@ -309,11 +309,12 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
         omega.j = sqrt(diag(diag(sigma.j),nrow=n-1))
         omega.j.inv = diag(diag(omega.j)^(-1),nrow=n-1)
         sigma.j.bar = omega.j.inv %*% sigma.j %*% omega.j.inv
-        alpha.hat = c(1 - delta %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) * c(omega.j %*% 
-            sigma.j.inv %*% A.j %*% omega %*% delta)   
-        u.j = A.j %*% sigma %*% I.mat1[,j]
-        b1 = c(alpha.hat %*% sigma.j.bar %*% alpha.hat)
-        b3 = c(-(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
+        # alpha.hat = c(1 - delta %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) * c(omega.j %*% 
+        #     sigma.j.inv %*% A.j %*% omega %*% delta)   
+        u.j = c(A.j %*% sigma[,j])
+        #b1 = c(alpha.hat %*% sigma.j.bar %*% alpha.hat)
+        #b3 = c(-(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
+        b3 = omega.j.inv %*% A.j %*% omega %*% delta
         sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),c(b3,1)))
         func_temp <- function(i){
             xi = x[i,]

@@ -3,7 +3,7 @@ args <- commandArgs(TRUE)
 computer = "hpc"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
-m <- 000 ## number of samples
+m <- 1000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
 #model = "truncT"; # "logskew" or "truncT"
@@ -48,7 +48,7 @@ set.seed(init.seed)
 if(basis.idx == 1){
     centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
     idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-    basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/max(abs(y))})
+    basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/sqrt(sum(y^2))})
 }else{
     idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
     basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
