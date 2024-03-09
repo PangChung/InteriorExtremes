@@ -94,6 +94,13 @@ for(i in 1:nrow(para.alpha)){
 grid.arrange(grobs=p1.list,nrow=1)
 
 
+sigma = cov.func(coord,c(4,1))
+delta = alpha2delta(list(sigma,alpha.func(para.alpha[2,])))[[2]]
+alpha = delta2alpha(list(sigma,delta))[[2]]
+range(delta)
+alpha = delta2alpha(list(sigma,delta*d))[[2]]
+alpha = delta2alpha(list(sigma,rep(1/sqrt(15*10),d*d)))[[2]]
+range(alpha)
 # # plot contours #
 
 # 

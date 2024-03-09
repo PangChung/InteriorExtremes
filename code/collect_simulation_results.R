@@ -6,7 +6,7 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = 1;basis.idx=1
+idx.file = 2;basis.idx=1
 files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_\\d+_",basis.idx,".RData"),full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
 load(files.list[[1]],e<-new.env())
@@ -18,10 +18,11 @@ extract_results <- function(files){
         load(files[[i]],e<-new.env())
         fit.logskew.angular = lapply(1:n1,function(id.1){
             lapply(1:n2,function(id.2){
-                value = round(unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){x$value})),1)
+                value = round(unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){x$value})),5)
                 scale = unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){max(x$par[3:4]^2)}))
-                idx = which(value == min(value))
-                return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx[which.min(scale[idx])]]])
+                idx = which.min(value)
+                return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx]])
+                #return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx[which.min(scale[idx])]]])
             })
         })
         fit.results[[i]] <- fit.logskew.angular
