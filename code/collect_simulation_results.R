@@ -6,7 +6,7 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = 2;basis.idx=1
+idx.file = 3;basis.idx=1
 files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_\\d+_",basis.idx,".RData"),full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
 load(files.list[[1]],e<-new.env())
@@ -18,38 +18,36 @@ extract_results <- function(files){
         load(files[[i]],e<-new.env())
         fit.logskew.angular = lapply(1:n1,function(id.1){
             lapply(1:n2,function(id.2){
-                value = round(unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){x$value})),5)
+                value = round(unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){x$value})),3)
                 scale = unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){max(x$par[3:4]^2)}))
-                idx = which.min(value)
-                return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx]])
-                #return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx[which.min(scale[idx])]]])
+                idx = 1:length(value)#which.min(value)
+                #return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx]])
+                return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx[which.min(scale[idx])]]])
             })
         })
         fit.results[[i]] <- fit.logskew.angular
         #fit.results[[i]] <- e$fit.logskew.angular
     }
-    par.skew <- e$par.skew.normal
-    n1 = nrow(par.skew);n2 = length(e$fit.logskew.angular[[1]])
-    est.mat.list <- lapply(1:n2,function(x){  lapply(1:n1,function(x1){list()})})
+    est.mat.list <- create_lists(c(n2,n1))
     for(i in 1:n1){
         for(j in 1:n2){
-            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par[1:4]})),ncol=ncol(par.skew),byrow=TRUE)
+            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)
         }
     }
-    return(list(est.mat.list,par.skew))
+    return(est.mat.list)
 }
 
-mse.max = matrix(NA,nrow=length(files.list),ncol=nrow(par.skew.normal)*2)
-for(k in 1:length(files.list)){
-    load(files.list[k],e<-new.env())    
-    fit.result <- lapply(1:nrow(par.skew.normal),function(i){values = lapply(1:2,function(j){matrix(unlist(lapply(e$fit.logskew.angular2[[i]][[j]], function(x2){x2$par[1:4]-par.skew.normal[i,]})),ncol=4,byrow=TRUE)})})
-    fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,3:4]),1,mean);min(mse)})}))
-    mse.max[k,] <- fit.result
-    print(k)
-}
+# mse.max = matrix(NA,nrow=length(files.list),ncol=nrow(par.skew.normal)*2)
+# for(k in 1:length(files.list)){
+#     load(files.list[k],e<-new.env())    
+#     fit.result <- lapply(1:nrow(par.skew.normal),function(i){values = lapply(1:2,function(j){matrix(unlist(lapply(e$fit.logskew.angular2[[i]][[j]], function(x2){x2$par[1:4]-par.skew.normal[i,]})),ncol=4,byrow=TRUE)})})
+#     fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,3:4]),1,mean);min(mse)})}))
+#     mse.max[k,] <- fit.result
+#     print(k)
+# }
 
-boxplot(mse.max)
-summary(mse.max)
+# boxplot(mse.max)
+# summary(mse.max)
 # idx= 1
 # max(mse.max[,idx])
 # error.idx = which.max(mse.max[,idx])
@@ -58,7 +56,6 @@ summary(mse.max)
 # e$fit.logskew.angular[[(idx-1) %/% 2 + 1]][[(idx-1) %% 2 + 1]]
 # par.skew.normal[(idx-1) %/% 2 + 1,]
 est.mat.list <- extract_results(files.list)
-par.skew.normal = est.mat.list[[2]];est.mat.list = est.mat.list[[1]]
 par.skew.normal = as.data.frame(par.skew.normal)
 save.image(file=paste0("data/simulation_study_logskew_results_",idx.file,"_",basis.idx,".RData"))
 
@@ -75,7 +72,7 @@ for(idx.thres in 1:n2){
         
         p<- ggplot(data_long, aes(x = Variable, y = Value)) +
         geom_boxplot() + scale_x_discrete(labels=variable.names) +
-        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 1000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(max(-10,min(data_long$Value)),min(10,max(data_long$Value)))
+        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 1000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(c(-10,10))#ylim(max(-10,min(data_long$Value)),min(10,max(data_long$Value)))
         p.list[[idx.thres]][[idx.case]] <- p
     }
 }
