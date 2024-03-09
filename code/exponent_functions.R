@@ -339,7 +339,7 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
     return(val)
 }
 
-V_bi <- function(x,delta,rho){
+V_bi_logskew <- function(x,delta,rho){
     phi.delta = pnorm(delta)
     phi.delta.log = log(phi.delta)
     if(!is.matrix(x)) x <- matrix(x,ncol=2)
