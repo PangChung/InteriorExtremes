@@ -339,6 +339,18 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
     return(val)
 }
 
+V_bi <- function(x,delta,rho){
+    phi.delta = pnorm(delta)
+    phi.delta.log = log(phi.delta)
+    if(!is.matrix(x)) x <- matrix(x,ncol=2)
+    mu.1 = c(phi.delta.log[2]-phi.delta.log[1]+log(x[,2]/x[,1]) - rho + 1,delta[1])
+    mu.2 = c(phi.delta.log[1]-phi.delta.log[2]+log(x[,1]/x[,2]) - rho + 1,delta[2])
+    sigma.1 = matrix(c(1,(delta[2]-delta[1])/sqrt(2-2*rho),(delta[2]-delta[1])/sqrt(2-2*rho),1),nrow=2)
+    sigma.2 = matrix(c(1,(delta[1]-delta[2])/sqrt(2-2*rho),(delta[1]-delta[2])/sqrt(2-2*rho),1),nrow=2)
+    val = 1/x[1]/phi.delta[1]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.1,sigma=sigma.1)[[1]] + 1/x[2]/phi.delta[2]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.2,sigma=sigma.2)[[1]]
+    return(val)
+}
+
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
 partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
