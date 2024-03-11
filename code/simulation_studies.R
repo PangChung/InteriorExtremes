@@ -19,7 +19,7 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(4,8) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(1) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
-para.alpha = rbind(c(0,0),c(-1,-0.5),c(-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -49,17 +49,17 @@ if(basis.idx == 1){
     centers <- rbind(c(0.25,0.25),c(0.5,0.5),c(0.75,0.75))*d
     idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
     basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/sqrt(sum(y^2))})
+    basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 1; basis[(d^2-floor(d^2/2)+1):d^2,1] = -1
 }else{
     idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
     basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
 }
 
 
-
-
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
+
 t0 <- proc.time()
 if(model == "logskew"){
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
@@ -91,10 +91,10 @@ if(model == "logskew"){
             init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
             init.list = split(init.mat,row(init.mat))
             fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
-            results.mat <- round(unlist(lapply(fit.result,function(x){c(x$value)})),1)
+            results.mat <- round(unlist(lapply(fit.result,function(x){c(x$value)})),3)
             scale = unlist(lapply(fit.result,function(x){max(abs(x$par[3:4]))}))
             idx = which(results.mat == min(results.mat))
-            fit.logskew[[j]] = fit.result[[idx[which.min(scale)]]]
+            fit.logskew[[j]] = fit.result[[idx[which.min(scale[idx])]]]
             fit.logskew2[[j]] = fit.result 
             print(c(i,j))
         }
