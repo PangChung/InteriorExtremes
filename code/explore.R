@@ -215,11 +215,13 @@ for(i in 1:length(rho)){
     delta.grid.list <- split(delta.grid,row(delta.grid))
 
     idx.valid = apply(delta.grid,1,function(x){sum(x^2) < r^2}) # & abs(diff(x))<sqrt(2-2*rho)
-    values <- unlist(lapply(delta.grid.list[idx.valid],function(x){V_bi(c(1,1),delta=x,rho=rho[i])}))
+    values <- unlist(lapply(delta.grid.list[idx.valid],function(x){V_bi_logskew(c(1,1),delta=x,rho=rho[i])}))
 
     data = data.frame(x=delta.grid[idx.valid,1],y=delta.grid[idx.valid,2],z=values)#(values-min(values))/(max(values)-min(values)))
-    p.list[[i]] <- ggplot(data) + geom_point(aes(x=x, y=y, color=z)) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("rho",rho[i])) + coord_fixed()
+    # p.list[[i]] <- ggplot(data) + geom_point(aes(x=x, y=y, color=z)) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("rho",rho[i])) + coord_fixed()
+    p.list[[i]] <- ggplot(data) + geom_contour(aes(x=x,y=y,z=z,colour = after_stat(level))) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("rho",rho[i])) + coord_fixed() + theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") 
 }
+
 pdf("figures/bivariate_extcoef_rho.pdf",width=5*3,height = 5*3,onefile = TRUE)
 grid.arrange(grobs=p.list,ncol=3,nrow=3)
 dev.off()
