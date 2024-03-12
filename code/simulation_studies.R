@@ -71,7 +71,6 @@ if(model == "logskew"){
     ec.logskew <- list()
     tc.logskew <- list()
     fit.logskew.angular <- list()
-    fit.logskew.angular2 <- list()
     if(file.exists(file.samples)){load(file.samples)} else samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
@@ -83,23 +82,11 @@ if(model == "logskew"){
         # ec.logskew[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.skew.normal[[i]]))
         # tc.logskew[[i]] <- mcmapply(true_extcoef,all.pairs.list,MoreArgs=list(par=alpha2delta(par.skew.list[[i]]),model="logskew1"),mc.cores=ncores,mc.set.seed=FALSE)
         for(j in 1:length(thres)){
-            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
-            #a = matrix(rnorm(ncol(para.alpha)*ncores),nrow=ncores)
-            a = seq(0,2*pi,length.out=ncores*5)
-            a = cbind(cos(a),sin(a))
-            #a <- sweep(a,1,sqrt(rowSums(a^2)),FUN="/")*3
-            init.mat = cbind(fit.result1$par[1],fit.result1$par[2],a)
-            init.list = split(init.mat,row(init.mat))
-            fit.result = mcmapply(FUN=fit.model,init=init.list,MoreArgs=list(data=samples.skew.normal[[i]],loc=coord,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE),mc.set.seed = FALSE,mc.cores=ncores,SIMPLIFY = FALSE)
-            results.mat <- round(unlist(lapply(fit.result,function(x){c(x$value)})),3)
-            scale = unlist(lapply(fit.result,function(x){max(abs(x$par[3:4]))}))
-            idx = which(results.mat == min(results.mat))
-            fit.logskew[[j]] = fit.result[[idx[which.min(scale[idx])]]]
-            fit.logskew2[[j]] = fit.result 
+            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE)
+            fit.logskew[[j]] = fit.result1
             print(c(i,j))
         }
         fit.logskew.angular[[i]] <- fit.logskew
-        fit.logskew.angular2[[i]] <- fit.logskew2
         print(i)   
     }
     save(fit.logskew.angular,fit.logskew.angular2,par.skew.normal,file=file2save)
@@ -122,7 +109,7 @@ if(model == "truncT"){
         # ec.truncT[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.truncT[[i]]))
         # tc.truncT[[i]] <- true_extcoef(all.pairs,par=par.truncT.list[[i]],model="truncT2")
         for(j in 1:length(thres)){
-            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(1,1,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="Nelder-Mead",bootstrap=FALSE,hessian=FALSE,opt=TRUE,trace=FALSE)
+            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(1,1,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="Nelder-Mead",hessian=FALSE,opt=TRUE,trace=FALSE)
         }
         fit.truncT.angular[[i]] <- fit.truncT
         print(i)

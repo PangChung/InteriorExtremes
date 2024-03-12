@@ -211,7 +211,7 @@ nloglik <- function(par,data,model="BR"){
         Vdata = V(data,sigma)
     }
     if(model == "truncT"){
-        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_truncT,x=data,par=par,log=FALSE)})
+        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_truncT,x=data,par=par[1:2],T_j=par[[3]],log=FALSE)})
         Vdata = V_truncT(data,par)
     }
     if(model == "logskew"){
@@ -244,8 +244,8 @@ nlogcomplik <- function(par,data,index,ncores,model){
     }
     nlogcomplik.contribution <- function(ind){
       par.index <- par
-      par.index[[1]] = par[[1]][ind,ind]
-      if(model == "logskew"){par.index[[2]] = par.index[[2]][ind]} 
+      if(model == "BR"){par.index[[1]] = par[[1]][ind,ind]}
+      if(model == "logskew"){par.index[[1]] = par[[1]][ind,ind];par.index[[2]] = par.index[[2]][ind]} 
       val <- nloglik(par=par.index,data[,ind],model)
     }
     if(!is.null(ncores)) res <- rowSums(matrix(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE) 
@@ -268,7 +268,7 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
         sigma = FUN(loc,par1[1:2])
         if(model=="BR"){par.list <- list(sigma=sigma)}
-        if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-c(1:2)])}
+        if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-c(1:2)]);par.list[[3]] <- a_fun()}
         if(model=="logskew"){par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-c(1:2)]))}
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
         if(opt){ 
@@ -356,7 +356,7 @@ MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR
         if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
         sigma = FUN(loc,par1[1:2])
         if(model=="BR"){par.list=list(sigma=sigma)}
-        if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-c(1:2)])}
+        if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-c(1:2)]);par.list[[3]] = a_fun(par.list,ncores=ncores)}
         if(model=="logskew"){par.list=list(sigma=sigma,alpha=alpha.func(par=par1[-c(1:2)]))}
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
         if(opt){
