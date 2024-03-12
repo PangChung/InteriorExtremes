@@ -2,6 +2,18 @@
 ###### Intensity function for truncated extremal-t ######
 #########################################################
 
+## this function returns the normalizing constant for the tr
+a_fun <- function(par){
+    sigma = par[[1]];nu=par[[2]]
+    if(n==2){
+        val = 1 - pt(-sigma[-j,j],df=nu+1)
+        return(log(val))
+    }
+    sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
+    val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
+    return(log(val))
+}
+
 ## this function returns the intensity function of the
 ## truncated extremal-t max-stable processes
 intensity_truncT <- function(x,par,ncores=NULL,log=TRUE){
