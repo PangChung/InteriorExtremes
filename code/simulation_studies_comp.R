@@ -32,7 +32,7 @@ para.alpha = rbind(c(0,0))
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 file2save = paste0(DataPath,"data/simulation_study_comp_",id,".RData")
-file.samples = paste0(DataPath,"data/samples/simulation_logskew_comp_",id,"_",m,"_",basis.idx,".RData")
+file.samples = paste0(DataPath,"data/samples/simulation_logskew_comp_",id,"_",m,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 vecchia.seq <- 1:nrow(coord) #sample(1:nrow(coord),size=nrow(coord),replace=FALSE)
@@ -65,8 +65,8 @@ for(i in 1:nrow(par.skew.normal)){
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
     }
     #fit.logskew.vecchia[[i]] <- MVLE(data=samples.skew.normal[[i]],init=par.skew.normal[i,],fixed=c(F,F,F,F,F),loc=coord,FUN=cov.func,vecchia.seq=vecchia.seq,neighbours = neighbours.mat,alpha.func=alpha.func,maxit=500,model="logskew",lb=lb,ub=ub,ncores=ncores)
-    fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=rep(F,F,T,T),loc=coord,FUN=cov.func,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="L-BFGS-B",opt=TRUE,hessian=FALSE)
-    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=rep(F,F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE)
+    fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T),loc=coord,FUN=cov.func,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="L-BFGS-B",opt=TRUE,hessian=FALSE)
+    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE)
 }
 
 save(fit.logskew.comp,par.skew.normal,init.seed,file=file2save)
