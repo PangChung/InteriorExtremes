@@ -89,7 +89,7 @@ if(model == "logskew"){
         fit.logskew.angular[[i]] <- fit.logskew
         print(i)   
     }
-    save(fit.logskew.angular,fit.logskew.angular2,par.skew.normal,file=file2save)
+    save(fit.logskew.angular,par.skew.normal,file=file2save)
 }
 
 if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
