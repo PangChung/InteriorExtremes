@@ -549,7 +549,7 @@ alpha.func <- function(par,b.mat=basis){
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,loc,init,fixed=NULL,thres = 0.90,model="truncT",maxit=100,FUN=NULL,alpha.func=NULL,
+fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit=100,FUN=NULL,alpha.func=NULL,
                     ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE){
     t0 <- proc.time()
     data.sum = apply(data,1,sum)

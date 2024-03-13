@@ -17,7 +17,7 @@ switch(computer,
 coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(4,8) #c(0.5,1,2) ## range for the correlation function ##      
+para.range = c(4) #c(0.5,1,2) ## range for the correlation function ##      
 para.nu = c(1) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
 para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = 2 ## degree of the freedom for the truncated t model ##
@@ -39,8 +39,8 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
-file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,"_",basis.idx,".RData")
-file.samples = paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,"_",basis.idx,".RData")
+file2save = paste0(DataPath,"data/simulation_study_comp2_","_",id,"_",m,"_",basis.idx,".RData")
+file.samples = paste0(DataPath,"data/samples/simulation_logskew_comp2_",id,"_",m,"_",basis.idx,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 pairs.idx = rank(diff.mat[t(all.pairs)]) < 2000
