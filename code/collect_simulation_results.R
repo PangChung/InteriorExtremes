@@ -69,20 +69,19 @@ save.image(file=paste0("data/simulation_study_logskew_results_",idx.file,"_",bas
 
 p.list <- list()
 for(idx.case in 1:nrow(par.skew.normal)){
-data = as.data.frame(est.mat.list[[idx.case]])
-data.true <- pivot_longer(par.skew.normal[idx.case,], everything(), names_to = "Variable", values_to = "Value")
-data_long <- pivot_longer(data, everything(), names_to = "Variable", values_to = "Value")
+    data = as.data.frame(est.mat.list[[idx.case]])
+    data.true <- pivot_longer(par.skew.normal[idx.case,], everything(), names_to = "Variable", values_to = "Value")
+    data_long <- pivot_longer(data, everything(), names_to = "Variable", values_to = "Value")
 
-p<- ggplot(data_long, aes(x = Variable, y = Value)) +
-geom_boxplot() + scale_x_discrete(labels=variable.names) +
-theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",0.95,"%"," with 100 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(c(-10,10))#ylim(max(-10,min(data_long$Value)),min(10,max(data_long$Value)))
-p.list[[idx.case]] <- p
+    p<- ggplot(data_long, aes(x = Variable, y = Value)) +
+    geom_boxplot() + scale_x_discrete(labels=variable.names) +
+    theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",0.95,"%"," with 100 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(c(-10,10))#ylim(max(-10,min(data_long$Value)),min(10,max(data_long$Value)))
+    p.list[[idx.case]] <- p
 }
 
 grid.arrange(grobs=p.list,ncol=3,nrow=2)
 
 variable.names <- c(expression(lambda), expression(nu), expression(alpha[1]), expression(alpha[2]), expression(alpha[3]))
-
 n1 = length(est.mat.list[[1]]);n2 = length(est.mat.list)
 p.list = create_lists(c(n2,n1))
 for(idx.thres in 1:n2){
