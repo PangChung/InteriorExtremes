@@ -208,6 +208,7 @@ grid.arrange(grobs=p.list,ncol=2)
 
 p.list = list()
 rho = seq(0.1,0.9,0.1)
+BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),delta=c(0,0),rho=x)}))
 for(i in 1:length(rho)){
     r = sqrt(min(eigen(matrix(c(1,rho[i],rho[i],1),2))$values))
     delta = seq(-r,r,length.out=100)
@@ -219,7 +220,8 @@ for(i in 1:length(rho)){
 
     data = data.frame(x=delta.grid[idx.valid,1],y=delta.grid[idx.valid,2],z=values)#(values-min(values))/(max(values)-min(values)))
     # p.list[[i]] <- ggplot(data) + geom_point(aes(x=x, y=y, color=z)) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("rho",rho[i])) + coord_fixed()
-    p.list[[i]] <- ggplot(data) + geom_contour(aes(x=x,y=y,z=z,colour = after_stat(level))) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("rho",rho[i])) + coord_fixed() + theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") 
+    data2 = data[data$z==max(data$z),]
+    p.list[[i]] <- ggplot(data) + geom_contour(aes(x=x,y=y,z=z,colour = after_stat(level))) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("rho",rho[i])) + coord_fixed() + theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + geom_point(data=data2,aes(x=x, y = y), color = "black") + ggtitle(paste("Max:",round(max(data$z),4),"BR:",round(BR.values[i],4)))
 }
 
 pdf("figures/bivariate_extcoef_rho.pdf",width=5*3,height = 5*3,onefile = TRUE)
