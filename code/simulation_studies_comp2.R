@@ -89,9 +89,11 @@ if(model == "logskew"){
             print(c(i,j))
         }
         fit.logskew.angular[[i]] <- fit.logskew
-        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE)
+        #fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,F,F),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE)
+        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=fit.logskew[[1]]$par,fixed=c(T,T,F,F),loc=coord,FUN=cov.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE)
         print(i)   
     }
+    
     save(fit.logskew.angular,fit.logskew.comp,par.skew.normal,file=file2save)
 }
 
