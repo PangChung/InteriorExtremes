@@ -24,7 +24,7 @@ para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 thres = c(0.95,0.9)
-if(model=="truncT"){thres=c(0.98,0.95,0.9)}
+if(model=="truncT"){thres=c(0.98,0.95,0.9);para.range = c(3,5)}
 # loading library and setting path
 library(parallel)
 library(mvtnorm)
@@ -41,7 +41,7 @@ source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
 file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,"_",basis.idx,".RData")
-file.samples = paste0(DataPath,"data/samples/simulation_logskew_",id,"_",m,"_",basis.idx,".RData")
+file.samples = paste0(DataPath,"data/samples/simulation_","model","_",id,"_",m,"_",basis.idx,".RData")
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 
