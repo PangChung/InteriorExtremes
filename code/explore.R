@@ -207,8 +207,8 @@ grid.arrange(grobs=p.list,ncol=2)
 
 
 p.list = list()
-rho = seq(0.1,0.9,0.1)
-BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),delta=c(0,0),rho=x)}))
+rho = seq(0.1,0.9,length.out=9)
+BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),delta=c(0,0),sigma=matrix(c(1,x,x,100),2,2))}))
 for(i in 1:length(rho)){
     r = sqrt(min(eigen(matrix(c(1,rho[i],rho[i],1),2))$values))
     delta = seq(-r,r,length.out=100)
@@ -216,7 +216,7 @@ for(i in 1:length(rho)){
     delta.grid.list <- split(delta.grid,row(delta.grid))
 
     idx.valid = apply(delta.grid,1,function(x){sum(x^2) < r^2}) # & abs(diff(x))<sqrt(2-2*rho)
-    values <- unlist(lapply(delta.grid.list[idx.valid],function(x){V_bi_logskew(c(1,1),delta=x,rho=rho[i])}))
+    values <- unlist(lapply(delta.grid.list[idx.valid],function(x){V_bi_logskew(c(1,1),delta=x,sigma=matrix(c(1,rho[i],rho[i],100),2,2))}))
 
     data = data.frame(x=delta.grid[idx.valid,1],y=delta.grid[idx.valid,2],z=values)#(values-min(values))/(max(values)-min(values)))
     # p.list[[i]] <- ggplot(data) + geom_point(aes(x=x, y=y, color=z)) + scale_color_gradient(low = "blue", high = "red") + ggtitle(paste("rho",rho[i])) + coord_fixed()
