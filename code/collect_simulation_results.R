@@ -105,7 +105,7 @@ dev.off()
 
 
 idx.file = "final"
-files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern="simulation_study_truncT_\\d+_1000_1.RData",full.names=TRUE,recursive=FALSE)
+files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern="simulation_study_truncT_\\d+_2000_1.RData",full.names=TRUE,recursive=FALSE)
 thres.list = c(0.98,0.95,0.9)
 
 extract_results_truncT <- function(files){
@@ -141,7 +141,7 @@ for(idx.thres in 1:n2){
         
         p<- ggplot(data_long, aes(x = Variable, y = Value)) +
         geom_boxplot() + scale_x_discrete(labels=variable.names) +
-        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 1000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(0,10)
+        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 2000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(0,10)
         p.list[[idx.thres]][[idx.case]] <- p
     }
 }
@@ -152,5 +152,5 @@ for(idx.case in 1:n1){
 }
 dev.off()
 
-save(p.list,est.mat.list,par.truncT,variable.names,file=paste0("data/simulation_study_truncT_results_",idx.file,"_1000.RData"))
+save(p.list,est.mat.list,par.truncT,variable.names,file=paste0("data/simulation_study_truncT_results_",idx.file,"_2000.RData"))
 
