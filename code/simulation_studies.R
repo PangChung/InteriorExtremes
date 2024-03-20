@@ -98,7 +98,7 @@ print(t0 <- proc.time() - t0)
 
 if(model == "truncT"){
     lb=c(0.01,0.01,-Inf)
-    ub=c(10,1.99,Inf)
+    ub=c(Inf,1.99,Inf)
     par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.deg))
     samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
     for(i in 1:nrow(par.truncT)){
@@ -117,7 +117,3 @@ if(model == "truncT"){
     save(fit.truncT.angular,par.truncT,file=file2save)
 }
 
-
-# for(idx in 1:nrow(par.skew.normal)){
-#     print(fit.logskew.angular[[idx]][[1]]$par - par.skew.normal[idx,])
-# }
