@@ -6,6 +6,8 @@
 a_fun <- function(par,ncores=NULL){
     sigma = par[[1]];nu=par[[2]]
     n = nrow(sigma)
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
     if(n==2){
         if(is.null(ncores)){
@@ -24,6 +26,7 @@ a_fun <- function(par,ncores=NULL){
                 sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
                 mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]},j=1:n,mc.cores=ncores)
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     return(list(log(val),logphi))
 }
 
@@ -90,7 +93,6 @@ V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
     if(n==1){return(1/x)}
-    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
     sigma_fun <- function(j){
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
@@ -106,17 +108,16 @@ V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
     idx.finite = which(apply(x,2,function(x.i){any(is.finite(x.i))}))
     sigma_j = lapply(1:n,sigma_fun)
     if(is.null(T_j)){
+        phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]]
         T_j = rep(1,n)
         if(!is.null(ncores)){ 
-            T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores)
+            T_j[idx.finite] = mcmapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE,mc.cores=ncores,mc.set.seed = FALSE)
         }else{
             T_j[idx.finite] = mapply(a_fun,sigma_j=sigma_j[idx.finite],j=idx.finite,MoreArgs = list(upper=rep(Inf,n-1)),SIMPLIFY = TRUE)
-        }
-        
+        } 
     }else{
-        T_j <- rep(1,n)
-        T_j[idx.finite] = T_j[[1]]
         phi = exp(T_j[[2]])
+        T_j = exp(T_j[[1]])
         
     }
     a_j = rep(1,n)
@@ -126,7 +127,7 @@ V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
         idx.finite.j = which(is.finite(x_j))
         x_upper = lapply(idx.finite.j,function(i){(x_j[-i]/x_j[i])^(1/nu)})
         V_j = mapply(a_fun,j=idx.finite.j,upper=x_upper,sigma_j = sigma_j[idx.finite.j],SIMPLIFY = TRUE)
-        val = sum(V_j/T_j[idx.finite.j]/x[idx,idx.finite.j])
+        tryCatch({val <- sum(V_j/T_j[idx.finite.j]/x[idx,idx.finite.j])},error=function(e) browser())
     }
     if(!is.null(ncores)){
         val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
@@ -506,7 +507,7 @@ delta2alpha <- function(par){
 }
 
 # calculate true extremal coefficients
-true_extcoef <- function(idx,par,model="logskew1"){
+true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
     if(model=="logskew1"){
         delta = par[[2]];sigma = par[[1]]
         if(length(idx)==2){
@@ -515,16 +516,15 @@ true_extcoef <- function(idx,par,model="logskew1"){
             val = V_bi_logskew(rep(1,length(idx)),delta[idx],sigma[idx,idx])
         }
     }
-
     if(model == "truncT1"){
         n = nrow(par[[1]])
-        x = t(apply(idx,2,function(id){x.id = rep(Inf,n); x.id[id] = 1;return(x.id)}))
-        val = V_truncT(x,par,ncores=min(detectCores(),nrow(x)))
+        x = matrix(unlist(lapply(idx,function(id){x.id = rep(Inf,n); x.id[id] = 1;x.id})),ncol=n,byrow=TRUE)
+        val = V_truncT(x,par,T_j=T_j,ncores=min(detectCores(),nrow(x)))
     }
     
     if(model == "truncT2"){
         x = rep(1,length(idx))
-        val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),ncores=NULL)
+        val = V_truncT(x,list(sigma=par[[1]][idx,idx],nu = par[[2]]),T_j=NULL,ncores=NULL)
     }
     
     if(model == "BR"){
