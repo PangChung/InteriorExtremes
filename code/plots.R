@@ -4,6 +4,7 @@ library(parallel)
 library(gridExtra)
 library(directlabels)
 library(RColorBrewer)
+library(mev)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
@@ -39,13 +40,13 @@ for(i in 1:length(par.list.1)){
     print(range(data$z))
     p.list1[[i]] <- ggplot(data, aes(x = x, y = y, fill = z)) +
     geom_tile() + ggtitle(paste(c("alpha:",para.alpha[i,]),collapse = " ")) + 
-    scale_fill_gradient2(low = "blue",mid="white" ,high = "red",limits=c(-0.5,0.5)) +
+    scale_fill_gradient2(low = "blue",mid="white" ,high = "red",limits=c(min(-0.5,min(data$z)),max(0.5,max(data$z)))) +
     theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + coord_fixed()
     data = data.frame(x=coord[,1],y=coord[,2],z=par.list.2[[i]][[2]])
     print(range(data$z))
     p.list2[[i]] <- ggplot(data, aes(x = x, y = y, fill = z)) +
     geom_tile() + ggtitle(paste(c("alpha:",para.alpha[i,]),collapse = " ")) + 
-    scale_fill_gradient2(low = "blue",mid="white" ,high = "red",limits=c(-0.5,0.5)) +
+    scale_fill_gradient2(low = "blue",mid="white" ,high = "red") +
     theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + coord_fixed()
 }
 
@@ -116,53 +117,22 @@ p2 <- ggplot(data, aes(x = x, y = y, z=z))  +
         labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
 p2.list[[1]] <- p2
 
-grid.arrange(grobs=p1.list,ncol=3)
-grid.arrange(grobs=p2.list,ncol=3)
+pdf("figures/extcoef_final_logskew.pdf",width=5*3,height=5*2,onefile=TRUE)
+# grid.arrange(grobs=p1.list,ncol=3)
+# grid.arrange(grobs=p2.list,ncol=3)
 grid.arrange(grobs=c(p1.list,p2.list),ncol=3,nrow=2)
+dev.off()
 
 ## plot the true extremal coef for the truncated extremal t model ##
-d=5
-coord.trunc = as.matrix(expand.grid(1:d,1:d))
-all.pairs.trunc = combn(1:nrow(coord.trunc),2)
+d=1000
+coord.trunc = as.matrix(expand.grid(0,(1:d)/d))
+all.pairs.trunc = rbind(1,2:d)
 all.pairs.list.trunc = split(all.pairs.trunc,col(all.pairs.trunc))
-idx.center = c(d/2,d/2)
-idx.center = which.min(abs(coord.trunc[,1] - idx.center[1]) + abs(coord.trunc[,2] - idx.center[2]))
-ind.idx.center = all.pairs.trunc[1,] == idx.center |  all.pairs.trunc[2,] == idx.center
-idx = apply(all.pairs.trunc[,ind.idx.center],2,function(x){x[x!=idx.center]})
-par.truncT.list = list(cov.func(coord.trunc,c(5,1.5)),nu=2)
-T_j.list = a_fun(par.truncT.list,ncores=5)
+par.truncT.list = list(cov.func(coord.trunc,c(0.5,1.5)),nu=2)
 
-## plot the true extremal coef for the truncated extremal t model ##
-true.ext.coef1 <- true_extcoef(all.pairs.list.trunc[ind.idx.center],par.truncT.list,model="truncT1",T_j=T_j.list)
-data <- data.frame( x = coord.trunc[idx,1],
-                        y = coord.trunc[idx,2],
-                        z = true.ext.coef)
-brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
-p3 <- ggplot(data, aes(x = x, y = y, z=z))  + 
-        geom_tile(aes(fill=z)) +
-        scale_fill_distiller(palette="RdBu") +
-        geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
-                stat="contour") + 
-        scale_color_gradient(low="blue",high = "red") +
-        theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
-p3
+true.ext.truncT <- unlist(lapply(all.pairs.list.trunc,true_extcoef,par=par.truncT.list,model="truncT2"))
 
-true.ext.coef2 <- unlist(mclapply(all.pairs.list.trunc[ind.idx.center],true_extcoef,par=par.truncT.list,model="truncT2",mc.cores=5,mc.set.seed = FALSE))
-data <- data.frame( x = coord.trunc[idx,1],
-                        y = coord.trunc[idx,2],
-                        z = true.ext.coef)
+true.ext.t <- unlist(lapply(all.pairs.list.trunc,function(id) mev::expme(z=rep(1,2),par=list(Sigma=par.truncT.list[[1]][id,id],df=2),model="xstud") ))
 
-brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
-p4 <- ggplot(data, aes(x = x, y = y, z=z))  + 
-        geom_tile(aes(fill=z)) +
-        scale_fill_distiller(palette="RdBu") +
-        geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
-                stat="contour") + 
-        scale_color_gradient(low="blue",high = "red") +
-        theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
-p4
-
+plot(x=coord.trunc[-1,2],y=true.ext.truncT,type="l",col="black",ylim=c(1,2),xlab="coordinate",ylab="Bivariate extremal coeffient")
+lines(x=coord.trunc[-1,2],y=true.ext.t,col="red")
