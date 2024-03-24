@@ -76,7 +76,6 @@ for(idx.case in 1:length(par.list.1)){
         geom_contour(colour="black",breaks=brks) + 
         geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
-        scale_color_gradient(low="blue",high = "red") +
         theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
         labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
     
@@ -94,7 +93,6 @@ for(idx.case in 1:length(par.list.1)){
         geom_contour(colour="black",breaks=brks) + 
         geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
-        scale_color_gradient(low="blue",high = "red") +
         theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
         labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
     p2.list[[idx.case]] <- p2
@@ -112,7 +110,6 @@ p2 <- ggplot(data, aes(x = x, y = y, z=z))  +
         geom_contour(colour="black",breaks=brks) + 
         geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
-        scale_color_gradient(low="blue",high = "red") +
         theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
         labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
 p2.list[[1]] <- p2
@@ -121,6 +118,30 @@ pdf("figures/extcoef_final_logskew.pdf",width=5*3,height=5*2,onefile=TRUE)
 # grid.arrange(grobs=p1.list,ncol=3)
 # grid.arrange(grobs=p2.list,ncol=3)
 grid.arrange(grobs=c(p1.list,p2.list),ncol=3,nrow=2)
+dev.off()
+
+p.list = list()
+sigma.22 = 1
+rho = 1:9/10*sigma.22
+BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),delta=c(0,0),sigma=matrix(c(sigma.22,x,x,sigma.22),2,2))}))
+for(i in 1:length(rho)){
+    r = sqrt(min(eigen(matrix(c(1,rho[i]/sigma.22,rho[i]/sigma.22,1),2))$values))
+    delta = seq(-r,r,length.out=100)
+    delta.grid = as.matrix(expand.grid(delta,delta))
+    delta.grid.list <- split(delta.grid,row(delta.grid))
+
+    idx.valid = apply(delta.grid,1,function(x){sum(x^2) < r^2}) # & abs(diff(x))<sqrt(2-2*rho)
+    
+    values <- unlist(lapply(delta.grid.list[idx.valid],function(x){V_bi_logskew(c(1,1),delta=x,sigma=matrix(c(sigma.22,rho[i],rho[i],sigma.22),2,2))}))
+
+    data = data.frame(x=delta.grid[idx.valid,1],y=delta.grid[idx.valid,2],z=values)
+    
+    data2 = data.frame(x=0,y=0,z=BR.values[i])
+    p.list[[i]] <- ggplot(data) + geom_point(aes(x=x,y=y,color=z)) + scale_color_distiller(palette="RdBu") + ggtitle(paste("rho",rho[i])) + coord_fixed() + theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + geom_point(data=data2,aes(x=x, y = y), color = "black") + ggtitle(paste("Max:",round(max(data$z),4),"BR:",round(BR.values[i],4)))
+}
+
+pdf("figures/bivariate_extcoef_rho.pdf",width=5*3,height = 5*3,onefile = TRUE)
+grid.arrange(grobs=p.list,ncol=3,nrow=3)
 dev.off()
 
 ## plot the true extremal coef for the truncated extremal t model ##

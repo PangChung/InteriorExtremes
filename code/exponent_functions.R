@@ -539,12 +539,19 @@ true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
 }
 
 
-cov.func <- function(loc,par){
-    r = par[1];v = par[2]
-    n = nrow(loc)
-    diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
-        as.vector(outer(loc[,2],loc[,2],'-')))
-    cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) + diag(1e-6,n) 
+# cov.func <- function(loc,par){
+#     r = par[1];v = par[2]
+#     n = nrow(loc)
+#     diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
+#         as.vector(outer(loc[,2],loc[,2],'-')))
+#     cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) + diag(1e-6,n) 
+#     #cov.mat <- diag(seq(1,2,length.out=n)) %*% cov.mat %*% diag(seq(1,2,length.out=n))
+#     return(cov.mat)
+# }
+
+cov.func <- function(distmat,par){
+    r = par[1];v = par[2];n=nrow(distmat)
+    cov.mat <- exp(-(distmat/r)^v) + diag(1e-6,n) 
     #cov.mat <- diag(seq(1,2,length.out=n)) %*% cov.mat %*% diag(seq(1,2,length.out=n))
     return(cov.mat)
 }
@@ -567,7 +574,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,ncore=NULL){
-            if(trace) print(par)
+            #if(trace) print(par)
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
             cov.mat = FUN(loc,par.1)
@@ -585,7 +592,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
     if(model == "truncT"){
     ## 3 parameters: 2 for the covariance function; 1 for the df parameter
         object.func <- function(par,opt=TRUE,ncore=NULL){
-            if(trace) print(par)
+            #if(trace) print(par)
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];nu = par2[3]
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
@@ -606,7 +613,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
         if(model=="logskew" & any(!fixed[-c(1:2)])){
             n.alpha = sum(!fixed[-c(1:2)])
             if(n.alpha==2){
-                a = seq(0,2*pi,length.out=ncores*5)
+                a = seq(0,2*pi,length.out=ncores)
                 a = cbind(cos(a),sin(a))
             }else{
                 a = matrix(rnorm(ncores*5*n.alpha),ncol=n.alpha)

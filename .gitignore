@@ -1,4 +1,4 @@
-data/*
+*.RData
 */settings.json
 katana*
 *.out
