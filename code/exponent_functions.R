@@ -676,7 +676,7 @@ vario.func <- function(loc,par){ ##return a covariance matrix
     }
     
     cov.mat <- sapply(1:n, function(i) sapply(1:n, function(j) 
-                        vario(coord[i,]) + vario(coord[j,]) - vario(coord[c(i,j),])))
+                        vario(loc[i,]) + vario(loc[j,]) - vario(loc[c(i,j),])))
                         
     return(cov.mat + .Machine$double.eps * diag(n))
 }
