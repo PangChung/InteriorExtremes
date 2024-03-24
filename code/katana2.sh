@@ -14,8 +14,8 @@ module load gsl/2.7.1
 module load gmp/6.2.1 
 module load r/4.3.1
 
-#Rscript $script "${inputs};id=${PBS_ARRAY_INDEX};computer=\"hpc\"" 
-Rscript code/simulation_studies_comp.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\";d=15;m=100"
+Rscript $script "${inputs};computer=\"hpc\"" 
+#Rscript code/simulation_studies_comp.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\";d=15;m=100"
 # for i in {1..300}; do
 #     Rscript code/simulation_studies_comp.R "id=${i};computer=\"hpc\";d=15;m=100"
 #     echo $i
