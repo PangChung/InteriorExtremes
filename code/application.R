@@ -30,6 +30,6 @@ basis = matrix(0,nrow=D,ncol=4)
 basis[1:floor(D/2),1] = 0.1;basis[(D-floor(D/2)+1):D,1] = -0.1
 basis[,-1] <- sapply(idx.centers,function(x){y=dnorm(distmat[,x],mean=0,sd=500);y=y-mean(y);y/sqrt(sum(y^2))})
 
-results = fit.model(data=maxima.frechet,loc=distmat,init=c(1000,0.3,0,0,0),fixed=c(F,F,T,T,T),thres=0.9,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.01,rep(-Inf,ncol(basis)-1)),ub=c(Inf,1.99,rep(Inf,ncol(basis)-1)),hessian=FALSE,opt=TRUE,trace=FALSE) 
+results = fit.model(data=maxima.frechet,loc=distmat,init=c(60,1.2,0,0,0),fixed=c(F,F,T,T,T),thres=0.9,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.01,rep(-Inf,ncol(basis)-1)),ub=c(Inf,1.99,rep(Inf,ncol(basis)-1)),hessian=FALSE,opt=TRUE,trace=FALSE) 
 
 save(results,basis,idx.centers,file=paste(DataPath,"data/application_results.RData"))
