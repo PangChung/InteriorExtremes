@@ -573,7 +573,6 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
     if(is.null(ub)){ub=rep(Inf,length(init))}
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
-    browser()
         object.func <- function(par,opt=TRUE,ncore=NULL){
             #if(trace) print(par)
             par2 = init; par2[!fixed] = par
