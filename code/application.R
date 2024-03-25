@@ -35,7 +35,7 @@ switch(id,
     results1 <- fit.model(data=maxima.frechet,loc=distmat,init=c(60,1.2,0,0,0),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.01,rep(-Inf,ncol(basis)-1)),ub=c(Inf,1.99,rep(Inf,ncol(basis)-1)),hessian=FALSE,opt=TRUE,trace=FALSE), 
     results2 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=c(60,1.2,0,0,0),fixed=c(F,F,F,F,F),thres=0.9,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.01,rep(-Inf,ncol(basis)-1)),ub=c(Inf,1.99,rep(Inf,ncol(basis)-1)),hessian=FALSE,opt=TRUE,trace=FALSE), 
     results3 <- fit.model(data=maxima.frechet,loc=distmat,init=c(60,1.2,0,0,0),fixed=c(F,F,T,T,T),thres=0.9,model="logskew",maxit=1000,FUN=cov.func,alpha.func=function(par){rep(0,D)},ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.01,rep(-Inf,ncol(basis)-1)),ub=c(Inf,1.99,rep(Inf,ncol(basis)-1)),hessian=FALSE,opt=TRUE,trace=FALSE),
-    results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=c(60,1.2,0,0,0),fixed=c(F,F,T,T,T),thres=0.9,model="logskew",maxit=1000,FUN=vario.func,alpha.func=function(par){rep(0,D)},ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.01,rep(-Inf,ncol(basis)-1)),ub=c(Inf,1.99,rep(Inf,ncol(basis)-1)),hessian=FALSE,opt=TRUE,trace=FALSE) 
+    results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=c(60,1.2,0,0,0),fixed=c(F,F,T,T,T),thres=0.9,model="logskew",maxit=1000,FUN=vario.func,alpha.func=function(par){rep(0,D)},ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.01,rep(-Inf,ncol(basis)-1)),ub=c(Inf,1.99,rep(Inf,ncol(basis)-1)),hessian=FALSE,opt=TRUE,trace=FALSE)
 )
 
 save.image(file=paste0(DataPath,"data/application_results",id,".RData"))
