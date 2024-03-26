@@ -228,13 +228,13 @@ save(p1,p2,p3,true.ext.coef1,true.ext.coef2,true.ext.coef3,file="data/plot_appli
 
 ## compare the fitted bivariate extremal coef vs the empirical extremal coef ##
 load("data/data_application.RData")
-load("data/application_results2.RData")
+load("data/application_results2.RData",e<-new.env())
 pairs = comb_n(1:ncol(distmat),2)
-par.list.BR = alpha2delta(list(vario.func(loc.sub.trans,results4$par[1:2]),rep(0,ncol(distmat))))
-par.list = alpha2delta(list(vario.func(loc.sub.trans,results2$par[1:2]),alpha.func(par=results$par[-c(1:2)])))
+par.list.BR = alpha2delta(list(vario.func(loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
+par.list = alpha2delta(list(vario.func(loc.sub.trans,e$results2$par[1:2]),alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis)))
 empirical.extcoef <- apply(pairs,2,empirical_extcoef,data=maxima.frechet)
 fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = par.list[[2]][x],sigma=par.list[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE))
 fitted.extcoef.BR <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = c(0,0),sigma=par.list[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE))
 
-sum(abs(empirical.extcoef - fitted.extcoef))
-sum(abs(empirical.extcoef - fitted.extcoef.BR))
+mean(abs(empirical.extcoef - fitted.extcoef))
+mean(abs(empirical.extcoef - fitted.extcoef.BR))
