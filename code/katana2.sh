@@ -4,7 +4,7 @@
 #PBS -l mem=124gb
 #PBS -l walltime=12:00:00
 #PBS -j oe 
-#PBS -J 1-4
+##PBS -J 1-4
 #PBS -m ae
 #PBS -M peng.zhong@unsw.edu.au 
 
@@ -15,7 +15,8 @@ module load gmp/6.2.1
 module load r/4.3.1
 
 #Rscript $script "${inputs};computer=\"hpc\"" 
-Rscript code/application.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\""
+#Rscript code/application.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\""
+Rscript code/application.R "id=2;computer=\"hpc\""
 #Rscript code/simulation_studies_comp.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\";d=15;m=100"
 # for i in {1..300}; do
 #     Rscript code/simulation_studies_comp.R "id=${i};computer=\"hpc\";d=15;m=100"
