@@ -578,7 +578,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
             cov.mat = FUN(loc,par.1)
-            alpha = alpha.func(par=par.2,b.mat=basis / diag(cov.mat))
+            alpha = alpha.func(par=par.2,b.mat=basis / sqrt(diag(cov.mat)))
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
             #regulator = - sum(par.2[2]^2)/nrow(data)
