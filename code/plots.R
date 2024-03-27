@@ -162,12 +162,13 @@ lines(x=coord.trunc[-1,2],y=true.ext.t,col="red")
 
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
-load("data/application_results2.RData",e<-new.env())
+load("data/application_results2_2.RData",e<-new.env())
 par.list.BR = alpha2delta(list(vario.func(loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
 loc.sub.trans = apply(loc.sub.trans,2,function(x) x-mean(x))
 par.list = list(vario.func(loc.sub.trans,e$results2$par[1:2]))
 par.list[[2]] = alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis/sqrt(diag(par.list[[1]])))
 par.list = alpha2delta(par.list)
+#idx.centers = e$idx.centers
 idx.centers = c(195,536,944)
 #idx.centers = c(212, 508, 843)
 #idx.centers = which(rank(colSums(distmat)) %in% c(1,100,200))
@@ -239,7 +240,7 @@ for(i in 1:length(idx.centers)){
                 scale_fill_manual(values=c("red","blue")) +
                 theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
                 coord_fixed() + 
-                labs(title = paste("Differences",round(mean(data$z),3)), x = "X", y = "Y",fill="Values") 
+                labs(title = paste("Differences",round(mean(data$z>0),3)), x = "X", y = "Y",fill="Values") 
 
 }
 
