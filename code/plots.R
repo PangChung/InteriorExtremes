@@ -162,79 +162,95 @@ lines(x=coord.trunc[-1,2],y=true.ext.t,col="red")
 
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
-load("data/application_results.RData")
-idx.center = which.min(colSums(distmat))
-pairs.idx = rbind(idx.center,1:ncol(distmat))[,-idx.center]
-pairs.idx.list = split(pairs.idx,col(pairs.idx))
-par.list = alpha2delta(list(cov.func(distmat,results$par[1:2]),alpha.func(par=results$par[-c(1:2)])))
-true.ext.coef1 <- unlist(lapply(pairs.idx.list,function(x){V_bi_logskew(c(1,1),delta = par.list[[2]][x],sigma=par.list[[1]][x,x])}))
+load("data/application_results2.RData",e<-new.env())
+par.list.BR = alpha2delta(list(vario.func(loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
+par.list = list(vario.func(loc.sub.trans,e$results2$par[1:2]))
+par.list[[2]] = alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis/sqrt(diag(par.list[[1]])))
+par.list = alpha2delta(par.list)
+idx.centers = c(195,536,915)
+#idx.centers = which(rank(colSums(distmat)) %in% c(1,100,200))
+#idx.centers = 1:ncol(distmat)
+p1 <- p2 <- p3 <- p4 <- list()
+#diff.extcoef = c()
+for(i in 1:length(idx.centers)){
+    idx.center = idx.centers[i]
+    pairs.idx = rbind(idx.center,1:ncol(distmat))[,-idx.center]
+    pairs.idx.list = split(pairs.idx,col(pairs.idx))
+    true.ext.coef <- unlist(lapply(pairs.idx.list,function(x){V_bi_logskew(c(1,1),delta = par.list[[2]][x],sigma=par.list[[1]][x,x])}))
+    true.ext.coef.BR <- unlist(lapply(pairs.idx.list,function(x){V_bi_logskew(c(1,1),delta = par.list.BR[[2]][x],sigma=par.list[[1]][x,x])}))
+    empirical.extcoef <- apply(pairs.idx,2,empirical_extcoef,data=maxima.frechet)
+#     diff.extcoef[i] = mean(abs(true.ext.coef.BR - empirical.extcoef) - abs(true.ext.coef - empirical.extcoef))
+#     print(i)
+# }
+    data <- data.frame( x = loc.sub[-idx.center,1],
+                            y = loc.sub[-idx.center,2],
+                            z = true.ext.coef)
 
-data <- data.frame( x = loc.sub[-idx.center,1],
-                        y = loc.sub[-idx.center,2],
-                        z = true.ext.coef1)
+    brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),3)
+    
+    p1[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
+            geom_tile(aes(fill=z)) +
+            scale_fill_distiller(palette="RdBu") +
+            geom_contour(colour="black",breaks=brks) + 
+            # geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
+            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
+            labs(title = paste("Skewed Brown-Resnick"), x = "X", y = "Y") 
 
-brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
 
-p1 <- ggplot(data, aes(x = x, y = y, z=z))  + 
-        geom_tile(aes(fill=z)) +
-        scale_fill_distiller(palette="RdBu") +
-        geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, 
-                stat="contour") + 
-        theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
-p1
+    data$z = true.ext.coef.BR
 
-load("data/application_results_BR.RData",e<-new.env())
-par.list.BR = alpha2delta(list(cov.func(distmat,e$results$par[1:2]),alpha.func(par=e$results$par[-c(1:2)])))
-true.ext.coef2 <- unlist(lapply(pairs.idx.list,function(x){V_bi_logskew(c(1,1),delta = par.list.BR[[2]][x],sigma=par.list.BR[[1]][x,x])}))
-true.ext.coef3 <- unlist(lapply(pairs.idx.list,function(x){V_bi_logskew(c(1,1),delta = c(0,0),sigma=par.list.BR[[1]][x,x])}))
+    brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),3)
 
-data <- data.frame( x = loc.sub[-idx.center,1],
-                        y = loc.sub[-idx.center,2],
-                        z = true.ext.coef2)
+    p2[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
+            geom_tile(aes(fill=z)) +
+            scale_fill_distiller(palette="RdBu") +
+            geom_contour(colour="black",breaks=brks) + 
+            # geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
+            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
+            labs(title = paste("Brown-Resnick"), x = "X", y = "Y")
 
-brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
+   
+    data$z = empirical.extcoef
 
-p2 <- ggplot(data, aes(x = x, y = y, z=z))  + 
-        geom_tile(aes(fill=z)) +
-        scale_fill_distiller(palette="RdBu") +
-        geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, 
-                stat="contour") + 
-        theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
-p2
+    brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),3)
 
-data <- data.frame( x = loc.sub[-idx.center,1],
-                        y = loc.sub[-idx.center,2],
-                        z = true.ext.coef3)
+    p3[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
+            geom_tile(aes(fill=z)) +
+            scale_fill_distiller(palette="RdBu") +
+            #geom_contour(colour="black",breaks=brks) + 
+            #geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
+            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
+            labs(title = paste("Empirical"), x = "X", y = "Y") 
 
-brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
+    
+    data$z = abs(true.ext.coef.BR - empirical.extcoef) - abs(true.ext.coef - empirical.extcoef) 
 
-p3 <- ggplot(data, aes(x = x, y = y, z=z))  + 
-        geom_tile(aes(fill=z)) +
-        scale_fill_distiller(palette="RdBu") +
-        geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, 
-                stat="contour") + 
-        theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
-p3
+    #brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
 
-grid.arrange(grobs=list(p,p2,p3),ncol=3,nrow=1)
+    # p4[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
+    #         geom_tile(aes(fill=z)) +
+    #         scale_fill_distiller(palette="RdBu") +
+    #         theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
+    #         labs(title = paste("Differences"), x = "X", y = "Y") 
+    p4[[i]] <- ggplot(data, aes(x = x, y = y, fill=factor(z>0)))  + 
+                geom_tile() +
+                scale_fill_manual(values=c("red","blue")) +
+                theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
+                coord_fixed() + 
+                labs(title = paste("Differences",round(mean(data$z),3)), x = "X", y = "Y",fill="Values") 
 
-save(p1,p2,p3,true.ext.coef1,true.ext.coef2,true.ext.coef3,file="data/plot_application.RData")
+}
+
+layout = matrix(1:(4*length(idx.centers)),ncol=length(idx.centers),byrow=TRUE)
+grid.arrange(grobs=c(p1,p2,p3,p4),layout_matrix=layout)
+
 
 ## compare the fitted bivariate extremal coef vs the empirical extremal coef ##
-load("data/data_application.RData")
-load("data/application_results2.RData",e<-new.env())
 pairs = comb_n(1:ncol(distmat),2)
-par.list.BR = alpha2delta(list(vario.func(loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
-par.list = alpha2delta(list(vario.func(loc.sub.trans,e$results2$par[1:2]),alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis)))
-empirical.extcoef <- apply(pairs,2,empirical_extcoef,data=maxima.frechet)
+empirical.extcoef.all <- apply(pairs,2,empirical_extcoef,data=maxima.frechet)
 fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = par.list[[2]][x],sigma=par.list[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE))
 fitted.extcoef.BR <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = c(0,0),sigma=par.list[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE))
 
-mean(abs(empirical.extcoef - fitted.extcoef))
-mean(abs(empirical.extcoef - fitted.extcoef.BR))
+sqrt(mean((empirical.extcoef.all - fitted.extcoef)^2))
+sqrt(mean((empirical.extcoef.all - fitted.extcoef.BR)^2))
+save(idx.centers,diff.extcoef,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.all,file="data/plot_application.RData")
