@@ -563,7 +563,7 @@ alpha.func <- function(par,b.mat=basis){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
-                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE){
+                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE){
     t0 <- proc.time()
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
@@ -609,7 +609,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
             opt.result$value = object.func(opt.result$par,opt=FALSE,ncore=ncores)
         }
-        if(model=="logskew" & any(!fixed[-c(1:2)])){
+        if(model=="logskew" & any(!fixed[-c(1:2)]) & step2){
             n.alpha = sum(!fixed[-c(1:2)])
             if(n.alpha==2){
                 a = seq(0,2*pi,length.out=ncores)
