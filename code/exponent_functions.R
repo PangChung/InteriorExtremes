@@ -671,7 +671,6 @@ vario.func <- function(loc,par){ ##return a covariance matrix
     vario <- function(coord){
         if(!is.matrix(coord)) {val <- 2*(sqrt(sum(coord^2))/lambda)^alpha}
         else {val <- 2*(sqrt(sum((coord[1,]-coord[2,])^2))/lambda)^alpha}
-
     }
     
     cov.mat <- sapply(1:n, function(i) sapply(1:n, function(j) 

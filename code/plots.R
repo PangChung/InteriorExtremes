@@ -162,25 +162,24 @@ lines(x=coord.trunc[-1,2],y=true.ext.t,col="red")
 
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
-load("data/application_results2_2.RData",e<-new.env())
-par.list.BR = alpha2delta(list(vario.func(loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
-loc.sub.trans = apply(loc.sub.trans,2,function(x) x-mean(x))
-par.list = list(vario.func(loc.sub.trans,e$results2$par[1:2]))
+load("data/application_results2_5.RData",e<-new.env())
+par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
+par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
 par.list[[2]] = alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis/sqrt(diag(par.list[[1]])))
 par.list = alpha2delta(par.list)
 pairs = comb_n(1:ncol(distmat),2)
 library(Matrix)
 empirical.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=apply(pairs,2,empirical_extcoef,data=maxima.frechet),symmetric = TRUE,dimnames=NULL)
 fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = par.list[[2]][x],sigma=par.list[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE)),symmetric = TRUE,dimnames=NULL) 
-fitted.extcoef.BR.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = c(0,0),sigma=par.list[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE)),symmetric = TRUE,dimnames=NULL)
+fitted.extcoef.BR.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = c(0,0),sigma=par.list.BR[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE)),symmetric = TRUE,dimnames=NULL)
 diag(fitted.extcoef.mat) <- diag(fitted.extcoef.BR.mat) <- diag(empirical.extcoef.mat) <- 1
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.mat)^2))
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.BR.mat)^2))
 diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extcoef.mat - fitted.extcoef.BR.mat) 
 diff.col.sums = colMeans(diff.mat)
 
-#idx.centers = e$idx.centers
-idx.centers = c(200,500,800)
+idx.centers = e$idx.centers
+#idx.centers = c(200,500,800)
 #idx.centers = which(rank(colSums(distmat)) %in% c(1,100,200))
 #idx.centers = 1:ncol(distmat)
 p1 <- p2 <- p3 <- list()
@@ -267,6 +266,18 @@ p4[[9]] <- p4[[9]] + geom_point(data=data.new,aes(x=x1,y=y1),color="black",size=
 p4[[9]]
 dev.off()
 
+data$z = delta2alpha(par.list)[[2]]
+data.new = data.frame(x1=loc.sub[idx.centers,1],y1=loc.sub[idx.centers,2])
+png("figures/extcoef_application_alpha.png",width=800,height=800)
+p4[[9]] <- ggplot(data, aes(x = x, y = y))  + 
+                geom_tile(aes(fill=z)) +
+                scale_fill_distiller(palette="RdBu") +
+                theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
+                coord_fixed() + 
+                labs(title = paste("Alpha"), x = "X", y = "Y",fill="Values") #
+p4[[9]] <- p4[[9]] + geom_point(data=data.new,aes(x=x1,y=y1),color="black",size=2,shape=20)
+p4[[9]]
+dev.off()
 
 ## compare the fitted bivariate extremal coef vs the empirical extremal coef ##
 data = data.frame(x=c(row(empirical.extcoef.mat)),y=c(col(empirical.extcoef.mat)),z=as.vector(empirical.extcoef.mat))
@@ -313,5 +324,21 @@ dev.off()
 
 
 save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
