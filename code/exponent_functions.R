@@ -581,9 +581,6 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             alpha = alpha.func(par=par.2,b.mat=basis / sqrt(diag(cov.mat)))
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            #regulator = - sum(par.2[2]^2)/nrow(data)
-            #regulator = - max(abs(para.temp[[2]])) + 0.5
-            regulator = 0
             val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
             if(opt) return(-mean(val)-regulator*par.2[length(par.2)]) else return(-mean(val))
         }
