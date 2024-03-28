@@ -163,6 +163,8 @@ lines(x=coord.trunc[-1,2],y=true.ext.t,col="red")
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
 load("data/application_results2_5.RData",e<-new.env())
+e$results2$par
+e$results4$par
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
 par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
 par.list[[2]] = alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis/sqrt(diag(par.list[[1]])))
@@ -176,13 +178,14 @@ diag(fitted.extcoef.mat) <- diag(fitted.extcoef.BR.mat) <- diag(empirical.extcoe
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.mat)^2))
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.BR.mat)^2))
 diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extcoef.mat - fitted.extcoef.BR.mat) 
-diff.col.sums = colMeans(diff.mat)
-
+#diff.col.sums = colMeans(diff.mat)
+diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,distmat[i,]<1000])}))
+sum(diff.col.sums < 0)
 idx.centers = e$idx.centers
 #idx.centers = c(200,500,800)
 #idx.centers = which(rank(colSums(distmat)) %in% c(1,100,200))
 #idx.centers = 1:ncol(distmat)
-p1 <- p2 <- p3 <- list()
+p1 <- p2 <- p3 <- p5 <- list()
 #diff.extcoef = c()
 for(i in 1:length(idx.centers)){
     idx.center = idx.centers[i]
@@ -229,12 +232,20 @@ for(i in 1:length(idx.centers)){
             #geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
             theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
             labs(title = paste("Empirical"), x = "X", y = "Y") 
+
+    data$z = abs(true.ext.coef - empirical.extcoef) - abs(true.ext.coef.BR - empirical.extcoef)
+    p5[[i]] <- ggplot(data, aes(x = x, y = y, fill=as.factor(z<0)))  + 
+            geom_tile() +
+            scale_fill_manual(values=c("red","blue")) +
+            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
+            coord_fixed() + 
+            labs(title = paste("Skewed BR is closer to the Empirical?",round(mean(data$z<0)*100,1),"%"), x = "X", y = "Y",fill="Values")
 }
 
 
 pdf("figures/extcoef_application.pdf",width=5*4,height=5*length(idx.centers),onefile=TRUE)
-layout = matrix(1:(3*length(idx.centers)),ncol=length(idx.centers),byrow=TRUE)
-grid.arrange(grobs=c(p1,p2,p3),layout_matrix=layout)
+layout = matrix(1:(4*length(idx.centers)),ncol=length(idx.centers),byrow=TRUE)
+grid.arrange(grobs=c(p1,p2,p3,p5),layout_matrix=layout)
 dev.off()
 
 p4 <- list()
@@ -324,6 +335,23 @@ dev.off()
 
 
 save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
