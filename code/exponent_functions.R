@@ -578,14 +578,12 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             par2 = init; par2[!fixed] = par
             par.1 = par2[1:2];par.2 = par2[-c(1:2)]
             cov.mat = FUN(loc,par.1)
-            alpha = alpha.func(par=par.2,b.mat=basis / sqrt(diag(cov.mat)))
+            b.mat <- basis / sqrt(diag(cov.mat))
+            alpha = alpha.func(par=par.2,b.mat= b.mat)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            #regulator = - sum(par.2[2]^2)/nrow(data)
-            #regulator = - max(abs(para.temp[[2]])) + 0.5
-            regulator = 0
             val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)-regulator*par.2[length(par.2)]) else return(-mean(val))
+            if(opt) return(-mean(val)) else return(-val)
         }
     }
     if(model == "truncT"){
