@@ -162,7 +162,7 @@ lines(x=coord.trunc[-1,2],y=true.ext.t,col="red")
 
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
-load("data/application_results2_5.RData",e<-new.env())
+load("data/application_results2_6.RData",e<-new.env())
 e$results2$par
 e$results4$par
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
@@ -179,10 +179,11 @@ sqrt(mean((empirical.extcoef.mat - fitted.extcoef.mat)^2))
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.BR.mat)^2))
 diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extcoef.mat - fitted.extcoef.BR.mat) 
 #diff.col.sums = colMeans(diff.mat)
-diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,distmat[i,]<1000])}))
+diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,]<0)}))
 sum(diff.col.sums < 0)
-idx.centers = e$idx.centers
-#idx.centers = c(200,500,800)
+#idx.centers = e$idx.centers
+idx.centers = c(200,538,800)
+diff.col.sums[idx.centers]
 #idx.centers = which(rank(colSums(distmat)) %in% c(1,100,200))
 #idx.centers = 1:ncol(distmat)
 p1 <- p2 <- p3 <- p5 <- list()
@@ -253,12 +254,12 @@ data = data.frame( x = loc.sub[,1],
                     y = loc.sub[,2],
                     z = diff.col.sums)
                     
-p4[[1]] <- ggplot(data, aes(x = x, y = y, fill=as.factor(z<0)))  + 
+p4[[1]] <- ggplot(data, aes(x = x, y = y, fill=as.factor(z>0.5)))  + 
                 geom_tile() +
                 scale_fill_manual(values=c("red","blue")) +
                 theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
                 coord_fixed() + 
-                labs(title = paste("Skewed BR is closer to the Empirical?",round(mean(data$z<0)*100,1),"%"), x = "X", y = "Y",fill="Values") 
+                labs(title = paste("Skewed BR is closer to the Empirical?",round(mean(data$z>0.5)*100,1),"%"), x = "X", y = "Y",fill="Values") 
 
 pdf("figures/extcoef_application_diff.pdf",width=5,height=5,onefile=TRUE)
 p4[[1]]
@@ -335,26 +336,6 @@ dev.off()
 
 
 save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
