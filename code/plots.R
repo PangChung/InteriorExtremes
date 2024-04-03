@@ -175,14 +175,18 @@ dev.off()
 #val.mat = matrix(unlist(values),ncol=length(alpha),byrow=TRUE)
 
 ## plot the true extremal coef for the truncated extremal t model ##
-sigma.22 = 10
+sigma.22 = 1
 rho = seq(0.1,sigma.22-0.1,length.out=1000)
 par.truncT.list = lapply(rho,function(x){list(matrix(c(sigma.22,x,x,sigma.22),2,2),2)})
+
 true.ext.truncT <- unlist(lapply(par.truncT.list,V_truncT,x=c(1,1)))
+range(true.ext.truncT)
 
-true.ext.t <- unlist(lapply(all.pairs.list.trunc,function(id) mev::expme(z=rep(1,2),par=list(Sigma=par.truncT.list[[1]][id,id],df=2),model="xstud") ))
+true.ext.t <- unlist(lapply(1:length(par.truncT.list),function(id) mev::expme(z=rep(1,2),par=list(Sigma=par.truncT.list[[id]][[1]],df=par.truncT.list[[id]][[2]]),model="xstud") ))
 
-plot(x=coord.trunc[-1,2],y=true.ext.truncT,type="l",col="black",ylim=c(1,2),xlab="coordinate",ylab="Bivariate extremal coeffient")
+range(true.ext.t)
+
+plot(x=rho,y=true.ext.truncT,type="l",col="black",ylim=c(1,2),xlab="coordinate",ylab="Bivariate extremal coeffient")
 lines(x=coord.trunc[-1,2],y=true.ext.t,col="red")
 
 
