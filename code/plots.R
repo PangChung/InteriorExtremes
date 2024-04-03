@@ -30,7 +30,8 @@ basis.list[[2]] <- basis
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 
-sigma = cov.func(coord,c(8,1.5))
+#sigma = cov.func(diff.mat,c(8,1.5))
+sigma = vario.func(coord,c(8,1))
 par.list.1 = apply(para.alpha,1,function(x){alpha2delta(list(sigma,alpha.func(par=x,b.mat=basis.list[[1]])))})
 par.list.2 = apply(para.alpha,1,function(x){alpha2delta(list(sigma,alpha.func(par=x,b.mat=basis.list[[2]])))})
 
@@ -56,8 +57,6 @@ grid.arrange(grobs=c(p.list1),ncol=length(par.list.1))
 grid.arrange(grobs=c(p.list2),ncol=length(par.list.2))
 dev.off()
 
-
-
 idx.center = c(16,16)
 idx.center = which.min(abs(coord[,1] - idx.center[1]) + abs(coord[,2] - idx.center[2]))
 ind.idx.center = all.pairs[1,] == idx.center |  all.pairs[2,] == idx.center
@@ -78,7 +77,7 @@ for(idx.case in 1:length(par.list.1)){
         geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
         theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
+        labs(title = paste("Skewed Brown-Resnick"), x = "X", y = "Y")
     
     p1.list[[idx.case]] <- p1
     
@@ -95,7 +94,7 @@ for(idx.case in 1:length(par.list.1)){
         geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
         theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
+        labs(title = paste("Skewed Brown-Resnick"), x = "X", y = "Y")
     p2.list[[idx.case]] <- p2
 }
 
@@ -112,10 +111,10 @@ p2 <- ggplot(data, aes(x = x, y = y, z=z))  +
         geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
         theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Bivariate Extremal Coef"), x = "X", y = "Y")
+        labs(title = paste("Brown-Resnick"), x = "X", y = "Y")
 p2.list[[1]] <- p2
 
-pdf("figures/extcoef_final_logskew.pdf",width=5*3,height=5*2,onefile=TRUE)
+pdf("figures/extcoef_final_logskew2.pdf",width=5*3,height=5*2,onefile=TRUE)
 # grid.arrange(grobs=p1.list,ncol=3)
 # grid.arrange(grobs=p2.list,ncol=3)
 grid.arrange(grobs=c(p1.list,p2.list),ncol=3,nrow=2)
