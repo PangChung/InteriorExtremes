@@ -57,67 +57,67 @@ grid.arrange(grobs=c(p.list1),ncol=length(par.list.1))
 grid.arrange(grobs=c(p.list2),ncol=length(par.list.2))
 dev.off()
 
-idx.center = c(8,8)
-idx.center = which.min(abs(coord[,1] - idx.center[1]) + abs(coord[,2] - idx.center[2]))
-ind.idx.center = all.pairs[1,] == idx.center |  all.pairs[2,] == idx.center
-idx = apply(all.pairs[,ind.idx.center],2,function(x){x[x!=idx.center]})
-idx.case = 3;p1.list <- p2.list <- list()
-for(idx.case in 1:length(par.list.1)){
-    true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.1[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
-    data <- data.frame( x = coord[idx,1],
-                        y = coord[idx,2],
-                        z = true.ext.coef )
-
-    brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
-
-    p1 <- ggplot(data, aes(x = x, y = y, z=z))  + 
-        geom_tile(aes(fill=z)) +
-        scale_fill_distiller(palette="RdBu") +
-        geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
-                stat="contour") + 
-        theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Skewed Brown-Resnick"), x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2]))
-    
-    p1.list[[idx.case]] <- p1
-    
-    true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.2[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
-    data <- data.frame( x = coord[idx,1],
-                        y = coord[idx,2],
-                        z = true.ext.coef )
-
-    brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
-    p2 <- ggplot(data, aes(x = x, y = y, z=z))  + 
-        geom_tile(aes(fill=z)) +
-        scale_fill_distiller(palette="RdBu") +
-        geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
-                stat="contour") + 
-        theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Skewed Brown-Resnick"), x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2]))
-    p2.list[[idx.case]] <- p2
-}
-
-true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=list(par.list.1[[1]][[1]],rep(0,nrow(coord))),model="logskew1",mc.cores=5,mc.set.seed = FALSE))
-data <- data.frame( x = coord[idx,1],
-                        y = coord[idx,2],
-                        z = true.ext.coef )
+data = NULL
+for(idx in 1:2){
+    idx.center = rep(ifelse(idx==1,16,8),2)
+    idx.center = which.min(abs(coord[,1] - idx.center[1]) + abs(coord[,2] - idx.center[2]))
+    ind.idx.center = all.pairs[1,] == idx.center |  all.pairs[2,] == idx.center
+    idx2 = apply(all.pairs[,ind.idx.center],2,function(x){x[x!=idx.center]})
+    for(idx.case in 1:length(par.list.1)){
+        true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.1[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
+        data <- rbind(data,data.frame( x = coord[idx2,1],
+                            y = coord[idx2,2],
+                            z = true.ext.coef,idx.case=paste0("setting==1","~b[1]==",para.alpha[idx.case,1],"~b[2]==",para.alpha[idx.case,2]),idx.center=idx))
+        if(idx.case!=1){
+            true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.2[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
+            data <- rbind(data,data.frame( x = coord[idx2,1],
+                            y = coord[idx2,2],
+                            z = true.ext.coef,idx.case=paste0("setting==2","~b[1]==",para.alpha[idx.case,1],"~b[2]==",para.alpha[idx.case,2]),idx.center=idx))
+        }else{
+            true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=list(par.list.1[[1]][[1]],rep(0,nrow(coord))),model="logskew1",mc.cores=5,mc.set.seed = FALSE))
+            data <- rbind(data,data.frame( x = coord[idx2,1],
+                            y = coord[idx2,2],
+                            z = true.ext.coef,idx.case="Brown-Resnick",idx.center=idx))
+        }
+}}
 
 brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
-p2 <- ggplot(data, aes(x = x, y = y, z=z))  + 
-        geom_tile(aes(fill=z)) +
+data1 = subset(data,idx.center==1)
+labels = unique(data$idx.case)[c(1,3,5,2,4,6)]
+data1$idx.case = factor(data1$idx.case,levels=labels,labels=labels)
+levels(data1$idx.case)
+p1 <- ggplot(data1, aes(x = x, y = y,z=z))  + 
+        geom_tile(aes(fill=z)) + facet_wrap(~ idx.case,labeller=label_parsed) +
         scale_fill_distiller(palette="RdBu") +
         geom_contour(colour="black",breaks=brks) + 
         geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
-        theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-        labs(title = paste("Brown-Resnick"), x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2]))
-p2.list[[1]] <- p2
+        theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14), 
+                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14)) + coord_fixed() + 
+        labs(x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2]))
+p1
 
-pdf("figures/extcoef_final_logskew2.pdf",width=5*3,height=5*2,onefile=TRUE)
-# grid.arrange(grobs=p1.list,ncol=3)
-# grid.arrange(grobs=p2.list,ncol=3)
-grid.arrange(grobs=c(p1.list,p2.list),ncol=3,nrow=2)
+data2 = subset(data,idx.center==2)
+data2$idx.case = factor(data2$idx.case,levels=labels,labels=labels)
+p2 <- ggplot(data2, aes(x = x, y = y,z=z))  + 
+        geom_tile(aes(fill=z)) + facet_wrap(~ idx.case,labeller=label_parsed) +
+        scale_fill_distiller(palette="RdBu") +
+        geom_contour(colour="black",breaks=brks) + 
+        geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
+                stat="contour") + 
+        theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14), 
+                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14)) + coord_fixed() + 
+        labs(x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2]))
+p2
+
+pdf("figures/extcoef_final_logskew.pdf",width=4*6-2,height=4*2,onefile=TRUE)
+grid.arrange(grobs=list(p1,p2),ncol=2)
 dev.off()
 
 p.list = list()
@@ -199,6 +199,10 @@ theme(axis.text = element_text(size=10),
 pdf("figures/bivariate_extcoef_truncT.pdf",width=8,height = 3,onefile = TRUE)
 p
 dev.off()
+
+## plot the boxplot for the simulation study ## 
+load("data/simulation_study_logskew_results_final_1.RData")
+
 
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
