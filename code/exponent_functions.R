@@ -11,11 +11,11 @@ a_fun <- function(par,ncores=NULL){
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
     if(is.null(ncores)){
     val = sapply(1:n,function(j){
-                sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)
+                sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)/sigma[j,j]
                 mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]})
     } else {
     val = mcmapply(function(j){
-                sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)
+                sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)/sigma[j,j]
                 mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]},j=1:n,mc.cores=ncores)
     }
     assign(".Random.seed", oldSeed, envir=globalenv())
@@ -39,7 +39,7 @@ intensity_truncT <- function(x,par,T_j=NULL,ncores=NULL,log=TRUE){
     gamma_n = log(gamma((nu+n)/2))
 
     a_fun <- function(j,upper=rep(Inf,n-1)){
-        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)
+        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)/sigma[j,j]
         val = mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))
     }
@@ -75,7 +75,6 @@ intensity_truncT <- function(x,par,T_j=NULL,ncores=NULL,log=TRUE){
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
 V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
-    browser()
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
@@ -84,7 +83,7 @@ V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
     if(n==1){return(1/x)}
     gamma_1 = gamma((nu+1)/2)
     sigma_fun <- function(j){
-        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/ (nu + 1)
+        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/ (nu + 1)/sigma[j,j]
     }
     a_fun <- function(j,upper,sigma_j){
         val = mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=upper-sigma[-j,j]/sigma[j,j],sigma=sigma_j,df=nu+1)[[1]]
@@ -106,7 +105,7 @@ V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
         
     }
     a_j = rep(1,n)
-    a_j[idx.finite] = T_j[idx.finite]/phi*2^(nu/2-1)*gamma_1/sqrt(pi)    
+    a_j[idx.finite] = T_j[idx.finite]/phi*2^(nu/2-1)*gamma_1/sqrt(pi)*diag(sigma)[idx.finite]^(nu/2)    
     func <- function(idx){
         x_j = x[idx,] * a_j
         idx.finite.j = which(is.finite(x_j))
