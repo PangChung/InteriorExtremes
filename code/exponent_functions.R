@@ -9,22 +9,14 @@ a_fun <- function(par,ncores=NULL){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
-    if(n==2){
-        if(is.null(ncores)){
-            val = sapply(1:n,function(j) log(1 - pt(-sigma[-j,j],df=nu+1)))
-        } else {
-            val = mcmapply(function(j) log(1 - pt(-sigma[-j,j],df=nu+1)),j=1:n,mc.cores=ncores)
-        }
-        return(list(log(val),logphi))
-    }
     if(is.null(ncores)){
     val = sapply(1:n,function(j){
-                sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
-                mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]})
+                sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)
+                mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]})
     } else {
     val = mcmapply(function(j){
-                sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
-                mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]},j=1:n,mc.cores=ncores)
+                sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)
+                mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]},j=1:n,mc.cores=ncores)
     }
     assign(".Random.seed", oldSeed, envir=globalenv())
     return(list(log(val),logphi))
@@ -47,12 +39,8 @@ intensity_truncT <- function(x,par,T_j=NULL,ncores=NULL,log=TRUE){
     gamma_n = log(gamma((nu+n)/2))
 
     a_fun <- function(j,upper=rep(Inf,n-1)){
-        if(n==2){
-            val = 1 - pt(-sigma[-j,j],df=nu+1)
-            return(log(val))
-        }
-        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/(nu + 1)
-        val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
+        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)
+        val = mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))
     }
 
@@ -87,6 +75,7 @@ intensity_truncT <- function(x,par,T_j=NULL,ncores=NULL,log=TRUE){
 ## this function returns the exponent function of the
 ## truncated extremal-t max-stable processes
 V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
+    browser()
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
@@ -95,14 +84,10 @@ V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
     if(n==1){return(1/x)}
     gamma_1 = gamma((nu+1)/2)
     sigma_fun <- function(j){
-        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F])/ (nu + 1)
+        sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/ (nu + 1)
     }
     a_fun <- function(j,upper,sigma_j){
-        if(n==2){
-            val = pt((upper-sigma[-j,j])/sqrt(sigma_j),df=nu+1) - pt(-sigma[-j,j]/sqrt(sigma_j),df=nu+1)
-            return(val)
-        }
-        val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma_j,df=nu+1)[[1]]
+        val = mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=upper-sigma[-j,j]/sigma[j,j],sigma=sigma_j,df=nu+1)[[1]]
         return(val)
     }
     idx.finite = which(apply(x,2,function(x.i){any(is.finite(x.i))}))
@@ -163,10 +148,6 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
     gamma_1 = log(gamma((nu+1)/2))
     gamma_k = log(gamma((k+nu)/2))
     a_fun <- function(j){
-        if(n==2){
-            val = 1 - pt(-sigma[-j,j],df=nu+1)
-            return(log(val))
-        }
         sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=FALSE] %*% sigma[j,-j,drop=FALSE])/(nu + 1)
         val = mvtnorm::pmvt(lower=-sigma[-j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]
         return(log(val))

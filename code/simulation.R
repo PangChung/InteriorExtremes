@@ -14,9 +14,9 @@ simu_truncT <- function(m,par,ncores=NULL){
     phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
     gamma_1 = gamma((nu+1)/2)
     a_fun <- function(j,upper){
-        sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]) 
-        sigma.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F] + diag(1e-5,n))/(nu+1) #causing numerical problems
-        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j],upper=upper-sigma[-j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[[1]]
+        sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j]) 
+        sigma.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F]/sigma[j,j])/(nu+1)/sigma[j,j] 
+        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j]/sigma[j,j],upper=upper-sigma[-j,j]/sigma[j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[[1]]
         return(list(val,sigma.j))
     }
     if(!is.null(ncores)) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
@@ -34,7 +34,7 @@ simu_truncT <- function(m,par,ncores=NULL){
     func <- function(idx.j,j){
         m.idx.j = length(idx.j)
         if(m.idx.j > 0 & j<=n){
-            val = TruncatedNormal::rtmvt(n=m.idx.j,mu=sigma[,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
+            val = TruncatedNormal::rtmvt(n=m.idx.j,mu=sigma[,j]/sigma[j,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
             if(!is.matrix(val)){ val = matrix(val,nrow=m.idx.j)}
             val = t(t(val)^nu * a[j]/a)
             return(val)
