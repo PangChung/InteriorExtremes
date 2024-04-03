@@ -166,7 +166,7 @@ p <- ggplot(data, aes(x = x, y = y, z=z))  +
         theme(axis.text = element_text(size=10), 
                             axis.title.x = element_text(size=14), 
                             axis.title.y = element_text(size=14), 
-                            plot.title = element_text(hjust = 0.5,size=10),legend.title = element_text(size=10))
+                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14))
 
 pdf("figures/bivariate_extcoef_rho_alpha.pdf",width=5,height = 4,onefile = TRUE)
 p
@@ -176,20 +176,29 @@ dev.off()
 
 ## plot the true extremal coef for the truncated extremal t model ##
 sigma.22 = 1
-rho = seq(0.1,sigma.22-0.1,length.out=1000)
-par.truncT.list = lapply(rho,function(x){list(matrix(c(sigma.22,x,x,sigma.22),2,2),2)})
+df = c(2,5,10)
+rho = seq(0.001,sigma.22-0.001,length.out=200)
+data = NULL
+for(i in 1:length(df)){
+    par.truncT.list = lapply(rho,function(x){list(matrix(c(sigma.22,x,x,sigma.22),2,2),df[i])})
+    true.ext.truncT <- unlist(lapply(par.truncT.list,V_truncT,x=c(1,1)))
+    true.ext.t <- unlist(lapply(1:length(par.truncT.list),function(id) mev::expme(z=rep(1,2),par=list(Sigma=par.truncT.list[[id]][[1]],df=par.truncT.list[[id]][[2]]),model="xstud") ))
+    data = rbind(data,data.frame(x=rho,truncT=true.ext.truncT,extT = true.ext.t,df=df[i]))
+}
+new_labels <- paste0("nu==",df)
+data$df <- factor(data$df,labels=new_labels)
+p <- ggplot(data) + geom_line(aes(x=x,y=truncT,color="Truncated extremal-t"),,linewidth=1) + 
+geom_line(aes(x=x,y=extT,color="Extremal-t"),linewidth=1) + coord_cartesian(ylim = c(1, 2)) + geom_hline(yintercept=c(1,2),linetype="dashed") +
+facet_wrap(~df,labeller =label_parsed) + theme(legend.position = "bottom") + labs(title="Bivariate extremal coefficient",x=expression(rho),y=expression(theta[2]),color="Model") +
+theme(axis.text = element_text(size=10), 
+            strip.text = element_text(size = 14), 
+            axis.title.x = element_text(size=14), 
+            axis.title.y = element_text(size=14), 
+            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.text = element_text(size=14))
 
-true.ext.truncT <- unlist(lapply(par.truncT.list,V_truncT,x=c(1,1)))
-range(true.ext.truncT)
-
-true.ext.t <- unlist(lapply(1:length(par.truncT.list),function(id) mev::expme(z=rep(1,2),par=list(Sigma=par.truncT.list[[id]][[1]],df=par.truncT.list[[id]][[2]]),model="xstud") ))
-
-range(true.ext.t)
-
-plot(x=rho,y=true.ext.truncT,type="l",col="black",ylim=c(1,2),xlab="coordinate",ylab="Bivariate extremal coeffient")
-lines(x=coord.trunc[-1,2],y=true.ext.t,col="red")
-
-
+pdf("figures/bivariate_extcoef_truncT.pdf",width=8,height = 3,onefile = TRUE)
+p
+dev.off()
 
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
