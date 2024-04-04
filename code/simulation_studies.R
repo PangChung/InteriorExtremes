@@ -23,8 +23,8 @@ para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm m
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-thres = c(0.95,0.9)
-if(model=="truncT"){thres=c(0.98,0.95,0.9);para.range = c(3,5)}
+thres = c(50,100)
+if(model=="truncT"){thres=c(10,50,100);para.range = c(3,5)}
 # loading library and setting path
 library(parallel)
 library(mvtnorm)
