@@ -240,8 +240,17 @@ str(data)
 
 # Reshape the data to a long format
 data_long <- pivot_longer(data, -c(thres, id, type), names_to = "variable", values_to = "value")
-ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres))) +
-  geom_boxplot(position = "dodge") +
+par.skew.normal = as.data.frame(e1$par.skew.normal)
+colnames(par.skew.normal) = c("lambda","nu","alpha1","alpha2")
+par.skew.normal$id = 1:nrow(par.skew.normal)
+par.skew.normal = rbind(par.skew.normal,par.skew.normal)
+par.skew.normal$type = rep(1:2,each=nrow(par.skew.normal)/2)
+par.skew.normal = rbind(par.skew.normal,par.skew.normal)
+par.skew.normal$thres = rep(1:2,each=nrow(par.skew.normal)/2)
+par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type,thres), names_to = "variable", values_to = "value")
+p <- ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres))) +
+  #geom_boxplot(position = "dodge") +
+  geom_violin(position = "dodge",draw_quantiles = c(0.25,0.5,0.75)) + geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,position=position_dodge(width = 0.75)) +
   facet_wrap(~ variable + type, scales = "free") +
   labs(title = "Boxplots for Each Variable",
        x = "ID",
@@ -253,6 +262,7 @@ ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = fa
         plot.title = element_text(hjust = 0.5, size = 14),
         legend.title = element_text(size = 14))
 
+p
 
 load("data/simulation_study_logskew_results_final_3.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_final_4.RData",e2<-new.env())

@@ -1,6 +1,6 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
-computer = "ws"
+computer = "local"
 id = 1
 d <- 10 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
