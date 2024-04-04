@@ -49,13 +49,13 @@ set.seed(init.seed)
 if(basis.idx == 1){
     centers <- rbind(c(0.25,0.25),c(0.25,0.25),c(0.75,0.75))*d
     idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
-    basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y*d})
+    basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/sqrt(sum(y^2))})
 }else{
     idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
-    basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-d,d);y})
+    basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
 }
 
-basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 1; basis[(d^2-floor(d^2/2)+1):d^2,1] = -1
+basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 0.1; basis[(d^2-floor(d^2/2)+1):d^2,1] = -0.1
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
@@ -84,7 +84,8 @@ if(model == "logskew"){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         }
         for(j in 1:length(thres)){
-            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),basis=basis,thres=thres[j],model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE)
+            # fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),basis=basis,thres=thres[j],model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE)
+            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,F,F,F),basis=basis,thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE)
             fit.logskew[[j]] = fit.result1
             print(c(i,j))
         }

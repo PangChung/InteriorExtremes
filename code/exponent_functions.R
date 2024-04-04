@@ -607,7 +607,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             }
             opt.values <- unlist(lapply(opt.result2,function(x){x$value}))
             opt.result = opt.result2[[which.min(opt.values)]]
-            #opt.result$others = opt.result2
+            opt.result$others = opt.result2
         }
     }else{
         return(object.func(init[!fixed],opt,ncores))
