@@ -147,7 +147,7 @@ dev.off()
 
 p.list = list()
 sigma.22 = 10
-rho = seq(0.1,sigma.22-0.1,length.out=200)
+rho = seq(0,0.999,length.out=200)*sigma.22
 BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),delta=c(0,0),sigma=matrix(c(sigma.22,x,x,sigma.22),2,2))}))
 alpha = seq(0,5,length.out=100)
 para.grid = as.matrix(expand.grid(alpha,rho))
@@ -172,12 +172,39 @@ pdf("figures/bivariate_extcoef_rho_alpha.pdf",width=5,height = 4,onefile = TRUE)
 p
 dev.off()
 
+p.list = list()
+sigma.22 = 10;sigma.11 = 5
+rho = seq(0,0.999,length.out=200)*sqrt(sigma.11*sigma.22)
+BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),delta=c(0,0),sigma=matrix(c(sigma.11,x,x,sigma.22),2,2))}))
+alpha = seq(0,5,length.out=100)
+para.grid = as.matrix(expand.grid(alpha,rho))
+values <- lapply(split(para.grid,row(para.grid)),function(x){par.list = alpha2delta(list(matrix(c(sigma.11,x[2],x[2],sigma.22),2,2),alpha=c(x[1]/sqrt(sigma.11),-x[1]/sqrt(sigma.22))));V_bi_logskew(c(1,1),delta=par.list[[2]],sigma=par.list[[1]])})
+
+data = data.frame(x=para.grid[,1],y=para.grid[,2],z=unlist(values))
+data2 = data.frame(x=0,y=para.grid[,2],z=BR.values)
+
+brks = round(quantile(data$z,probs=seq(0.01,0.99,length.out=4)),2)
+p <- ggplot(data, aes(x = x, y = y, z=z))  + 
+        geom_tile(aes(fill=z)) +
+        scale_fill_distiller(palette="RdBu",limits=c(1,2)) +
+        geom_contour(colour="black",breaks=brks) + 
+        geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks,stat="contour") + 
+        labs(title="Bivariate extremal coefficients",x=expression(alpha[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
+        theme(axis.text = element_text(size=10), 
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14), 
+                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14))
+
+pdf("figures/bivariate_extcoef_rho_alpha2.pdf",width=5,height = 4,onefile = TRUE)
+p
+dev.off()
+
 #val.mat = matrix(unlist(values),ncol=length(alpha),byrow=TRUE)
 
 ## plot the true extremal coef for the truncated extremal t model ##
 sigma.22 = 1
 df = c(2,5,10)
-rho = seq(0.001,sigma.22-0.001,length.out=200)
+rho = seq(0,sigma.22-0.001,length.out=200)
 data = NULL
 for(i in 1:length(df)){
     par.truncT.list = lapply(rho,function(x){list(matrix(c(sigma.22,x,x,sigma.22),2,2),df[i])})
@@ -201,7 +228,20 @@ p
 dev.off()
 
 ## plot the boxplot for the simulation study ## 
-load("data/simulation_study_logskew_results_final_1.RData")
+load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
+load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## plot the extremal coef for the application ##
