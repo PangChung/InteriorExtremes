@@ -240,8 +240,7 @@ str(data)
 
 # Reshape the data to a long format
 data_long <- pivot_longer(data, -c(thres, id, type), names_to = "variable", values_to = "value")
-
-ggplot(subset(data_long,abs(value)<100), aes(x = factor(id), y = value, fill = factor(thres))) +
+ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres))) +
   geom_boxplot(position = "dodge") +
   facet_wrap(~ variable + type, scales = "free") +
   labs(title = "Boxplots for Each Variable",

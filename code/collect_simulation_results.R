@@ -17,15 +17,15 @@ extract_results <- function(files){
     fit.results <- list()
     for(i in 1:length(files)){
         load(files[[i]],e<-new.env())
-        fit.logskew.angular = lapply(1:n1,function(id.1){
-            lapply(1:n2,function(id.2){
-                value = unlist(lapply(e$fit.logskew.angular[[id.1]][[id.2]]$others,function(x){x$value}))
-                #scale = which(unlist(lapply(e$fit.logskew.angular[[id.1]][[id.2]]$others,function(x){max(abs(x$par[3:4]))})) < 10 )
-                idx = scale[which.min(value[scale])]
-                return(e$fit.logskew.angular[[id.1]][[id.2]]$others[[idx]])
-            })
-        })
-        fit.results[[i]] <- fit.logskew.angular
+        # fit.logskew.angular = lapply(1:n1,function(id.1){
+        #     lapply(1:n2,function(id.2){
+        #         value = unlist(lapply(e$fit.logskew.angular[[id.1]][[id.2]]$others,function(x){x$value}))
+        #         #scale = which(unlist(lapply(e$fit.logskew.angular[[id.1]][[id.2]]$others,function(x){max(abs(x$par[3:4]))})) < 10 )
+        #         idx = scale[which.min(value[scale])]
+        #         return(e$fit.logskew.angular[[id.1]][[id.2]]$others[[idx]])
+        #     })
+        # })
+        # fit.results[[i]] <- fit.logskew.angular
         #fit.results[[i]] <- e$fit.logskew.angular
         #fit.results[[i]] <- e$fit.logskew.comp
     }
