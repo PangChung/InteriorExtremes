@@ -6,8 +6,8 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = "final";basis.idx="4"
-files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_comp_\\d+.RData"),full.names=TRUE,recursive=FALSE)
+idx.file = "final";basis.idx="1"
+files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_1000_1.RData"),full.names=TRUE,recursive=FALSE)
 #files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_\\d+_",basis.idx,".RData"),full.names=TRUE,recursive=FALSE)
 thres.list = c(0.95,0.9)
 load(files.list[[1]],e<-new.env())
@@ -17,31 +17,28 @@ extract_results <- function(files){
     fit.results <- list()
     for(i in 1:length(files)){
         load(files[[i]],e<-new.env())
-        # fit.logskew.angular = lapply(1:n1,function(id.1){
-        #     lapply(1:n2,function(id.2){
-        #         value = round(unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){x$value})),4)
-        #         scale = unlist(lapply(e$fit.logskew.angular2[[id.1]][[id.2]],function(x){max(x$par[3:4]^2)}))
-        #         #idx = 1:length(value)#which.min(value)
-        #         idx = which(value == min(value))
-        #         #return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx]])
-        #         return(e$fit.logskew.angular2[[id.1]][[id.2]][[idx[which.min(scale[idx])]]])
-        #     })
-        # })
-        # fit.results[[i]] <- fit.logskew.angular
+        fit.logskew.angular = lapply(1:n1,function(id.1){
+            lapply(1:n2,function(id.2){
+                value = unlist(lapply(e$fit.logskew.angular[[id.1]][[id.2]]$others,function(x){x$value}))
+                #scale = which(unlist(lapply(e$fit.logskew.angular[[id.1]][[id.2]]$others,function(x){max(abs(x$par[3:4]))})) < 10 )
+                idx = scale[which.min(value[scale])]
+                return(e$fit.logskew.angular[[id.1]][[id.2]]$others[[idx]])
+            })
+        })
+        fit.results[[i]] <- fit.logskew.angular
         #fit.results[[i]] <- e$fit.logskew.angular
-        fit.results[[i]] <- e$fit.logskew.comp
+        #fit.results[[i]] <- e$fit.logskew.comp
     }
-    # est.mat.list <- create_lists(c(n2,n1))
-    # for(i in 1:n1){
-    #     for(j in 1:n2){
-    #         est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)
-            
-    #     }
-    # }
-    est.mat.list = list()
+    est.mat.list <- create_lists(c(n2,n1))
     for(i in 1:n1){
-        est.mat.list[[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)
+        for(j in 1:n2){
+            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)       
+        }
     }
+    #est.mat.list = list()
+    # for(i in 1:n1){
+    #     est.mat.list[[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)
+    # }
     return(est.mat.list)
 }
 

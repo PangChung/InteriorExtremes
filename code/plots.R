@@ -6,6 +6,7 @@ library(directlabels)
 library(Rfast)
 library(RColorBrewer)
 library(mev)
+library(tidyr)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
@@ -230,17 +231,58 @@ dev.off()
 ## plot the boxplot for the simulation study ## 
 load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
+data = cbind(1,rep(1:6,times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
+data = rbind(data,cbind(2,rep(1:6,times=sapply(e1$est.mat.list[[2]],nrow)),1,do.call(rbind,e1$est.mat.list[[2]])))
+data = rbind(data,cbind(1,rep(1:6,times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
+data = rbind(data,cbind(2,rep(1:6,times=sapply(e2$est.mat.list[[2]],nrow)),2,do.call(rbind,e2$est.mat.list[[2]])))
+data = as.data.frame(data);names(data) = c("thres","id","type","lambda","nu","alpha1","alpha2")
+str(data)
+
+# Reshape the data to a long format
+data_long <- pivot_longer(data, -c(thres, id, type), names_to = "variable", values_to = "value")
+
+ggplot(subset(data_long,abs(value)<100), aes(x = factor(id), y = value, fill = factor(thres))) +
+  geom_boxplot(position = "dodge") +
+  facet_wrap(~ variable + type, scales = "free") +
+  labs(title = "Boxplots for Each Variable",
+       x = "ID",
+       y = "Value",
+       fill = "Threshold") +
+  theme(axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 14))
 
 
+load("data/simulation_study_logskew_results_final_3.RData",e1<-new.env())
+load("data/simulation_study_logskew_results_final_4.RData",e2<-new.env())
+data = cbind(rep(1:6,times=sapply(e1$est.mat.list,nrow)),1,do.call(rbind,e1$est.mat.list))
+data = rbind(data,cbind(rep(1:6,times=sapply(e2$est.mat.list,nrow)),2,do.call(rbind,e2$est.mat.list)))
+data = as.data.frame(data);names(data) = c("id","type","lambda","nu","alpha1","alpha2")
+data = data[,1:4]
+str(data)
 
-
-
-
-
-
-
-
-
+# Reshape the data to a long format
+data_long <- pivot_longer(data, -c(id, type), names_to = "variable", values_to = "value")
+par.skew.normal = as.data.frame(e1$par.skew.normal[,1:2])
+colnames(par.skew.normal) = c("lambda","nu")
+par.skew.normal$id = 1:nrow(par.skew.normal)
+par.skew.normal = rbind(par.skew.normal,par.skew.normal)
+par.skew.normal$type = rep(1:2,each=nrow(par.skew.normal)/2)
+par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type), names_to = "variable", values_to = "value")
+p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type))) +
+  geom_boxplot(position = "dodge") + geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="red",size=2,position=position_dodge(width = 0.75)) +
+  facet_wrap(~ variable, scales = "free") +
+  labs(title = "",
+       x = "Cases",
+       y = "Value",
+       fill = "Method") +
+  theme(axis.text = element_text(size = 10),
+        axis.title.x = element_text(size = 14),
+        axis.title.y = element_text(size = 14),
+        plot.title = element_text(hjust = 0.5, size = 14),
+        legend.title = element_text(size = 14))
 
 
 

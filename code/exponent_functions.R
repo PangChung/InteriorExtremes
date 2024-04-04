@@ -592,7 +592,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             if(n.alpha==2){
                 a = seq(0,2*pi,length.out=ncores)
                 a = cbind(cos(a),sin(a))
-            }else{
+            } else {
                 a = matrix(rnorm(ncores*5*n.alpha),ncol=n.alpha)
                 a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             }
