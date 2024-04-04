@@ -531,7 +531,7 @@ true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
 
 cov.func <- function(distmat,par){
     r = par[1];v = par[2];n=nrow(distmat)
-    cov.mat <- exp(-(distmat/r)^v) + diag(1e-6,n) 
+    cov.mat <- v*exp(-(distmat/r)) + diag(1e-6,n) 
     #cov.mat <- diag(seq(1,2,length.out=n)) %*% cov.mat %*% diag(seq(1,2,length.out=n))
     return(cov.mat)
 }
