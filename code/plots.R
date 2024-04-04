@@ -58,6 +58,7 @@ grid.arrange(grobs=c(p.list1),ncol=length(par.list.1))
 grid.arrange(grobs=c(p.list2),ncol=length(par.list.2))
 dev.off()
 
+## plot the extremal coefficients map##
 data = NULL
 for(idx in 1:2){
     idx.center = rep(ifelse(idx==1,16,8),2)
