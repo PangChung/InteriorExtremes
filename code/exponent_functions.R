@@ -563,7 +563,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
             val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)) else return(-val)
+            if(opt) return(-mean(val)) else return(-mean(val))
         }
     }
     if(model == "truncT"){
@@ -576,7 +576,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
             val = intensity_truncT(data,par=para.temp,T_j=a_fun(para.temp,ncores=ncores),log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)) else return(-val)
+            if(opt) return(-mean(val)) else return(-mean(val))
         }
     }
     if(opt){
@@ -605,7 +605,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }
             opt.values <- unlist(lapply(opt.result2,function(x){x$value}))
-            opt.result = opt.result2[[idx[which.min(scale[idx])]]]
+            opt.result = opt.result2[[which.min(opt.values)]]
             opt.result$others = opt.result2
         }
     }else{
