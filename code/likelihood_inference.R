@@ -260,7 +260,7 @@ nlogcomplik <- function(par,data,index,ncores,model){
 # loc: coordinates
 # sigmaFUN: function returns covariance matrix
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
-MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,trace =FALSE,...){
+MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,trace =FALSE,basis=NULL,...){
     t <- proc.time()
     object.func <- function(par2,opt=TRUE){
         par1 <- init
@@ -269,7 +269,8 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         sigma = FUN(loc,par1[1:2])
         if(model=="BR"){par.list <- list(sigma=sigma)}
         if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-c(1:2)]);par.list[[3]] <- a_fun()}
-        if(model=="logskew"){par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-c(1:2)]))}
+        if(model=="logskew"){b.mat <- basis / sqrt(diag(sigma))
+                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-c(1:2)],b.mat=b.mat))}
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
         if(opt){ 
             val = mean(val,na.rm=TRUE)
@@ -348,7 +349,7 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
 # sigma.FUN: function returns covariance matrix
 # vecchia.seq: vector of length D (with integers from {1,...,D}), indicating the sequence of variables to be considered for the Vecchia approximation
 # neighbours: an q-by-D matrix with the corresponding the neighbors of each observation in the Vecchia sequence (where q is the number of neighbours, i.e., the size of the conditioning set)
-MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=1000,hessian=FALSE,alpha.func=NULL,lb=-Inf,ub=Inf,trace=FALSE,...){
+MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=1000,hessian=FALSE,alpha.func=NULL,lb=-Inf,ub=Inf,trace=FALSE,basis=NULL,...){
     t <- proc.time()
     object.func <- function(par2,opt=TRUE){
         par1 <- init
@@ -357,7 +358,8 @@ MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR
         sigma = FUN(loc,par1[1:2])
         if(model=="BR"){par.list=list(sigma=sigma)}
         if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-c(1:2)]);par.list[[3]] = a_fun(par.list,ncores=ncores)}
-        if(model=="logskew"){par.list=list(sigma=sigma,alpha=alpha.func(par=par1[-c(1:2)]))}
+        if(model=="logskew"){b.mat <- basis / sqrt(diag(sigma))
+                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-c(1:2)],b.mat=b.mat))}
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
         if(opt){
             val = mean(val,na.rm=TRUE)
