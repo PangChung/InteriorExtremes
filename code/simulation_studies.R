@@ -2,7 +2,7 @@ rm(list=ls())
 args <- commandArgs(TRUE)
 computer = "ws"
 id = 1
-d <- 15 ## 10 * 10 grid on [0,1]^2
+d <- 10 ## 10 * 10 grid on [0,1]^2
 m <- 1000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
@@ -64,7 +64,7 @@ basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 1; basis[(d^2-floor(d^2/2)+1):d
 t0 <- proc.time()
 if(model == "logskew"){
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
-    ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
+    ub=c(Inf,Inf,rep(Inf,ncol(para.alpha)))
     init = c(1,1,0,0)
     par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:nrow(para.alpha)))
     par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
@@ -76,13 +76,15 @@ if(model == "logskew"){
     for(i in 1:nrow(par.skew.normal)){
         fit.logskew <- list()
         fit.logskew2 <- list()
-        par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]))
+        # par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]))
+        # par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-c(1:2)],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma)))
+        par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,1:2]))
         par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-c(1:2)],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma)))
         if(!file.exists(file.samples)){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         }
         for(j in 1:length(thres)){
-            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),basis=basis,thres=thres[j],model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE)
+            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),basis=basis,thres=thres[j],model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE)
             fit.logskew[[j]] = fit.result1
             print(c(i,j))
         }

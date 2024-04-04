@@ -596,17 +596,18 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
                 a = matrix(rnorm(ncores*5*n.alpha),ncol=n.alpha)
                 a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             }
-            init.mat = cbind(matrix(opt.result$par[idx.para],ncol=length(idx.para),nrow=ncores,byrow=TRUE),a)
-            init.list = split(init.mat,row(init.mat))
-            fixed[idx.para] = TRUE
+            #init.mat = cbind(matrix(opt.result$par[idx.para],ncol=length(idx.para),nrow=ncores,byrow=TRUE),a)
+            init.list = split(a,row(a)) 
+            init[!fixed] = opt.result$par
+            fixed[idx.para] <- TRUE
             if(method=="L-BFGS-B"){
-                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+                opt.result2 = mcmapply(optim,par=init.list[1:2],MoreArgs = list(fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }else{
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }
             opt.values <- unlist(lapply(opt.result2,function(x){x$value}))
             opt.result = opt.result2[[which.min(opt.values)]]
-            opt.result$others = opt.result2
+            #opt.result$others = opt.result2
         }
     }else{
         return(object.func(init[!fixed],opt,ncores))
