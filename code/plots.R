@@ -235,64 +235,82 @@ data = cbind(1,rep(1:6,times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,
 data = rbind(data,cbind(2,rep(1:6,times=sapply(e1$est.mat.list[[2]],nrow)),1,do.call(rbind,e1$est.mat.list[[2]])))
 data = rbind(data,cbind(1,rep(1:6,times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
 data = rbind(data,cbind(2,rep(1:6,times=sapply(e2$est.mat.list[[2]],nrow)),2,do.call(rbind,e2$est.mat.list[[2]])))
-data = as.data.frame(data);names(data) = c("thres","id","type","lambda","nu","alpha1","alpha2")
+data = as.data.frame(data);names(data) = c("thres","id","type","lambda","nu","alpha[1]","alpha[2]")
 str(data)
 
 # Reshape the data to a long format
 data_long <- pivot_longer(data, -c(thres, id, type), names_to = "variable", values_to = "value")
+data_long$facet = paste0(data_long$variable, "~" ,"Spline~Type==", data_long$type)
+data_long$facet = factor(data_long$facet)
 par.skew.normal = as.data.frame(e1$par.skew.normal)
-colnames(par.skew.normal) = c("lambda","nu","alpha1","alpha2")
+colnames(par.skew.normal) = c("lambda","nu","alpha[1]","alpha[2]")
 par.skew.normal$id = 1:nrow(par.skew.normal)
 par.skew.normal = rbind(par.skew.normal,par.skew.normal)
 par.skew.normal$type = rep(1:2,each=nrow(par.skew.normal)/2)
 par.skew.normal = rbind(par.skew.normal,par.skew.normal)
-par.skew.normal$thres = rep(1:2,each=nrow(par.skew.normal)/2)
+par.skew.normal$thres = rep(1:2,each=nrow(par.skew.normal)/2) 
+
 par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type,thres), names_to = "variable", values_to = "value")
-p <- ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres))) +
-  #geom_boxplot(position = "dodge") +
-  geom_violin(position = "dodge",draw_quantiles = c(0.25,0.5,0.75)) + geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,position=position_dodge(width = 0.75)) +
-  facet_wrap(~ variable + type, scales = "free") +
-  labs(title = "Boxplots for Each Variable",
+par.skew.normal_long$facet = factor(paste0(par.skew.normal_long$variable, "~" ,"Spline~Type==", par.skew.normal_long$type),levels=levels(data_long$facet))
+
+p <- ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres,labels=c("95%","90%")))) +
+  geom_violin(position = position_dodge(width=0.75),draw_quantiles = NULL) + 
+  geom_boxplot(position = position_dodge(width=0.75),width=0.2, color="grey", alpha=0.8) +
+  geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,position=position_dodge(width = 0.75)) +
+  facet_wrap(~ facet, scales = "free",nrow=2,ncol=4,labeller = label_parsed) +
+  labs(title = "Efficiency of the angular density estimation method with 1000 replicates on a 15 by 15 grid",
        x = "ID",
        y = "Value",
        fill = "Threshold") +
   theme(axis.text = element_text(size = 10),
         axis.title.x = element_text(size = 14),
+        strip.text = element_text(size = 14),
         axis.title.y = element_text(size = 14),
         plot.title = element_text(hjust = 0.5, size = 14),
         legend.title = element_text(size = 14))
 
+pdf("figures/simulation_est_boxplots_final.pdf",width=4*4-2,height=4*2,onefile=TRUE)
 p
+dev.off()
 
 load("data/simulation_study_logskew_results_final_3.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_final_4.RData",e2<-new.env())
 data = cbind(rep(1:6,times=sapply(e1$est.mat.list,nrow)),1,do.call(rbind,e1$est.mat.list))
 data = rbind(data,cbind(rep(1:6,times=sapply(e2$est.mat.list,nrow)),2,do.call(rbind,e2$est.mat.list)))
-data = as.data.frame(data);names(data) = c("id","type","lambda","nu","alpha1","alpha2")
+data = as.data.frame(data);names(data) = c("id","type","lambda","nu","alpha[1]","alpha[2]")
 data = data[,1:4]
 str(data)
 
 # Reshape the data to a long format
 data_long <- pivot_longer(data, -c(id, type), names_to = "variable", values_to = "value")
+data_long$facet = factor(data_long$variable)
 par.skew.normal = as.data.frame(e1$par.skew.normal[,1:2])
 colnames(par.skew.normal) = c("lambda","nu")
 par.skew.normal$id = 1:nrow(par.skew.normal)
 par.skew.normal = rbind(par.skew.normal,par.skew.normal)
 par.skew.normal$type = rep(1:2,each=nrow(par.skew.normal)/2)
 par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type), names_to = "variable", values_to = "value")
-p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type))) +
-  geom_boxplot(position = "dodge") + geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="red",size=2,position=position_dodge(width = 0.75)) +
-  facet_wrap(~ variable, scales = "free") +
-  labs(title = "",
+par.skew.normal_long$facet = factor(par.skew.normal_long$variable)
+p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("Angular","Composite")))) +
+  geom_violin(position = position_dodge(width=0.75),draw_quantiles = NULL) + 
+  geom_boxplot(position = position_dodge(width=0.75),width=0.2, color="grey", alpha=0.8) +
+  geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,
+  position=position_dodge(width = 0.75)) +
+  facet_wrap(~ facet, scales = "free",ncol=2,labeller = label_parsed) +
+  labs(title = "Comparing angular method and pairwise likelihood with 100 replicates on a 15 by 15 grid",
        x = "Cases",
        y = "Value",
        fill = "Method") +
   theme(axis.text = element_text(size = 10),
+        strip.text = element_text(size = 14),
         axis.title.x = element_text(size = 14),
         axis.title.y = element_text(size = 14),
         plot.title = element_text(hjust = 0.5, size = 14),
         legend.title = element_text(size = 14))
 
+pdf("figures/simulation_est_boxplots_final_BR.pdf",width=4*2-1,height=4,onefile=TRUE)
+p
+dev.off()
 
 
 ## plot the extremal coef for the application ##
