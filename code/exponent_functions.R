@@ -598,14 +598,13 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             }
             init.mat = cbind(opt.result$par[1],opt.result$par[2],a)
             init.list = split(init.mat,row(init.mat))
+            fixed[1:2] = TRUE
             if(method=="L-BFGS-B"){
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }else{
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }
             opt.values <- unlist(lapply(opt.result2,function(x){x$value}))
-            scale = unlist(lapply(opt.result2,function(x){max(abs(x$par[-c(1:2)]))}))
-            idx = which(opt.values <= opt.result$value)
             opt.result = opt.result2[[idx[which.min(scale[idx])]]]
             opt.result$others = opt.result2
         }

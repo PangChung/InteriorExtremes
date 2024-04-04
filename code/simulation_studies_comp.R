@@ -62,7 +62,8 @@ fit.logskew.comp <- list()
 #if(file.exists(file2save)){
 #    load(file2save)
 for(i in 1:nrow(par.skew.normal)){
-    par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]),alpha=alpha.func(par=par.skew.normal[i,-c(1:2)]))
+    par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]))
+    par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-c(1:2)],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma)))
     if(!file.exists(file.samples)){
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
     }
