@@ -1,6 +1,6 @@
 *.RData
 */settings.json
-katana*
+katana.sh.*
 *.out
 *.log
 *.err
