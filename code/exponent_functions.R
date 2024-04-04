@@ -543,7 +543,7 @@ alpha.func <- function(par,b.mat=basis){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
-                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE){
+                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2){
     t0 <- proc.time()
     data.sum = apply(data,1,sum)
     idx.thres = which(data.sum>quantile(data.sum,thres))
@@ -556,7 +556,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
         object.func <- function(par,opt=TRUE,ncore=NULL){
             #if(trace) print(par)
             par2 = init; par2[!fixed] = par
-            par.1 = par2[1:2];par.2 = par2[-c(1:2)]
+            par.1 = par2[idx.para];par.2 = par2[-idx.para]
             cov.mat = FUN(loc,par.1)
             b.mat <- basis / sqrt(diag(cov.mat))
             alpha = alpha.func(par=par.2,b.mat= b.mat)
@@ -571,7 +571,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
         object.func <- function(par,opt=TRUE,ncore=NULL){
             #if(trace) print(par)
             par2 = init; par2[!fixed] = par
-            par.1 = par2[1:2];nu = par2[3]
+            par.1 = par2[idx.para];nu = par2[-idx.para]
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
@@ -587,8 +587,8 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
             opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
             opt.result$value = object.func(opt.result$par,opt=FALSE,ncore=ncores)
         }
-        if(model=="logskew" & any(!fixed[-c(1:2)]) & step2){
-            n.alpha = sum(!fixed[-c(1:2)])
+        if(model=="logskew" & any(!fixed[-idx.para]) & step2){
+            n.alpha = sum(!fixed[-idx.para])
             if(n.alpha==2){
                 a = seq(0,2*pi,length.out=ncores)
                 a = cbind(cos(a),sin(a))
@@ -596,9 +596,9 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 0.95,model="truncT",maxit
                 a = matrix(rnorm(ncores*5*n.alpha),ncol=n.alpha)
                 a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             }
-            init.mat = cbind(opt.result$par[1],opt.result$par[2],a)
+            init.mat = cbind(matrix(opt.result$par[idx.para],ncol=length(idx.para),nrow=ncores,byrow=TRUE),a)
             init.list = split(init.mat,row(init.mat))
-            fixed[1:2] = TRUE
+            fixed[idx.para] = TRUE
             if(method=="L-BFGS-B"){
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }else{

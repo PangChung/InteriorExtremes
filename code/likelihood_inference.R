@@ -260,17 +260,17 @@ nlogcomplik <- function(par,data,index,ncores,model){
 # loc: coordinates
 # sigmaFUN: function returns covariance matrix
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
-MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,trace =FALSE,basis=NULL,...){
+MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,trace =FALSE,basis=NULL,idx.para=1:2,...){
     t <- proc.time()
     object.func <- function(par2,opt=TRUE){
         par1 <- init
         par1[!fixed] <- par2
         if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
-        sigma = FUN(loc,par1[1:2])
+        sigma = FUN(loc,par1[idx.para])
         if(model=="BR"){par.list <- list(sigma=sigma)}
-        if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-c(1:2)]);par.list[[3]] <- a_fun()}
+        if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-idx.para]);par.list[[3]] <- a_fun()}
         if(model=="logskew"){b.mat <- basis / sqrt(diag(sigma))
-                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-c(1:2)],b.mat=b.mat))}
+                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))}
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
         if(opt){ 
             val = mean(val,na.rm=TRUE)
