@@ -643,16 +643,18 @@ vario.func <- function(loc,par){ ##return a covariance matrix
     if(!is.matrix(loc)){loc = matrix(loc,nrow=1)}
     n = nrow(loc)
     if(n==1){
-        val=2*(sqrt(sum(loc[1,]^2))/lambda)^alpha
+        val=(sqrt(sum(loc[1,]^2))/lambda)^alpha
         return(val)
     }
     vario <- function(coord){
-        if(!is.matrix(coord)) {val <- 2*(sqrt(sum(coord^2))/lambda)^alpha}
-        else {val <- 2*(sqrt(sum((coord[1,]-coord[2,])^2))/lambda)^alpha}
+        if(!is.matrix(coord)) {val <- (sqrt(sum(coord^2))/lambda)^alpha}
+        else {val <- (sqrt(sum((coord[1,]-coord[2,])^2))/lambda)^alpha}
+        return(val)
     }
-    
-    cov.mat <- sapply(1:n, function(i) sapply(1:n, function(j) 
-                        vario(loc[i,]) + vario(loc[j,]) - vario(loc[c(i,j),])))
-                        
+        gamma.vec = unlist(lapply(all.pairs.list,function(idx) vario(loc[idx,])))
+        gamma.origin = sapply(1:n,function(i) vario(loc[i,]))
+        cov.mat = diag(2*gamma.origin)
+        cov.mat[t(all.pairs)] <- sapply(1:length(gamma.vec),function(i){idx = all.pairs[,i];return(gamma.origin[idx[1]] + gamma.origin[idx[2]] - gamma.vec[i])})
+        cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
     return(cov.mat + .Machine$double.eps * diag(n))
 }

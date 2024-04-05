@@ -235,3 +235,12 @@ fit.result <- fit.model(data=samples.skew.normal,loc=coord,init=init,fixed=c(F,F
 fit.result$par
 para.alpha[idx,]
 
+
+## play 
+files.list = list.files("data/samples/",pattern="simulation_logskew_comp_*",full.names = TRUE)
+samples.skew.normal <- NULL
+for(i in 1:length(files.list)){
+    load(files.list[i],e<-new.env())
+    samples.skew.normal <- lapply(1:length(e$samples.skew.normal),function(x){rbind(samples.skew.normal[[x]],e$samples.skew.normal[[x]])})
+    print(i)
+}
