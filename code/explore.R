@@ -244,3 +244,19 @@ for(i in 1:length(files.list)){
     samples.skew.normal <- lapply(1:length(e$samples.skew.normal),function(x){rbind(samples.skew.normal[[x]],e$samples.skew.normal[[x]])})
     print(i)
 }
+
+
+ub=c(Inf,Inf,rep(Inf,ncol(para.alpha)))
+i=6
+data = samples.skew.normal[[i]][1:1000,]
+data.avg = rowMeans(data)
+idx = data.avg > 100 & data.avg < 1000
+if(sum(idx)<2){idx = c(which(idx),which.max(data.avg))}
+data = data[idx,,drop=FALSE]
+fit.logskew.angular[[i]] <- fit.model(data=data,init=e$par.skew.normal[i,],fixed=c(F,F,T,T),loc=diff.mat,thres=nrow(data),FUN=cov.func,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis)
+fit.logskew.angular[[i]]$par - e$par.skew.normal[i,]   
+sum(idx)
+
+
+
+

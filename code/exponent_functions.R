@@ -545,8 +545,11 @@ alpha.func <- function(par,b.mat=basis){
 fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
                     ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2){
     t0 <- proc.time()
+    n = ncol(data)
     data.sum = apply(data,1,sum)
-    idx.thres = which(order(data.sum,decreasing=TRUE)<=thres) #which(data.sum>quantile(data.sum,thres))
+    idx.thres = data.sum > 100*n & data.sum < 1000*n
+    if(sum(idx)<2){idx = c(which(idx.thres),which.max(data.sum))}
+    #idx.thres = which(order(data.sum,decreasing=TRUE)<=thres) #which(data.sum>quantile(data.sum,thres))
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
     if(is.null(lb)){lb=rep(-Inf,length(init))}
