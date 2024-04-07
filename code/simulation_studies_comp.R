@@ -72,7 +72,7 @@ for(i in 1:nrow(par.skew.normal)){
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
     }
     init = par.skew.normal[i,]
-    fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,thres=30,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,para.idx=para.idx,step2=FALSE)
+    fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,thres=30,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
     
     fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
 }
