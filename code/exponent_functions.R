@@ -547,7 +547,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     t0 <- proc.time()
     n = ncol(data)
     data.sum = apply(data,1,sum)
-    idx.thres = data.sum > thres*n
+    idx.thres = data.sum > thres*n & data.sum < 1000*n
     print(paste("#sampels: ",sum(idx.thres)))
     if(sum(idx.thres)<3){idx.thres = which(order(data.sum,decreasing=TRUE)<=3)}
     
