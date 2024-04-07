@@ -2,7 +2,7 @@ args <- commandArgs(TRUE)
 id = 1
 computer = "ws"
 d <- 25## 10 * 10 grid on [0,1]^2
-m <- 100 ## number of samples
+m <- 200 ## number of samples
 # loading library and setting path
 for (arg in args) eval(parse(text = arg))
 switch(computer,
