@@ -349,17 +349,17 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
 # sigma.FUN: function returns covariance matrix
 # vecchia.seq: vector of length D (with integers from {1,...,D}), indicating the sequence of variables to be considered for the Vecchia approximation
 # neighbours: an q-by-D matrix with the corresponding the neighbors of each observation in the Vecchia sequence (where q is the number of neighbours, i.e., the size of the conditioning set)
-MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=1000,hessian=FALSE,alpha.func=NULL,lb=-Inf,ub=Inf,trace=FALSE,basis=NULL,...){
+MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR",maxit=1000,hessian=FALSE,alpha.func=NULL,lb=-Inf,ub=Inf,trace=FALSE,basis=NULL,idx.para=1:2,...){
     t <- proc.time()
     object.func <- function(par2,opt=TRUE){
         par1 <- init
         par1[!fixed] <- par2
         if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
-        sigma = FUN(loc,par1[1:2])
+        sigma = FUN(loc,par1[idx.para])
         if(model=="BR"){par.list=list(sigma=sigma)}
-        if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-c(1:2)]);par.list[[3]] = a_fun(par.list,ncores=ncores)}
+        if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-idx.para]);par.list[[3]] = a_fun(par.list,ncores=ncores)}
         if(model=="logskew"){b.mat <- basis / sqrt(diag(sigma))
-                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-c(1:2)],b.mat=b.mat))}
+                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))}
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
         if(opt){
             val = mean(val,na.rm=TRUE)
