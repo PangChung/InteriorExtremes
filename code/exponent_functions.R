@@ -530,10 +530,10 @@ true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
 # }
 
 cov.func <- function(distmat,par){
-    r = par[1];v = par[2];n=nrow(distmat)
-    cov.mat <- v*exp(-(distmat/r)) + diag(1e-6,n) 
-    #cov.mat <- diag(seq(1,2,length.out=n)) %*% cov.mat %*% diag(seq(1,2,length.out=n))
-    return(cov.mat)
+    r = par[1];v = par[2];shape=par[3]
+    n=nrow(distmat)
+    cov.mat <- v*exp(-(distmat/r)^shape)
+    return(cov.mat + .Machine$double.eps * diag(n))
 }
 
 alpha.func <- function(par,b.mat=basis){
@@ -547,8 +547,9 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     t0 <- proc.time()
     n = ncol(data)
     data.sum = apply(data,1,sum)
-    idx.thres = data.sum > 100*n & data.sum < 1000*n
-    if(sum(idx)<2){idx = c(which(idx.thres),which.max(data.sum))}
+    idx.thres = data.sum > thres*n
+    print(paste("#sampels: ",sum(idx.thres)))
+    if(sum(idx.thres)<2){idx.thres = c(which(idx.thres),which.max(data.sum))}
     #idx.thres = which(order(data.sum,decreasing=TRUE)<=thres) #which(data.sum>quantile(data.sum,thres))
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
@@ -565,7 +566,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             alpha = alpha.func(par=par.2,b.mat= b.mat)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
+            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) - n/data.sum[idx.thres]
             if(opt) return(-mean(val)) else return(-mean(val))
         }
     }
@@ -599,10 +600,9 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
                 a = matrix(rnorm(ncores*5*n.alpha),ncol=n.alpha)
                 a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             }
-            #init.mat = cbind(matrix(opt.result$par[idx.para],ncol=length(idx.para),nrow=ncores,byrow=TRUE),a)
-            init.list = split(a,row(a)) 
             init[!fixed] = opt.result$par
-            fixed[idx.para] <- TRUE
+            a = cbind(matrix(init[idx.para],ncol=length(idx.para),nrow=nrow(a),byrow=T),a)[,!fixed]
+            init.list = split(a,row(a)) 
             if(method=="L-BFGS-B"){
                 opt.result2 = mcmapply(optim,par=init.list[1:2],MoreArgs = list(fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }else{

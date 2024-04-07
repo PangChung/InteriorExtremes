@@ -61,8 +61,7 @@ fit.logskew.vecchia <- list()
 fit.logskew.angular <- list()
 fit.logskew.comp <- list()
 
-#if(file.exists(file2save)){
-#    load(file2save)
+
 for(i in 1:nrow(par.skew.normal)){
     #par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,1:2]))
     par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]))
@@ -76,5 +75,5 @@ for(i in 1:nrow(par.skew.normal)){
     fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis)
 }
 save(fit.logskew.comp,fit.logskew.angular,basis,par.skew.normal,init.seed,m,d,file=file2save)
-#}
+
 if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)

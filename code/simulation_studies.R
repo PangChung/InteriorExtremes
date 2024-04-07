@@ -3,7 +3,7 @@ args <- commandArgs(TRUE)
 computer = "local"
 id = 1
 d <- 10 ## 10 * 10 grid on [0,1]^2
-m <- 1000 ## number of samples
+m <- 3000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
 #model = "truncT"; # "logskew" or "truncT"
@@ -17,8 +17,10 @@ switch(computer,
 coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(4,8) #c(0.5,1,2) ## range for the correlation function ##      
-para.nu = c(4) #c(0.5,1,1.5) ## smoothness parameter for the correlation function ##
+para.range = c(2,4) #c(0.5,1,2) ## range for the covariance function ##      
+para.nu = c(4) #c(0.5,1,1.5) ## variance parameter for the covariance function ##
+para.shape = c(1) ## smoothness parameter for the covariance function ##
+idx.para = 1:3
 para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
@@ -63,36 +65,31 @@ basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 0.1; basis[(d^2-floor(d^2/2)+1)
 
 t0 <- proc.time()
 if(model == "logskew"){
-    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
-    ub=c(Inf,Inf,rep(Inf,ncol(para.alpha)))
-    init = c(1,1,0,0)
-    par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,1:nrow(para.alpha)))
-    par.skew.normal <- cbind(par.skew.normal[,-3],para.alpha[par.skew.normal[,3],]);colnames(par.skew.normal) <- NULL
+    lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
+    ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
+    init = c(1,1,1,0,0)
+    par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
+    par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
     par.skew.list <- list()
     ec.logskew <- list()
     tc.logskew <- list()
     fit.logskew.angular <- list()
-    if(file.exists(file.samples)){load(file.samples)} else samples.skew.normal <- list()
+    #if(file.exists(file.samples)){load(file.samples)} else samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
-        fit.logskew <- list()
-        fit.logskew2 <- list()
         # par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,1:2]))
         # par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-c(1:2)],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma)))
-        par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,1:2]))
-        par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-c(1:2)],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma)))
-        if(!file.exists(file.samples)){
+        par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,idx.para]))
+        par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma)))
+        #if(!file.exists(file.samples)){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-        }
-        for(j in 1:length(thres)){
-            # fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),basis=basis,thres=thres[j],model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE)
-            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,F,F,F),basis=basis,thres=thres[j],model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE)
-            fit.logskew[[j]] = fit.result1
-            print(c(i,j))
-        }
-        fit.logskew.angular[[i]] <- fit.logskew
-        print(i)   
+        #}
+        # fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),basis=basis,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE)
+        fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=1:3)
+        print(fit.result1$par - init2)
+        fit.logskew.angular[[i]] <- fit.result1
+        print(i)
     }
-    save(fit.logskew.angular,par.skew.normal,thres,m,d,basis,file=file2save)
+    save(fit.logskew.angular,par.skew.normal,m,d,basis,file=file2save)
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
