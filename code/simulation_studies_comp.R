@@ -1,8 +1,8 @@
 args <- commandArgs(TRUE)
 id = 1
 computer = "ws"
-d <- 15## 10 * 10 grid on [0,1]^2
-m <- 1000 ## number of samples
+d <- 25## 10 * 10 grid on [0,1]^2
+m <- 100 ## number of samples
 # loading library and setting path
 for (arg in args) eval(parse(text = arg))
 switch(computer,
@@ -29,7 +29,7 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(4,8)/2 ## range for the correlation function ##
 para.nu = c(1,2)    
-para.shape = c(1,2) ## smoothness parameter for the correlation function ##
+para.shape = c(1,1.5) ## smoothness parameter for the correlation function ##
 para.alpha = rbind(c(0,0)) 
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -65,17 +65,18 @@ fit.logskew.comp <- list()
 
 
 for(i in 1:nrow(par.skew.normal)){
-    #par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,1:2]))
-    par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
+    par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,idx.para]))
+    #par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
     par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma)))
-    if(!file.exists(file.samples)){
+    #if(!file.exists(file.samples)){
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-    }
+    #}
     init = par.skew.normal[i,]
     fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,thres=30,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
-    
-    fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
+    print(fit.logskew.angular[[i]]$par - par.skew.normal[i,])
+    #fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
 }
+
 save(fit.logskew.comp,fit.logskew.angular,basis,par.skew.normal,init.seed,m,d,file=file2save)
 
 if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)

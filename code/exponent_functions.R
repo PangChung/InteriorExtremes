@@ -549,8 +549,8 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     data.sum = apply(data,1,sum)
     idx.thres = data.sum > thres*n
     print(paste("#sampels: ",sum(idx.thres)))
-    if(sum(idx.thres)<2){idx.thres = c(which(idx.thres),which.max(data.sum))}
-    #idx.thres = which(order(data.sum,decreasing=TRUE)<=thres) #which(data.sum>quantile(data.sum,thres))
+    if(sum(idx.thres)<3){idx.thres = which(order(data.sum,decreasing=TRUE)<=3)}
+    
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
     if(is.null(lb)){lb=rep(-Inf,length(init))}
