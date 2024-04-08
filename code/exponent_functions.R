@@ -244,32 +244,29 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
 #         return(exp(val))    
 # }
 
-intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+## slant parameter without normlized by the variance
+intensity_logskew1 <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
     if(n==1) return(1/(x^2))
-    omega = diag(sqrt(diag(sigma)))
-    omega_inv = diag(diag(omega)^(-1))
-    sigma_bar = omega_inv %*% sigma %*% omega_inv
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
     if(alpha.para){
         alpha = par[[2]]
-        delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
     }else{
-        inv.sigma.bar = omega %*% inv.sigma %*% omega
         delta = par[[2]]
-        alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
     }
-    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
+    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
     sum.inv.sigma = sum(inv.sigma)
     one.mat = matrix(1,n,n)
     one.vec = rep(1,n)
-    beta.hat =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma))
+    beta.hat =  c(alpha %*%  (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma))
     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
     func <- function(idx){
         x_log = log(x[idx,])
@@ -293,6 +290,50 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
         return(exp(val))    
 }
 
+## slant paramter nomalized by the variance, where the variance is constant and sum(alpha)=0
+intensity_logskew2 <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
+    sigma = par[[1]]
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    n = ncol(x)
+    if(n==1) return(1/(x^2))
+    chol.sigma = chol(sigma)
+    inv.sigma = chol2inv(chol.sigma)
+    logdet.sigma = sum(log(diag(chol.sigma)))*2
+    if(alpha.para){
+        alpha = par[[2]]
+        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
+    }else{
+        delta = par[[2]]
+        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
+    }
+    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
+    sum.inv.sigma = sum(inv.sigma)
+    one.mat = matrix(1,n,n)
+    one.vec = rep(1,n)
+    A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
+    func <- function(idx){
+        x_log = log(x[idx,])
+        x_circ = x_log + a
+        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(c(alpha %*% x_circ),log.p=TRUE) -
+            1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
+        val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
+        return(val)
+    }
+    
+    if(!is.null(ncores)){
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+    }
+    else{
+        val = unlist(lapply(1:nrow(x),func))
+    }
+    assign(".Random.seed", oldSeed, envir=globalenv())
+    if(log)
+        return(val)
+    else
+        return(exp(val))    
+}
 
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
@@ -303,47 +344,34 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
     if(n==1) return(1/x)
-    omega = diag(sqrt(diag(sigma)))
-    omega_inv = diag(diag(omega)^(-1))
-    sigma_bar = omega_inv %*% sigma %*% omega_inv
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
     if(alpha.para){
         alpha = par[[2]]
-        delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
     }else{
-        inv.sigma.bar = omega %*% inv.sigma %*% omega
         delta = par[[2]]
-        alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
     }
-    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    b = c(alpha %*% sigma_bar %*% alpha)
+    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
     func <- function(j){        
         if(j<n){
-        A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)])
+            A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)])
         }else{
-        A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1))
+            A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1))
         }
         sigma.j = A.j %*% sigma %*% t(A.j)
         sigma.j.chol = chol(sigma.j)
-        sigma.j.inv = chol2inv(sigma.j.chol)
-        omega.j = sqrt(diag(diag(sigma.j),nrow=n-1))
-        omega.j.inv = diag(diag(omega.j)^(-1),nrow=n-1)
-        sigma.j.bar = omega.j.inv %*% sigma.j %*% omega.j.inv
-        # alpha.hat = c(1 - delta %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) * c(omega.j %*% 
-        #     sigma.j.inv %*% A.j %*% omega %*% delta)   
         u.j = c(A.j %*% sigma[,j])
-        #b1 = c(alpha.hat %*% sigma.j.bar %*% alpha.hat)
-        #b3 = c(-(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
-        b3 = omega.j.inv %*% A.j %*% omega %*% delta
-        sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),c(b3,1)))
+        b3 = c(A.j %*% delta)
+        sigma_circ = unname(cbind(rbind(sigma.j,b3),c(b3,1)))
         func_temp <- function(i){
             xi = x[i,]
-            mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),delta[j]*omega[j,j])
-            val = pnorm(delta[j]*omega[j,j])^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[[1]]
+            mu = c(a[-j] - a[j] + log(xi[-j]/xi[j])-u.j,delta[j])
+            val = pnorm(delta[j])^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[[1]]
             return(val)
         }
         val = unlist(lapply(1:nrow(x),func_temp))
@@ -364,15 +392,14 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
 }
 
 V_bi_logskew <- function(x,delta,sigma){
-    delta.sigma = delta * sqrt(diag(sigma))
-    phi.delta = pnorm(delta.sigma)
+    phi.delta = pnorm(delta)
     phi.delta.log = log(phi.delta)
     vario.sqrt = sqrt(sigma[1,1] + sigma[2,2] - 2*sigma[1,2])
     if(!is.matrix(x)) x <- matrix(x,ncol=2)
     mu.1 = c((phi.delta.log[2]-phi.delta.log[1]+log(x[,2]/x[,1]))/vario.sqrt + vario.sqrt/2,delta.sigma[1])
     mu.2 = c((phi.delta.log[1]-phi.delta.log[2]+log(x[,1]/x[,2]))/vario.sqrt + vario.sqrt/2,delta.sigma[2])
-    sigma.1 = matrix(c(1,(delta.sigma[1]-delta.sigma[2])/vario.sqrt,(delta.sigma[1]-delta.sigma[2])/vario.sqrt,1),nrow=2)
-    sigma.2 = matrix(c(1,(delta.sigma[2]-delta.sigma[1])/vario.sqrt,(delta.sigma[2]-delta.sigma[1])/vario.sqrt,1),nrow=2)
+    sigma.1 = matrix(c(1,(delta[1]-delta[2])/vario.sqrt,(delta[1]-delta[2])/vario.sqrt,1),nrow=2)
+    sigma.2 = matrix(c(1,(delta[2]-delta[1])/vario.sqrt,(delta[2]-delta[1])/vario.sqrt,1),nrow=2)
     val = 1/x[1]/phi.delta[1]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.1,sigma=sigma.1)[[1]] + 1/x[2]/phi.delta[2]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.2,sigma=sigma.2)[[1]]
     return(val)
 }
@@ -462,6 +489,79 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     }
 }
 
+partialV_logskew2 <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
+    # set a random seed
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
+    sigma = par[[1]]
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    n = ncol(x)
+    if(length(idx)==0){
+        val = V_logskew(x,par,alpha.para,ncores=ncores)
+        if(log) return(log(val))
+        else return(val)
+    }
+    if(length(idx)==n){
+        val = intensity_logskew(x,par,alpha.para,ncores,log)
+        return(val)
+    }
+    ones <- rep(1,n)
+    one.mat <- matrix(1,n,n)
+    I <- diag(1,n)
+    sigma.chol = chol(sigma)
+    sigma.inv = chol2inv(sigma.chol)
+    sum.sigma.inv = sum(sigma.inv)
+    
+    if(alpha.para){
+        alpha = par[[2]]
+        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
+    }else{
+        delta = par[[2]]
+        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
+    }
+
+    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
+    H =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
+
+    sigma.tilde.inv = H[-idx,-idx,drop=FALSE]
+    sigma.tilde.inv.chol = chol(sigma.tilde.inv)
+    sigma.tilde = chol2inv(sigma.tilde.inv.chol)
+
+    b = c(alpha %*% ones/sqrt(sum.sigma.inv))
+    beta =  c(alpha %*% (diag(n) - one.mat %*% sigma.inv/sum.sigma.inv) * (1+b^2)^(-1/2))    
+    delta.hat = (1+b^2)^(-1/2)*b
+    alpha.tilde = beta[-idx] 
+    b1 =c((1 + alpha.tilde %*% sigma.tilde %*% alpha.tilde)^(-1/2))
+
+    func <- function(i){
+        xi.log = log(x[i,])
+        xi.tilde = xi.log + a
+        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv))
+        tau.tilde = c(b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde))
+        b2 = c(-b1 * sigma.tilde %*% alpha.tilde)
+        scale.val = unname(cbind(rbind(sigma.tilde, b2),c(b2,1)))
+        mu.val = c(xi.tilde[-idx] - mu.tilde, tau.tilde * b1)
+        phi = pnorm(c(tau.tilde * b1))
+        intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
+        val = intensity.marginal/phi * mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]]
+        return(val)
+    }
+    if(!is.null(ncores)){
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+    }
+    else{
+        val = unlist(lapply(1:nrow(x),func))
+    }
+    assign(".Random.seed", oldSeed, envir=globalenv())
+    if(log){
+        return(log(val))
+    }
+    else{
+        return(val)
+    }
+}
+
+
 # calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
 empirical_extcoef <- function(idx,data){
     return(min(2,max(1,1/mean(1/pmax(data[,idx[1]],data[,idx[2]])))))
@@ -469,20 +569,15 @@ empirical_extcoef <- function(idx,data){
 
 alpha2delta <- function(par){
     alpha = par[[2]];sigma = par[[1]]
-    omega = diag(sqrt(diag(sigma)))
-    omega.inv = diag(diag(omega)^(-1))
-    sigma.bar = omega.inv %*% sigma %*% omega.inv
-    delta = c(sigma.bar %*% alpha)/sqrt(c(1+alpha %*% sigma.bar %*% alpha))
+    delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
     return(list(sigma,delta))
 }
 
 delta2alpha <- function(par){
     delta = par[[2]];sigma = par[[1]]
-    omega = diag(sqrt(diag(sigma)))
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
-    inv.sigma.bar = omega %*% inv.sigma %*% omega
-    alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+    alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
     return(list(sigma,alpha))
 }
 
@@ -562,7 +657,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             par2 = init; par2[!fixed] = par
             par.1 = par2[idx.para];par.2 = par2[-idx.para]
             cov.mat = FUN(loc,par.1)
-            b.mat <- basis / sqrt(diag(cov.mat)/min(diag(cov.mat)))
+            b.mat <- basis #/ sqrt(diag(cov.mat))
             alpha = alpha.func(par=par.2,b.mat= b.mat)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)

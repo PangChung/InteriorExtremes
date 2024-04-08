@@ -121,12 +121,8 @@ simu_truncT <- function(m,par,ncores=NULL){
 simu_logskew <- function(m,par,ncores=NULL){  
     delta = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
-    omega = diag(sqrt(diag(sigma)))
-    omega.inv = diag(diag(omega)^(-1))
-    sigma.bar = omega.inv %*% sigma %*% omega.inv
-    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    tau.new = delta * diag(omega)
-    sigma.star = rbind(cbind(sigma.bar, delta), c(delta, 1))
+    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
+    sigma.star = rbind(cbind(sigma, delta), c(delta, 1))
     sigma.star.chol = chol(sigma.star)
     #message("normalizing constants computed")
     # Simulate the max-stable process
@@ -134,8 +130,8 @@ simu_logskew <- function(m,par,ncores=NULL){
         r <- rexp(1)
         r.hat <- 1/r
         x <- c(t(sigma.star.chol) %*% rnorm(n+1))
-        while(x[n+1] + tau.new[1] < 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
-        x0 = c(omega %*% x[1:n] + sigma[,1])
+        while(x[n+1] + delta[1] < 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+        x0 = x[1:n] + sigma[,1]
         z <- exp(x0-a);z <- z/z[1]
         z <- z * r.hat
         for(j in 2:n){
@@ -143,8 +139,8 @@ simu_logskew <- function(m,par,ncores=NULL){
             r.hat <- 1/r
             while(r.hat > z[j]){
                 x <- c(t(sigma.star.chol) %*% rnorm(n+1))
-                while(x[n+1] + tau.new[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
-                x0 <- c(omega %*% x[1:n] + sigma[,j])
+                while(x[n+1] + delta[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+                x0 <- x[1:n] + sigma[,j]
                 z_temp <- exp(x0-a);z_temp <- z_temp/z_temp[j]
                 z_temp <- z_temp * r.hat
                 if(!any(z_temp[1:(j-1)] > z[1:(j-1)])){
@@ -255,40 +251,6 @@ simu_logskew2 <- function(m,par,ncores=NULL){
     }
     return(Z)
 }
-
-# Simulate a truncated extremal-t max-stable process
-bi.simu <- function(m,par,ncores=10,model="truncT",alpha.para=TRUE){
-    if(model == "truncT"){
-        par.func <- function(idx){
-            new.par <- list(par[[1]][c(1,idx),c(1,idx)],par[[2]])
-        }
-        new.par.list <- lapply(2:nrow(par[[1]]),par.func)
-        val.list<- mclapply(new.par.list,simu_truncT,m=m,ncores=NULL,mc.cores=10,mc.preschedule = TRUE)
-    }
-    if(model == "logskew"){
-        par.func <- function(idx){
-            idx = c(1,idx)
-            if(alpha.para)
-                new.par <- alpha2delta(list(par[[1]][idx,idx],par[[2]][idx]))
-            else 
-                new.par <- list(par[[1]][idx,idx],par[[2]][idx])
-        }
-        new.par.list <- lapply(2:nrow(par[[1]]),par.func)
-        val.list<- mclapply(new.par.list,simu_logskew,m=m,ncores=NULL,mc.cores=10,mc.preschedule = TRUE) 
-    }
-    if(model == "logskew2"){
-        par.func <- function(idx){
-            if(alpha.para)
-                new.par <- alpha2delta(list(par[[1]],par[[2]][c(idx,idx)]))
-            else 
-                new.par <- list(par[[1]],par[[2]][c(idx,idx)])
-        }
-        new.par.list <- lapply(1:length(par[[2]]),par.func)
-        val.list<- mclapply(new.par.list,simu_logskew,m=m,ncores=NULL,mc.cores=10,mc.preschedule = TRUE) 
-    }
-    return(list(val=val.list,par=new.par.list))
-}
-
 
 ks.test.new <- function(x,n=1000){
     y = runif(length(x))

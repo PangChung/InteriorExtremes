@@ -18,7 +18,7 @@ coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(2,4) # range for the covariance function ##      
-para.nu = 4 # ## variance parameter for the covariance function ##
+para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1,1.5) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:3 # variogram parameters; otherwise 1:3 for cov.func
 para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
@@ -83,7 +83,7 @@ if(model == "logskew"){
         # par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
         # par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma)/max(diag(par.skew.list[[i]]$sigma))))
         par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,idx.para]))
-        par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis / sqrt(diag(par.skew.list[[i]]$sigma/min(diag(par.skew.list[[i]]$sigma)))))
+        par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
         # if(!file.exists(file.samples)){
             # samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # }
