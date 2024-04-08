@@ -562,7 +562,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             par2 = init; par2[!fixed] = par
             par.1 = par2[idx.para];par.2 = par2[-idx.para]
             cov.mat = FUN(loc,par.1)
-            b.mat <- basis / sqrt(diag(cov.mat))
+            b.mat <- basis / sqrt(diag(cov.mat)/min(diag(cov.mat)))
             alpha = alpha.func(par=par.2,b.mat= b.mat)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
@@ -659,7 +659,9 @@ vario.func <- function(loc,par){ ##return a covariance matrix
     gamma.vec = unlist(lapply(all.pairs.list,function(idx) vario(loc[idx,])))
     gamma.origin = sapply(1:n,function(i) vario(loc[i,]))
     cov.mat = diag(2*gamma.origin)
-    cov.mat[t(all.pairs)] <- sapply(1:length(gamma.vec),function(i){idx = all.pairs[,i];return(gamma.origin[idx[1]] + gamma.origin[idx[2]] - gamma.vec[i])})
+    cov.mat[t(all.pairs)] <- sapply(1:length(gamma.vec),function(i){
+        idx = all.pairs[,i]
+        return(gamma.origin[idx[1]] + gamma.origin[idx[2]] - gamma.vec[i])})
     cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
     return(cov.mat + .Machine$double.eps * diag(n))
 }
