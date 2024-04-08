@@ -2,7 +2,7 @@ rm(list=ls())
 args <- commandArgs(TRUE)
 computer = "ws"
 id = 1
-d <- 15 ## 10 * 10 grid on [0,1]^2
+d <- 10 ## 10 * 10 grid on [0,1]^2
 m <- 2000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
@@ -18,7 +18,7 @@ coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(2,4) # range for the covariance function ##      
-para.nu = 8 # ## variance parameter for the covariance function ##
+para.nu = 4 # ## variance parameter for the covariance function ##
 para.shape = c(1,1.5) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:3 # variogram parameters; otherwise 1:3 for cov.func
 para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
@@ -87,8 +87,8 @@ if(model == "logskew"){
         # if(!file.exists(file.samples)){
             # samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # }
-        # true.ext.coef <- unlist(mclapply(all.pairs.list,true_extcoef,par=par.skew.list[[i]],model="logskew1",mc.cores=ncores,mc.set.seed = FALSE))
-        # print(range(true.ext.coef))}
+        true.ext.coef <- unlist(mclapply(all.pairs.list,true_extcoef,par=par.skew.list[[i]],model="logskew1",mc.cores=ncores,mc.set.seed = FALSE))
+        print(range(true.ext.coef))
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         init = par.skew.normal[i,]
         fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,T,F,F),basis=basis,thres=50,model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
