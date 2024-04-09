@@ -71,11 +71,11 @@ for(i in 1:nrow(par.skew.normal)){
     # par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,idx.para]))
     par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para])) #semivarigoram
     par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
-    #true.ext.coef <- unlist(mclapply(all.pairs.list,true_extcoef,par=alpha2delta(par.skew.list[[i]]),model="logskew1",mc.cores=ncores,mc.set.seed = FALSE))
+    # true.ext.coef <- unlist(mclapply(all.pairs.list,true_extcoef,par=alpha2delta(par.skew.list[[i]]),model="logskew1",mc.cores=ncores,mc.set.seed = FALSE))
     #print(range(true.ext.coef))#}
-    #if(!file.exists(file.samples)){
-        # samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-    #}
+    if(!file.exists(file.samples)){
+        samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
+    }
     # system.time(samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores))
     # init = par.skew.normal[i,]
     # fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,T,F,T,T),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,thres=50,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
