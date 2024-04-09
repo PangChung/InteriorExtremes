@@ -58,7 +58,7 @@ basis[,2] = rep(0,d^2);basis[1:floor(d^2/2),2] = 0.1; basis[(d^2-floor(d^2/2)+1)
 # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
 par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
 par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
-#if(file.exists(file.samples)){load(file.samples)} else samples.skew.normal <- list()
+if(file.exists(file.samples)){load(file.samples)} else samples.skew.normal <- list()
 samples.skew.normal <- list()
 par.skew.list <- list()
 ec.logskew <- list()
