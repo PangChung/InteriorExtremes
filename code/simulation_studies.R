@@ -106,19 +106,20 @@ if(model == "logskew"){
 print(t0 <- proc.time() - t0)
 
 if(model == "truncT"){
-    lb=c(0.01,0.01,-Inf)
-    ub=c(Inf,1.99,Inf)
-    par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.deg))
+    lb=c(0.01,0.01,0.01,0)
+    ub=c(Inf,Inf,1.99,Inf)
+    fixed = c(F,T,F,T)
+    init = c(1,1,2,2)
+    par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.shape,para.deg))
     samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
     for(i in 1:nrow(par.truncT)){
         fit.truncT <- list()
-        par.truncT.list[[i]] <- list(sigma=cov.func(coord,par.truncT[i,1:2]),nu=par.truncT[i,3])
+        par.truncT.list[[i]] <- list(sigma=cov.func(coord,par.truncT[i,idx.para]),nu=par.truncT[i,-idx.para])
         set.seed(init.seed)
         samples.truncT[[i]] <- simu_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
-        # ec.truncT[[i]] <- unlist(lapply(all.pairs.list,empirical_extcoef,data=samples.truncT[[i]]))
-        # tc.truncT[[i]] <- true_extcoef(all.pairs,par=par.truncT.list[[i]],model="truncT2")
+        init[!fixed] = par.truncT[i,!fixed]
         for(j in 1:length(thres)){
-            fit.truncT[[j]] <- fit.model(data=samples.truncT[[i]],loc=coord,init=c(1,1,par.truncT.list[[i]]$nu),fixed=c(F,F,T),thres=thres[j],model="truncT",ncores=ncores,maxit=1000,lb=lb,ub=ub,method="Nelder-Mead",hessian=FALSE,opt=TRUE,trace=FALSE)
+           fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=30,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         }
         fit.truncT.angular[[i]] <- fit.truncT
         print(i)
