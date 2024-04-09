@@ -83,7 +83,7 @@ V <- function(data,sigma){
 # data: matrix of dimension nxD, containing n D-dimensional random Brown-Resnick vectors (each row = 1 vector) on the unit Frechet scale
 # sigma: covariance matrix of dimension DxD
 # I: vector of indices with respect to which the partial derivatives are computed; if I==c(1:D), the function returns the full mixed derivative.
-nVI <- function(data,sigma,I){
+nVI <- function(data,sigma,I,logval=FALSE){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     if(!is.matrix(data)) data <- matrix(data,nrow=1)
@@ -109,8 +109,9 @@ nVI <- function(data,sigma,I){
       log.Part3 <- c(-(1/2)*( 1/4*t(sigma.DD)%*%sigma.inv%*%sigma.DD -1/4*(sigma.q)^2/q.sum + sigma.q/q.sum - 1/q.sum))
       log.Part4 <- c(-(1/2)*(apply(log.data,1,function(x){return(t(x)%*%A%*%x)}) + log.data%*%(q%*%(2-sigma.q)/q.sum + sigma.inv%*%sigma.DD)))
       
-      res <- exp(log.Part1-log.Part2+log.Part3+log.Part4)
+      res <- log.Part1-log.Part2+log.Part3+log.Part4
       assign(".Random.seed", oldSeed, envir=globalenv())
+      if(logval) return(drop(res)) else return(drop(exp(res)))
       return( drop(res) )
     }
   } else{ ## Partial derivative
@@ -139,19 +140,20 @@ nVI <- function(data,sigma,I){
         
         gamma.inv <- t(K01)%*%A%*%K01
         tryCatch({
-        gamma <- chol2inv(chol(gamma.inv))
-        mu <- -gamma%*%(t(K01)%*%A%*%K10%*%t(log.data.I) + c(t(K01)%*%( (q + 1/2*q%*%t(q)%*%sigma.DD )/sum(q)-1/2*sigma.inv%*%sigma.DD )) )
-        eval.x <- log(data[,-I])-t(mu)
-        sigma.q.II <- t(sigma.II)%*%q.I
-        q.I.sum <- sum(q.I)
-        
-        log.Part1 <- apply(eval.x,1,function(x){return(max(mvtnorm::pmvnorm(upper=x,sigma=gamma),0))})
-        log.Part2 <- ((nI-1)/2)*log(2*pi) + (1/2)*log(det(sigma.I)) + (1/2)*log(q.I.sum) + rowSums(log.data.I)
-        log.Part3 <- c(-(1/2)*( 1/4*t(sigma.II)%*%sigma.I.inv%*%sigma.II -1/4*(sigma.q.II)^2/q.I.sum + sigma.q.II/q.I.sum - 1/q.I.sum))
-        log.Part4 <- c(-(1/2)*(apply(log.data.I,1,function(x){return(t(x)%*%A.I%*%x)}) + log.data.I%*%(q.I%*%(2-sigma.q.II)/q.I.sum + sigma.I.inv%*%sigma.II)))
-        res <- drop(log.Part1*exp(-log.Part2+log.Part3+log.Part4))
-        assign(".Random.seed", oldSeed, envir=globalenv())},error=function(e){browser()})
-      return(drop(res))
+            gamma <- chol2inv(chol(gamma.inv))
+            mu <- -gamma%*%(t(K01)%*%A%*%K10%*%t(log.data.I) + c(t(K01)%*%( (q + 1/2*q%*%t(q)%*%sigma.DD )/sum(q)-1/2*sigma.inv%*%sigma.DD )) )
+            eval.x <- log(data[,-I])-t(mu)
+            sigma.q.II <- t(sigma.II)%*%q.I
+            q.I.sum <- sum(q.I)
+            
+            log.Part1 <- apply(eval.x,1,function(x){return(max(mvtnorm::pmvnorm(upper=x,sigma=gamma),0))})
+            log.Part2 <- ((nI-1)/2)*log(2*pi) + (1/2)*log(det(sigma.I)) + (1/2)*log(q.I.sum) + rowSums(log.data.I)
+            log.Part3 <- c(-(1/2)*( 1/4*t(sigma.II)%*%sigma.I.inv%*%sigma.II -1/4*(sigma.q.II)^2/q.I.sum + sigma.q.II/q.I.sum - 1/q.I.sum))
+            log.Part4 <- c(-(1/2)*(apply(log.data.I,1,function(x){return(t(x)%*%A.I%*%x)}) + log.data.I%*%(q.I%*%(2-sigma.q.II)/q.I.sum + sigma.I.inv%*%sigma.II)))
+            #res <- drop(log.Part1*exp(-log.Part2+log.Part3+log.Part4))
+            res <- drop(log(log.Part1) - log.Part2+log.Part3+log.Part4)
+            assign(".Random.seed", oldSeed, envir=globalenv())},error=function(e){browser()})
+        if(logval) return(drop(res)) else return(drop(exp(res)))
     }
   }
 }

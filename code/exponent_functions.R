@@ -642,7 +642,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     t0 <- proc.time()
     n = ncol(data)
     data.sum = apply(data,1,sum)
-    idx.thres = data.sum > thres*n & data.sum < 1000*n
+    idx.thres = data.sum > thres*n #& data.sum < 1000*n 
     print(paste("#sampels: ",sum(idx.thres)))
     if(sum(idx.thres)<3){idx.thres = which(order(data.sum,decreasing=TRUE)<=3)}
     
@@ -675,6 +675,17 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
             val = intensity_truncT(data,par=para.temp,T_j=a_fun(para.temp,ncores=ncores),log=TRUE,ncores=ncore) 
+            if(opt) return(-mean(val)) else return(-mean(val))
+        }
+    }
+    if(model == "BR"){
+    ## 3 parameters: 2 for the covariance function;
+        object.func <- function(par,opt=TRUE,ncore=NULL){
+            par2 = init; par2[!fixed] = par
+            par.1 = par2[idx.para]
+            cov.mat = FUN(loc,par.1)
+            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
+            val = nVI(data,cov.mat,1:n,logval=TRUE) -n/data.sum[idx.thres]
             if(opt) return(-mean(val)) else return(-mean(val))
         }
     }
