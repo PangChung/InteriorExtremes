@@ -77,7 +77,7 @@ if(model == "logskew"){
     ec.logskew <- list()
     tc.logskew <- list()
     fit.logskew.angular <- list()
-    #if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal} else samples.skew.normal <- list()
+    if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal} else samples.skew.normal <- list()
     samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
         par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
