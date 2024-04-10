@@ -661,7 +661,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             alpha = alpha.func(par=par.2,b.mat= b.mat)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = intensity_logskew2(data,par=para.temp,log=TRUE,ncores=ncore) - n/data.sum[idx.thres]
+            val = intensity_logskew2(data,par=para.temp,log=TRUE,ncores=ncore) 
             if(opt) return(-mean(val)) else return(-mean(val))
         }
     }
@@ -685,7 +685,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             par.1 = par2[idx.para]
             cov.mat = FUN(loc,par.1)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
-            val = nVI(data,cov.mat,1:n,logval=TRUE) -n/data.sum[idx.thres]
+            val = nVI(data,cov.mat,1:n,logval=TRUE)
             if(opt) return(-mean(val)) else return(-mean(val))
         }
     }
