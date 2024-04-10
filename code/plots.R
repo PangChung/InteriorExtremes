@@ -16,6 +16,7 @@ d = 32
 coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
+
 basis.list <- list()
 centers <- rbind(c(0.25,0.25),c(0.25,0.25),c(0.75,0.75))*d
 idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
@@ -32,7 +33,7 @@ all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
 
 #sigma = cov.func(diff.mat,c(8,1.5))
-sigma = vario.func(coord,c(8,1))
+sigma = vario.func(coord,c(4,1))
 par.list.1 = apply(para.alpha,1,function(x){alpha2delta(list(sigma,alpha.func(par=x,b.mat=basis.list[[1]])))})
 par.list.2 = apply(para.alpha,1,function(x){alpha2delta(list(sigma,alpha.func(par=x,b.mat=basis.list[[2]])))})
 
@@ -60,11 +61,13 @@ dev.off()
 
 ## plot the extremal coefficients map##
 data = NULL
+coord.center = matrix(NA,2,2)
 for(idx in 1:2){
     idx.center = rep(ifelse(idx==1,16,8),2)
     idx.center = which.min(abs(coord[,1] - idx.center[1]) + abs(coord[,2] - idx.center[2]))
     ind.idx.center = all.pairs[1,] == idx.center |  all.pairs[2,] == idx.center
     idx2 = apply(all.pairs[,ind.idx.center],2,function(x){x[x!=idx.center]})
+    coord.center[idx,] = coord[idx.center,]
     for(idx.case in 1:length(par.list.1)){
         true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.1[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
         data <- rbind(data,data.frame( x = coord[idx2,1],
@@ -88,18 +91,22 @@ data1 = subset(data,idx.center==1)
 labels = unique(data$idx.case)[c(1,3,5,2,4,6)]
 data1$idx.case = factor(data1$idx.case,levels=labels,labels=labels)
 levels(data1$idx.case)
-p1 <- ggplot(data1, aes(x = x, y = y,z=z))  + 
-        geom_tile(aes(fill=z)) + facet_wrap(~ idx.case,labeller=label_parsed) +
-        scale_fill_distiller(palette="RdBu") +
-        geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
-                stat="contour") + 
-        theme(axis.text = element_text(size=10), 
-                            strip.text = element_text(size = 14),
-                            axis.title.x = element_text(size=14), 
-                            axis.title.y = element_text(size=14), 
-                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14)) + coord_fixed() + 
-        labs(x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2]))
+p1 <- ggplot(data1, aes(x = x, y = y, z = z))  + 
+        geom_tile(aes(fill = z)) + 
+        facet_wrap(~ idx.case, labeller = label_parsed) +
+        scale_fill_distiller(palette = "RdBu") +
+        geom_contour(colour = "black", breaks = brks) + 
+        geom_dl(aes(label = ..level..), method = "bottom.pieces", breaks = brks, stat = "contour") + 
+        theme(axis.text = element_text(size = 10), 
+              strip.text = element_text(size = 14),
+              axis.title.x = element_text(size = 14), 
+              axis.title.y = element_text(size = 14), 
+              plot.title = element_text(hjust = 0.5, size = 14),
+              legend.title = element_text(size = 14)) + 
+        coord_fixed() + 
+        labs(x = expression(s[1]), y = expression(s[2]), fill = expression(theta[2])) +
+        # Add a star to the center of the grid
+        geom_text(aes(x = coord.center[1,1], y = coord.center[1,2], label = "*"), size = 10, color = "red", vjust = 0.8, hjust = 0.5)
 p1
 
 data2 = subset(data,idx.center==2)
@@ -115,7 +122,8 @@ p2 <- ggplot(data2, aes(x = x, y = y,z=z))  +
                             axis.title.x = element_text(size=14), 
                             axis.title.y = element_text(size=14), 
                             plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14)) + coord_fixed() + 
-        labs(x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2]))
+        labs(x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2])) + 
+        geom_text(aes(x = coord.center[2,1], y = coord.center[2,2], label = "*"), size = 10, color = "red", vjust = 0.8, hjust = 0.5)
 p2
 
 pdf("figures/extcoef_final_logskew.pdf",width=4*6-2,height=4*2,onefile=TRUE)
@@ -165,7 +173,7 @@ for(i in 1:length(sigma.22.vec)){
             scale_fill_distiller(palette="RdBu",limits=c(1,2)) +
             geom_contour(colour="black",breaks=brks) + 
             geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks,stat="contour") + 
-            labs(title=paste("Bivariate extremal coefficients:",sigma.22),x=expression(alpha[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
+            labs(title=bquote(Bivariate~extremal~coefficient:~sigma[22]==.(sigma.22)),x=expression(alpha[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
             theme(axis.text = element_text(size=10), 
                                 axis.title.x = element_text(size=14), 
                                 axis.title.y = element_text(size=14), 
