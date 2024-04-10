@@ -96,7 +96,9 @@ nVI <- function(data,sigma,I,logval=FALSE){
         return(1/data^2)
     } else{
       sigma.DD <- diag(sigma)
-      sigma.inv <- chol2inv(chol(sigma))
+      sigma.chol <- chol(sigma)
+      sigma.inv <- chol2inv(sigma.chol)
+      log.det.sigma <- 2*sum(log(diag(sigma.chol)))
       q <- rowSums(sigma.inv)
       q.sum <- sum(q)
       A <- (sigma.inv - q%*%t(q)/q.sum)
@@ -105,7 +107,7 @@ nVI <- function(data,sigma,I,logval=FALSE){
       log.data <- log(data)
       
       log.Part1 <- 0
-      log.Part2 <- ((D-1)/2)*log(2*pi) + (1/2)*log(det(sigma)) + (1/2)*log(q.sum) + rowSums(log.data)
+      log.Part2 <- ((D-1)/2)*log(2*pi) + (1/2)*log.det.sigma + (1/2)*log(q.sum) + rowSums(log.data)
       log.Part3 <- c(-(1/2)*( 1/4*t(sigma.DD)%*%sigma.inv%*%sigma.DD -1/4*(sigma.q)^2/q.sum + sigma.q/q.sum - 1/q.sum))
       log.Part4 <- c(-(1/2)*(apply(log.data,1,function(x){return(t(x)%*%A%*%x)}) + log.data%*%(q%*%(2-sigma.q)/q.sum + sigma.inv%*%sigma.DD)))
       
@@ -126,7 +128,9 @@ nVI <- function(data,sigma,I,logval=FALSE){
         
         
         sigma.I <- as.matrix(sigma[I,I])
-        sigma.I.inv <- chol2inv(chol(sigma.I))
+        sigma.I.chol = chol(sigma.I)
+        sigma.I.inv <- chol2inv(sigma.I.chol)
+        logdet.sigma.I = 2*sum(log(diag(chol(sigma.I))))
         q.I <- rowSums(sigma.I.inv)
         A.I <- (sigma.I.inv - q.I%*%t(q.I)/sum(q.I))
         
@@ -147,7 +151,7 @@ nVI <- function(data,sigma,I,logval=FALSE){
             q.I.sum <- sum(q.I)
             
             log.Part1 <- apply(eval.x,1,function(x){return(max(mvtnorm::pmvnorm(upper=x,sigma=gamma),0))})
-            log.Part2 <- ((nI-1)/2)*log(2*pi) + (1/2)*log(det(sigma.I)) + (1/2)*log(q.I.sum) + rowSums(log.data.I)
+            log.Part2 <- ((nI-1)/2)*log(2*pi) + (1/2)*logdet.sigma.I + (1/2)*log(q.I.sum) + rowSums(log.data.I)
             log.Part3 <- c(-(1/2)*( 1/4*t(sigma.II)%*%sigma.I.inv%*%sigma.II -1/4*(sigma.q.II)^2/q.I.sum + sigma.q.II/q.I.sum - 1/q.I.sum))
             log.Part4 <- c(-(1/2)*(apply(log.data.I,1,function(x){return(t(x)%*%A.I%*%x)}) + log.data.I%*%(q.I%*%(2-sigma.q.II)/q.I.sum + sigma.I.inv%*%sigma.II)))
             #res <- drop(log.Part1*exp(-log.Part2+log.Part3+log.Part4))

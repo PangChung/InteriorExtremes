@@ -37,16 +37,17 @@ basis[,-1] <- sapply(idx.centers,function(x){y=-distmat[,x]/max(distmat[,x]);y=y
 # basis[1:floor(D/2),1] = 0.1;basis[(D-floor(D/2)+1):D,1] = -0.1
 # basis[,-1] <- apply(idx.centers,1,function(x){y <- rep(0,nrow(distmat));y[x] <- c(-2,2);y})
 
-init = c(109,1.16,rep(0,length(idx.centers)))
+init = c(93,1.15,rep(0,length(idx.centers)))
 n.alpha = ncol(basis)-1
+idx.para = 1:2
 switch(id,
-    results1 <- fit.model(data=maxima.frechet,loc=distmat,init=init,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=2,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE), 
+    results1 <- fit.model(data=maxima.frechet,loc=distmat,init=init,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=2,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para), 
     
-    {results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,n.alpha)),basis=matrix(0,ncol=n.alpha+1,nrow=D),thres=15,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
+    {results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init[idx.para],fixed=c(F,F),thres=15,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
 
-    results2 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=results4$par,fixed=c(T,T,rep(F,n.alpha)),basis=basis,thres=15,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,step2=FALSE,idx.para=1:2)},
+    results2 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=results4$par,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=15,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,step2=TRUE,idx.para=1:2)},
 
-    results3 <- fit.model(data=maxima.frechet,loc=distmat,init=init,fixed=c(F,F,rep(T,n.alpha)),basis=basis,thres=0.9,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE)
+    results3 <- fit.model(data=maxima.frechet,loc=distmat,init=init,fixed=c(F,F,rep(T,n.alpha)),basis=basis,thres=0.9,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
 )
 
-save.image(file=paste0(DataPath,"data/application_results_new",id,".RData"))
+save.image(file=paste0(DataPath,"data/application_results_new_",id,".RData"))
