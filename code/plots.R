@@ -392,8 +392,8 @@ diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extco
 #diff.col.sums = colMeans(diff.mat)
 diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,]<0)}))
 sum(diff.col.sums < 0)
-#idx.centers = e$idx.centers
-idx.centers = c(200,538,800)
+idx.centers = e$idx.centers
+#idx.centers = c(200,538,800)
 diff.col.sums[idx.centers]
 #idx.centers = which(rank(colSums(distmat)) %in% c(1,100,200))
 #idx.centers = 1:ncol(distmat)
@@ -476,31 +476,31 @@ pdf("figures/extcoef_application_diff.pdf",width=5,height=5,onefile=TRUE)
 p4[[1]]
 dev.off()
 
-data$z = par.list[[2]]
-data.new = data.frame(x1=loc.sub[idx.centers,1],y1=loc.sub[idx.centers,2])
-png("figures/extcoef_application_delta.png",width=800,height=800)
-p4[[9]] <- ggplot(data, aes(x = x, y = y))  + 
-                geom_tile(aes(fill=z)) +
-                scale_fill_distiller(palette="RdBu") +
-                theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
-                coord_fixed() + 
-                labs(title = paste("Delta"), x = "X", y = "Y",fill="Values") #
-p4[[9]] <- p4[[9]] + geom_point(data=data.new,aes(x=x1,y=y1),color="black",size=2,shape=20)
-p4[[9]]
-dev.off()
+# data$z = par.list[[2]]
+# data.new = data.frame(x1=loc.sub[idx.centers,1],y1=loc.sub[idx.centers,2])
+# png("figures/extcoef_application_delta.png",width=800,height=800)
+# p4[[9]] <- ggplot(data, aes(x = x, y = y))  + 
+#                 geom_tile(aes(fill=z)) +
+#                 scale_fill_distiller(palette="RdBu") +
+#                 theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
+#                 coord_fixed() + 
+#                 labs(title = paste("Delta"), x = "X", y = "Y",fill="Values") #
+# p4[[9]] <- p4[[9]] + geom_point(data=data.new,aes(x=x1,y=y1),color="black",size=2,shape=20)
+# p4[[9]]
+# dev.off()
 
-data$z = delta2alpha(par.list)[[2]]
-data.new = data.frame(x1=loc.sub[idx.centers,1],y1=loc.sub[idx.centers,2])
-png("figures/extcoef_application_alpha.png",width=800,height=800)
-p4[[9]] <- ggplot(data, aes(x = x, y = y))  + 
-                geom_tile(aes(fill=z)) +
-                scale_fill_distiller(palette="RdBu") +
-                theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
-                coord_fixed() + 
-                labs(title = paste("Alpha"), x = "X", y = "Y",fill="Values") #
-p4[[9]] <- p4[[9]] + geom_point(data=data.new,aes(x=x1,y=y1),color="black",size=2,shape=20)
-p4[[9]]
-dev.off()
+# data$z = delta2alpha(par.list)[[2]]
+# data.new = data.frame(x1=loc.sub[idx.centers,1],y1=loc.sub[idx.centers,2])
+# png("figures/extcoef_application_alpha.png",width=800,height=800)
+# p4[[9]] <- ggplot(data, aes(x = x, y = y))  + 
+#                 geom_tile(aes(fill=z)) +
+#                 scale_fill_distiller(palette="RdBu") +
+#                 theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
+#                 coord_fixed() + 
+#                 labs(title = paste("Alpha"), x = "X", y = "Y",fill="Values") #
+# p4[[9]] <- p4[[9]] + geom_point(data=data.new,aes(x=x1,y=y1),color="black",size=2,shape=20)
+# p4[[9]]
+# dev.off()
 
 ## compare the fitted bivariate extremal coef vs the empirical extremal coef ##
 data = data.frame(x=c(row(empirical.extcoef.mat)),y=c(col(empirical.extcoef.mat)),z=as.vector(empirical.extcoef.mat))
@@ -521,11 +521,11 @@ p4[[4]] <- ggplot(data,aes(x=x,y=y,z=z)) + geom_tile(aes(fill=z)) + scale_fill_d
 p4[[4]]
 dev.off()
 
-data$z = as.vector(diff.mat) 
-png("figures/extcoef_application_diff.png",width=800,height=800)
-p4[[5]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu")  + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
-p4[[5]]
-dev.off()
+# data$z = as.vector(diff.mat) 
+# png("figures/extcoef_application_diff.png",width=800,height=800)
+# p4[[5]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu")  + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
+# p4[[5]]
+# dev.off()
 
 data$z = as.vector(fitted.extcoef.BR.mat - fitted.extcoef.mat) 
 png("figures/extcoef_application_diff_models.png",width=800,height=800)
@@ -533,20 +533,23 @@ p4[[6]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller
 p4[[6]]
 dev.off()
 
-data$z = as.vector(fitted.extcoef.mat - empirical.extcoef.mat) 
-png("figures/extcoef_application_diff_skew_BR.png",width=800,height=800)
-p4[[7]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu") + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
-p4[[7]]
-dev.off()
+# data$z = as.vector(fitted.extcoef.mat - empirical.extcoef.mat) 
+# png("figures/extcoef_application_diff_skew_BR.png",width=800,height=800)
+# p4[[7]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu") + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
+# p4[[7]]
+# dev.off()
 
-data$z = as.vector(fitted.extcoef.BR.mat - empirical.extcoef.mat) 
-png("figures/extcoef_application_diff_BR.png",width=800,height=800)
-p4[[8]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu") + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
-p4[[8]]
-dev.off()
+# data$z = as.vector(fitted.extcoef.BR.mat - empirical.extcoef.mat) 
+# png("figures/extcoef_application_diff_BR.png",width=800,height=800)
+# p4[[8]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu") + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
+# p4[[8]]
+# dev.off()
 
 
 save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+
+
+
 
 
 
