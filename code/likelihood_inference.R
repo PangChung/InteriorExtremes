@@ -217,7 +217,7 @@ nloglik <- function(par,data,model="BR"){
         Vdata = V_truncT(data,par)
     }
     if(model == "logskew"){
-        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_logskew,x=data,par=par,alpha.para=FALSE,log=FALSE)})
+        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_logskew2,x=data,par=par,alpha.para=FALSE,log=FALSE)})
         Vdata = V_logskew(data,par)
     }
     get.nVI <- function(I){
