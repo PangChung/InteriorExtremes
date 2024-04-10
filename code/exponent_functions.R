@@ -517,7 +517,7 @@ partialV_logskew2 <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
         delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
     }else{
         delta = par[[2]]
-        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
+        alpha = c(1 - delta %*% sigma.inv %*% delta)^(-1/2) * c(sigma.inv %*% delta)
     }
 
     a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)

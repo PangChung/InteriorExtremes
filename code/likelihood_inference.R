@@ -244,7 +244,6 @@ nlogcomplik <- function(par,data,index,ncores,model){
     if(model == "logskew"){
         par <- alpha2delta(par)  
     }
-    browser()
     nlogcomplik.contribution <- function(ind){
       par.index <- par
       if(model == "BR"){par.index[[1]] = par[[1]][ind,ind]}
@@ -265,7 +264,6 @@ nlogcomplik <- function(par,data,index,ncores,model){
 # index: q-by-Q matrix of q-dimensional margins to be used in the composite likelihood. Here Q refers to the number of composite likelihood contributions (with 1<=Q<=choose(D,q)).
 MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessian=FALSE,lb=-Inf,ub=Inf,alpha.func=NULL,trace =FALSE,basis=NULL,idx.para=1:2,...){
     t <- proc.time()
-    browser()
     object.func <- function(par2,opt=TRUE){
         par1 <- init
         par1[!fixed] <- par2
