@@ -84,12 +84,11 @@ save.image(file=paste0("data/simulation_study_logskew_results_",idx.file,"_",bas
 # grid.arrange(grobs=p.list,ncol=3,nrow=2)
 
 
-variable.names <- c(expression(lambda==), expression(nu), expression(alpha[1]), expression(alpha[2]), expression(alpha[3]))
 n1 = length(est.mat.list[[1]]);n2 = length(est.mat.list)
 p.list = create_lists(c(n2,n1))
 for(idx.thres in 1:n2){
     for(idx.case in 1:n1){
-        variable.names = c(bquote(lambda==.(par.skew.normal[i,1])),bquote(nu==.(par.skew.normal[i,2])),bquote(alpha[1]==.(par.skew.normal[i,3])),bquote(alpha[2]==.(par.skew.normal[i,4])))
+        variable.names = c(bquote(lambda==.(par.skew.normal[idx.case,1])),bquote(nu==.(par.skew.normal[idx.case,2])),bquote(alpha[1]==.(par.skew.normal[idx.case,3])),bquote(alpha[2]==.(par.skew.normal[idx.case,4])))
         data = matrix(unlist(apply(est.mat.list[[idx.thres]][[idx.case]],1,function(x){x- par.skew.normal[idx.case,]})),ncol=4,byrow = TRUE)
         data = as.data.frame(data)
         data_long <- pivot_longer(data, everything(), names_to = "Variable", values_to = "Value")
