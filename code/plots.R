@@ -212,6 +212,81 @@ pdf("figures/bivariate_extcoef_truncT.pdf",width=8,height = 3,onefile = TRUE)
 p
 dev.off()
 
+
+## explore the likelihood ## 
+## setting 1: covariance function
+d = 10
+ncores=10
+coord = as.matrix(expand.grid(1:d,1:d))
+diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
+diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
+nu.list = c(1,2,5,10)
+para.range.list = c(4,8)
+idx.para=1:3
+basis = matrix(0,nrow=nrow(coord),ncol=3)
+result2 <- result1 <- create_lists(c(length(nu.list),length(para.range.list)))
+for(i in 1:length(nu.list)){
+    for(j in 1:length(para.range.list)){
+        nu = nu.list[i]
+        para.range = para.range.list[j]
+        init = cbind(seq(1,20,length.out=100),nu,1,0,0)
+        data <- simu_logskew(m=10000,par=alpha2delta(list(cov.func(diff.mat,c(para.range,nu,1)),alpha.func(c(0,0),basis))),ncores=ncores)
+        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F),loc=diff.mat,FUN=cov.func,thres=100,model="BR",lb=rep(-Inf,3),ub=rep(Inf,3),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
+        result1[[i]][[j]] <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F,F,F),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,5),ub=rep(Inf,5),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
+    }
+}
+
+save(result2,result1,nu.list,para.range.list,idx.para,diff.mat,file="data/log_likelihood_BR_cov.RData")
+
+load("data/log_likelihood_BR_cov.RData")
+pdf("figures/log_likelihood_BR_cov.pdf",width=5*4,height=5*2)
+par(mfrow=c(length(nu.list),length(para.range.list)),mar=c(4,4,2,1),oma=c(0,0,2,0),mgp=c(2,1,0))
+range.seq = seq(1,20,length.out=100)
+for(i in 1:length(nu.list)){
+    for(j in 1:length(para.range.list)){
+        plot(range.seq,result2[[i]][[j]],xlab=bquote(lambda),ylab="Values",main=bquote(sigma==.(nu.list[i])~lambda==.(para.range.list[j])),type="l")
+        lines(range.seq,result1[[i]][[j]],col="red")
+        idx.min = which.min(result2[[i]][[j]])
+        abline(v=range.seq[idx.min],col="grey")
+        abline(v=para.range.list[j],col="blue")
+    }
+}
+dev.off()
+
+## setting 2: variogram function
+para.range.list = c(2,4,8,10)
+para.smooth.list = c(0.5,1,1.5)
+idx.para = 1:2
+result2 <- result1 <- create_lists(c(length(para.range.list),length(para.smooth.list)))
+for(i in 1:length(para.range.list)){
+    for(j in 1:length(para.smooth.list)){
+        para.range = para.range.list[i]
+        para.smooth = para.smooth.list[j]
+        data <- simu_logskew(m=10000,par=alpha2delta(list(vario.func(coord,c(para.range,para.smooth)),alpha.func(c(0,0),basis))),ncores=ncores)
+        init = cbind(seq(1,20,length.out=100),para.smooth,0,0)
+        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) fit.model(data=data,init=x,fixed=c(F,F),loc=coord,FUN=vario.func,thres=100,model="BR",lb=rep(-Inf,2),ub=rep(Inf,2),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
+        result1[[i]][[j]] <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F,F),loc=coord,FUN=vario.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,4),ub=rep(Inf,4),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
+    }
+}
+
+save(result2,result1,para.range.list,para.smooth.list,idx.para,coord,file="data/log_likelihood_BR_vario.RData")
+
+load("data/log_likelihood_BR_vario.RData")
+pdf("figures/log_likelihood_BR_vario.pdf",width=5*4,height=5*3)
+par(mfrow=c(length(para.range.list),length(para.smooth.list)),mar=c(4,4,2,1),oma=c(0,0,2,0),mgp=c(2,1,0))
+range.seq = seq(1,20,length.out=100)
+for(i in 1:length(para.range.list)){
+    for(j in 1:length(para.smooth.list)){
+        plot(range.seq,result2[[i]][[j]],xlab=bquote(lambda),ylab="Values",main=bquote(lambda==.(para.range.list[i])~nu==.(para.smooth.list[j])),type="l")
+        lines(range.seq,result1[[i]][[j]],col="red")
+        idx.min = which.min(result2[[i]][[j]])
+        abline(v=range.seq[idx.min],col="grey")
+        abline(v=para.range.list[i],col="blue")
+    }
+}
+dev.off()
+
+
 ## plot the boxplot for the simulation study ## 
 load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
