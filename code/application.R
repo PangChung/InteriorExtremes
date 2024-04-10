@@ -45,7 +45,7 @@ switch(id,
     
     {results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init[idx.para],fixed=c(F,F),thres=15,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
     init[1:2] = results4$par
-    results2 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=15,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,step2=TRUE,idx.para=1:2)},
+    results2 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init,fixed=c(T,T,rep(F,n.alpha)),basis=basis,thres=15,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,step2=TRUE,idx.para=1:2)},
 
     results3 <- fit.model(data=maxima.frechet,loc=distmat,init=init,fixed=c(F,F,rep(T,n.alpha)),basis=basis,thres=0.9,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
 )
