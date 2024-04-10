@@ -46,7 +46,7 @@ init = c(2,1,0,0)
 # lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
 # ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
 # init = c(1,1,1,0,0)
-pairs.idx = rank(diff.mat[t(all.pairs)]) < ncol(coord)*10
+pairs.idx = rank(diff.mat[t(all.pairs)]) < nrow(coord)*10
 
 ##compute the basis ###
 basis = matrix(0,nrow=nrow(coord),ncol=3)
@@ -81,7 +81,9 @@ for(i in 1:nrow(par.skew.normal)){
     fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T),loc=coord,FUN=vario.func,alpha.func=alpha.func,thres=30,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
     #fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
     print(fit.logskew.angular[[i]]$par-par.skew.normal[i,])
+
     fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,basis=basis,idx.para=idx.para)
+
     print(fit.logskew.comp[[i]]$par - par.skew.normal[i,])
 }
 

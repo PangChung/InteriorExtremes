@@ -245,7 +245,7 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
 # }
 
 ## slant parameter without normlized by the variance
-intensity_logskew1 <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     sigma = par[[1]]
@@ -542,7 +542,7 @@ partialV_logskew2 <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
         scale.val = unname(cbind(rbind(sigma.tilde, b2),c(b2,1)))
         mu.val = c(xi.tilde[-idx] - mu.tilde, tau.tilde * b1)
         phi = pnorm(c(tau.tilde * b1))
-        intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
+        intensity.marginal = c(intensity_logskew2(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
         val = intensity.marginal/phi * mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]]
         return(val)
     }
