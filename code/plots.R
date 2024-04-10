@@ -377,7 +377,7 @@ load("data/application_results2.RData",e<-new.env())
 e$results2$par
 e$results4$par
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
-par.list = list(vario.func(e$loc.sub.trans,e$results4$par[1:2]))
+par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
 par.list[[2]] = alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis)
 par.list = alpha2delta(par.list)
 pairs = comb_n(1:ncol(distmat),2)
@@ -547,6 +547,13 @@ dev.off()
 
 
 save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+
+
+
+
+
+
+
 
 
 
