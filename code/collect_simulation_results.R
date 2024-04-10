@@ -6,13 +6,12 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = "final";basis.idx="1"
-files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_1000_1.RData"),full.names=TRUE,recursive=FALSE)
-#files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_\\d+_",basis.idx,".RData"),full.names=TRUE,recursive=FALSE)
-thres.list = c(0.95,0.9)
+idx.file = "vario";basis.idx="2"
+files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
+#files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_\\d+_",basis.idx,".RData"),full.names=TRUE,recursive=FALSE
 load(files.list[[1]],e<-new.env())
 par.skew.normal = e$par.skew.normal
-n1 = nrow(par.skew.normal);n2 = length(e$fit.logskew.angular[[1]])
+n1 = nrow(par.skew.normal);n2 = 1 #length(e$fit.logskew.angular[[1]])
 extract_results <- function(files){
     fit.results <- list()
     for(i in 1:length(files)){
@@ -26,13 +25,19 @@ extract_results <- function(files){
         #     })
         # })
         # fit.results[[i]] <- fit.logskew.angular
-        #fit.results[[i]] <- e$fit.logskew.angular
+        fit.logskew.angular = lapply(1:n1,function(id.1){
+                          idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){max(abs(x$par[3:4]))})))
+                          return(e$fit.logskew.angular[[id.1]]$others[[idx]])
+        })
+        fit.results[[i]] <- fit.logskew.angular
+        # fit.results[[i]] <- e$fit.logskew.angular
         #fit.results[[i]] <- e$fit.logskew.comp
     }
     est.mat.list <- create_lists(c(n2,n1))
     for(i in 1:n1){
         for(j in 1:n2){
-            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)       
+            #est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)       
+            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)       
         }
     }
     #est.mat.list = list()
@@ -78,27 +83,29 @@ save.image(file=paste0("data/simulation_study_logskew_results_",idx.file,"_",bas
 
 # grid.arrange(grobs=p.list,ncol=3,nrow=2)
 
-variable.names <- c(expression(lambda), expression(nu), expression(alpha[1]), expression(alpha[2]), expression(alpha[3]))
+
+variable.names <- c(expression(lambda==), expression(nu), expression(alpha[1]), expression(alpha[2]), expression(alpha[3]))
 n1 = length(est.mat.list[[1]]);n2 = length(est.mat.list)
 p.list = create_lists(c(n2,n1))
 for(idx.thres in 1:n2){
     for(idx.case in 1:n1){
-        data = as.data.frame(est.mat.list[[idx.thres]][[idx.case]])
-        data.true <- pivot_longer(par.skew.normal[idx.case,], everything(), names_to = "Variable", values_to = "Value")
+        variable.names = c(bquote(lambda==.(par.skew.normal[i,1])),bquote(nu==.(par.skew.normal[i,2])),bquote(alpha[1]==.(par.skew.normal[i,3])),bquote(alpha[2]==.(par.skew.normal[i,4])))
+        data = matrix(unlist(apply(est.mat.list[[idx.thres]][[idx.case]],1,function(x){x- par.skew.normal[idx.case,]})),ncol=4,byrow = TRUE)
+        data = as.data.frame(data)
         data_long <- pivot_longer(data, everything(), names_to = "Variable", values_to = "Value")
-        
         p<- ggplot(data_long, aes(x = Variable, y = Value)) +
         geom_boxplot() + scale_x_discrete(labels=variable.names) +
-        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=1),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: ",thres.list[idx.thres],"%"," with 1000 replicates")) + geom_point(data=data.true,aes(x=Variable, y = Value), color = "red") + ylim(c(-10,10))#ylim(max(-10,min(data_long$Value)),min(10,max(data_long$Value)))
+        theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5,size=10),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: 30"," with 2000 replicates")) + 
+        geom_hline(yintercept = 0, linetype="dashed", color = "red")
         p.list[[idx.thres]][[idx.case]] <- p
     }
 }
 
-pdf(file=paste0("figures/simulation_est_boxplots_",idx.file,"_",basis.idx,".pdf"),width=4*n2,height = 5,onefile = TRUE)
-for(idx.case in 1:n1){
-    do.call(grid.arrange, c(lapply(p.list,function(x){x[[idx.case]]}), ncol = n2,nrow=1))
-}
+pdf(file=paste0("figures/simulation_est_boxplots_",idx.file,"_",basis.idx,".pdf"),width=4*4,height = 5*3,onefile = TRUE)
+grid.arrange(grobs=p.list[[1]],ncol=4)
 dev.off()
+
+
 
 idx.file = "final"
 files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern="simulation_study_truncT_\\d+_1000_1.RData",full.names=TRUE,recursive=FALSE)
@@ -142,7 +149,7 @@ for(idx.thres in 1:n2){
     }
 }
 
-pdf(file="figures/simulation_est_boxplots_truncT_final_1000.pdf",width=4*n2,height = 5,onefile = TRUE)
+pdf(file="figures/simulation_est_boxplots_truncT_final_2000.pdf",width=4*n2,height = 5,onefile = TRUE)
 for(idx.case in 1:n1){
     do.call(grid.arrange, c(lapply(p.list,function(x){x[[idx.case]]}), ncol = n2,nrow=1))
 }

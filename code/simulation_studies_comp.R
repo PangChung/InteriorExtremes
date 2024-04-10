@@ -43,9 +43,9 @@ neighbours.mat <- sapply(1:nrow(coord),FUN=neighbours,vecchia.seq=vecchia.seq,
 lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
 ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
 init = c(2,1,0,0)
-# lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
-# ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
-# init = c(1,1,1,0,0)
+lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
+ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
+init = c(1,1,1,0,0)
 pairs.idx = rank(diff.mat[t(all.pairs)]) < nrow(coord)*10
 
 ##compute the basis ###
@@ -93,11 +93,11 @@ save(fit.logskew.comp,fit.logskew.angular,basis,par.skew.normal,init.seed,m,d,fi
 
 if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 
-# nu = 10
+# nu = 4
 # data <- simu_logskew(m=1000,par=alpha2delta(list(cov.func(diff.mat,c(2,nu,1)),alpha.func(c(1,0),basis))),ncores=ncores)
 # #init = cbind(par.skew.normal[i,1],seq(1,30,length.out=100),par.skew.normal[i,3])
 # init = cbind(seq(1,20,length.out=100),nu,1,1,0)
-# # result2 <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F),loc=diff.mat,FUN=cov.func,thres=100,model="BR",lb=lb[idx.para],ub=ub[idx.para],ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
+# result2 <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F),loc=diff.mat,FUN=cov.func,thres=100,model="BR",lb=lb[idx.para],ub=ub[idx.para],ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
 # result2 <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F,F,F),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
 # #result1 <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,T,F,T,T),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,thres=50,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
 

@@ -396,8 +396,8 @@ V_bi_logskew <- function(x,delta,sigma){
     phi.delta.log = log(phi.delta)
     vario.sqrt = sqrt(sigma[1,1] + sigma[2,2] - 2*sigma[1,2])
     if(!is.matrix(x)) x <- matrix(x,ncol=2)
-    mu.1 = c((phi.delta.log[2]-phi.delta.log[1]+log(x[,2]/x[,1]))/vario.sqrt + vario.sqrt/2,delta.sigma[1])
-    mu.2 = c((phi.delta.log[1]-phi.delta.log[2]+log(x[,1]/x[,2]))/vario.sqrt + vario.sqrt/2,delta.sigma[2])
+    mu.1 = c((phi.delta.log[2]-phi.delta.log[1]+log(x[,2]/x[,1]))/vario.sqrt + vario.sqrt/2,delta[1])
+    mu.2 = c((phi.delta.log[1]-phi.delta.log[2]+log(x[,1]/x[,2]))/vario.sqrt + vario.sqrt/2,delta[2])
     sigma.1 = matrix(c(1,(delta[1]-delta[2])/vario.sqrt,(delta[1]-delta[2])/vario.sqrt,1),nrow=2)
     sigma.2 = matrix(c(1,(delta[2]-delta[1])/vario.sqrt,(delta[2]-delta[1])/vario.sqrt,1),nrow=2)
     val = 1/x[1]/phi.delta[1]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.1,sigma=sigma.1)[[1]] + 1/x[2]/phi.delta[2]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.2,sigma=sigma.2)[[1]]
