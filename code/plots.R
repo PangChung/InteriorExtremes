@@ -286,7 +286,6 @@ for(i in 1:length(para.range.list)){
 }
 dev.off()
 
-
 ## plot the boxplot for the simulation study ## 
 load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
@@ -374,12 +373,12 @@ dev.off()
 
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
-load("data/application_results2_6.RData",e<-new.env())
+load("data/application_results2.RData",e<-new.env())
 e$results2$par
 e$results4$par
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
 par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
-par.list[[2]] = alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis/sqrt(diag(par.list[[1]])))
+par.list[[2]] = alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis)
 par.list = alpha2delta(par.list)
 pairs = comb_n(1:ncol(distmat),2)
 library(Matrix)
