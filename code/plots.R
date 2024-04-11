@@ -396,8 +396,8 @@ diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extco
 diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,]<0)}))
 sum(diff.col.sums > 0.5)
 
-idx.centers = apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,function(x) which.max(x))
-idx.centers = e$idx.centers
+idx.centers = apply(maxima.frechet[which(rowmeans(maxima.frechet)>14),],1,function(x) which.max(x))
+idx.centers = c(idx.centers,e$idx.centers)
 p1 <- p2 <- p3 <- p5 <- list()
 #diff.extcoef = c()
 for(i in 1:length(idx.centers)){
@@ -421,8 +421,8 @@ for(i in 1:length(idx.centers)){
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
             geom_contour(colour="black",breaks=brks) + 
             # geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
-            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-            labs(title = paste("Skewed Brown-Resnick"), x = "X", y = "Y") 
+            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "none") + coord_fixed() + 
+            labs(title = paste("Fitted skewed Brown-Resnick"), x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
 
 
     data$z = true.ext.coef.BR
@@ -432,8 +432,8 @@ for(i in 1:length(idx.centers)){
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
             geom_contour(colour="black",breaks=brks) + 
             # geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
-            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-            labs(title = paste("Brown-Resnick"), x = "X", y = "Y")
+            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "none") + coord_fixed() + 
+            labs(title = paste("Fitted Brown-Resnick"), x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
 
    
     data$z = empirical.extcoef
@@ -443,22 +443,23 @@ for(i in 1:length(idx.centers)){
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
             #geom_contour(colour="black",breaks=brks) + 
             #geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
-            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + coord_fixed() + 
-            labs(title = paste("Empirical"), x = "X", y = "Y") 
+            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "right") + coord_fixed() + 
+            labs(title = paste("Empirical"), x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
 
     data$z = abs(true.ext.coef - empirical.extcoef) - abs(true.ext.coef.BR - empirical.extcoef)
     p5[[i]] <- ggplot(data, aes(x = x, y = y, fill=as.factor(z<0)))  + 
             geom_tile() +
             scale_fill_manual(values=c("red","blue")) +
-            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
+            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "right") + 
             coord_fixed() + 
-            labs(title = paste("Skewed BR is closer to the Empirical?",round(mean(data$z<0)*100,1),"%"), x = "X", y = "Y",fill="Values")
+            labs(title = paste("Skewed BR is closer to the Empirical?",round(mean(data$z<0)*100,1),"%"), x = "Longitude", y = "Latitude",fill="Values")+
+            geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
 }
 
-
-pdf("figures/extcoef_application.pdf",width=5*4,height=5*length(idx.centers),onefile=TRUE)
-layout = matrix(1:(4*length(idx.centers)),nrow=length(idx.centers),byrow=FALSE)
-grid.arrange(grobs=c(p1,p2,p3,p5),layout_matrix=layout)
+pdf("figures/extcoef_application.pdf",width=4*3+2,height=6,onefile=TRUE)
+for(i in 1:length(idx.centers)){
+    grid.arrange(grobs=list(p1[[i]],p2[[i]],p3[[i]]),nrow=1,widths=c(4,5,5))
+}
 dev.off()
 
 p4 <- list()
