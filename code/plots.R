@@ -6,6 +6,7 @@ library(directlabels)
 library(Rfast)
 library(RColorBrewer)
 library(mev)
+library(ggpubr)
 library(tidyr)
 source("code/simulation.R")
 source("code/exponent_functions.R")
@@ -91,7 +92,7 @@ data1 = subset(data,idx.center==1)
 labels = unique(data$idx.case)[c(1,3,5,2,4,6)]
 data1$idx.case = factor(data1$idx.case,levels=labels,labels=labels)
 levels(data1$idx.case)
-p1 <- ggplot(data1, aes(x = x, y = y, z = z))  + 
+p1 <- ggplot(subset(data1,idx.case %in% labels[c(1,3,4,6)]), aes(x = x, y = y, z = z))  + 
         geom_tile(aes(fill = z)) + 
         facet_wrap(~ idx.case, labeller = label_parsed) +
         scale_fill_distiller(palette = "RdBu") +
@@ -111,7 +112,7 @@ p1
 
 data2 = subset(data,idx.center==2)
 data2$idx.case = factor(data2$idx.case,levels=labels,labels=labels)
-p2 <- ggplot(data2, aes(x = x, y = y,z=z))  + 
+p2 <- ggplot(subset(data2,idx.case %in% labels[c(1,3,4,6)]), aes(x = x, y = y,z=z))  + 
         geom_tile(aes(fill=z)) + facet_wrap(~ idx.case,labeller=label_parsed) +
         scale_fill_distiller(palette="RdBu") +
         geom_contour(colour="black",breaks=brks) + 
@@ -126,7 +127,7 @@ p2 <- ggplot(data2, aes(x = x, y = y,z=z))  +
         geom_text(aes(x = coord.center[2,1], y = coord.center[2,2], label = "*"), size = 10, color = "red", vjust = 0.8, hjust = 0.5)
 p2
 
-pdf("figures/extcoef_final_logskew.pdf",width=4*6-2,height=4*2,onefile=TRUE)
+pdf("figures/extcoef_final_logskew.pdf",width=4*4-1,height=4*2-1,onefile=TRUE)
 grid.arrange(grobs=list(p1,p2),ncol=2)
 dev.off()
 
@@ -156,7 +157,7 @@ dev.off()
 
 
 p.list = list()
-sigma.22.vec = c(1,2,4,8,10)
+sigma.22.vec = c(1,5,10)
 for(i in 1:length(sigma.22.vec)){
     sigma.22 = sigma.22.vec[i]
     rho = seq(0,0.999,length.out=100)*sigma.22
@@ -173,15 +174,17 @@ for(i in 1:length(sigma.22.vec)){
             scale_fill_distiller(palette="RdBu",limits=c(1,2)) +
             geom_contour(colour="black",breaks=brks) + 
             geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks,stat="contour") + 
-            labs(title=bquote(Bivariate~extremal~coefficient:~sigma[22]==.(sigma.22)),x=expression(alpha[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
+            labs(title=bquote(Bivariate~extremal~coefficient:~sigma[22]==.(sigma.22)),x=expression(eta[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
             theme(axis.text = element_text(size=10), 
                                 axis.title.x = element_text(size=14), 
                                 axis.title.y = element_text(size=14), 
-                                plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14))
+                                plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.position = "none")
 }
 
-pdf("figures/bivariate_extcoef_rho_alpha.pdf",width=5*length(sigma.22.vec),height = 4,onefile = TRUE)
-grid.arrange(grobs=p.list,nrow=1)
+p.list[[length(sigma.22.vec)+1]] <- as_ggplot(get_legend(p.list[[1]]+theme(legend.position = "right")))
+
+pdf("figures/bivariate_extcoef_rho_alpha.pdf",width=5*length(sigma.22.vec)+1,height = 4,onefile = TRUE)
+grid.arrange(grobs=p.list,nrow=1,widths=c(rep(5,length(sigma.22.vec)),1))
 dev.off()
 
 #val.mat = matrix(unlist(values),ncol=length(alpha),byrow=TRUE)
@@ -239,16 +242,16 @@ for(i in 1:length(nu.list)){
 save(result2,result1,nu.list,para.range.list,idx.para,diff.mat,file="data/log_likelihood_BR_cov.RData")
 
 load("data/log_likelihood_BR_cov.RData")
-pdf("figures/log_likelihood_BR_cov.pdf",width=5*4,height=5*2)
-par(mfrow=c(length(nu.list),length(para.range.list)),mar=c(4,4,2,1),oma=c(0,0,2,0),mgp=c(2,1,0))
+pdf("figures/log_likelihood_BR_cov.pdf",width=5*4,height=4*2)
+par(mfrow=c(length(para.range.list),length(nu.list)),mgp=c(2.5,1,0),cex.main=2,cex.lab = 2,cex.axis=2,mar=c(5,5,4,1))
 range.seq = seq(1,20,length.out=100)
-for(i in 1:length(nu.list)){
-    for(j in 1:length(para.range.list)){
-        plot(range.seq,result2[[i]][[j]],xlab=bquote(lambda),ylab="Values",main=bquote(sigma==.(nu.list[i])~lambda==.(para.range.list[j])),type="l")
-        lines(range.seq,result1[[i]][[j]],col="red")
+for(j in 1:length(para.range.list)){
+    for(i in 1:length(nu.list)){
+        plot(range.seq,result2[[i]][[j]],xlab=bquote(lambda),ylab="Log likelihood",main=bquote(sigma==.(nu.list[i])~~lambda==.(para.range.list[j])~~nu==1),type="l",lwd=2)
+        lines(range.seq,result1[[i]][[j]],col="red",lwd=2)
         idx.min = which.min(result2[[i]][[j]])
-        abline(v=range.seq[idx.min],col="grey")
-        abline(v=para.range.list[j],col="blue")
+        abline(v=range.seq[idx.min],col="grey",lwd=2)
+        abline(v=para.range.list[j],col="blue",lwd=2)
     }
 }
 dev.off()
@@ -272,16 +275,16 @@ for(i in 1:length(para.range.list)){
 save(result2,result1,para.range.list,para.smooth.list,idx.para,coord,file="data/log_likelihood_BR_vario.RData")
 
 load("data/log_likelihood_BR_vario.RData")
-pdf("figures/log_likelihood_BR_vario.pdf",width=5*4,height=5*3)
-par(mfrow=c(length(para.range.list),length(para.smooth.list)),mar=c(4,4,2,1),oma=c(0,0,2,0),mgp=c(2,1,0))
+pdf("figures/log_likelihood_BR_vario.pdf",width=5*4,height=4*3)
+par(mfrow=c(length(para.smooth.list),length(para.range.list)),mgp=c(2.5,1,0),cex.main=2,cex.lab = 2,cex.axis=2,mar=c(5,5,4,1))
 range.seq = seq(1,20,length.out=100)
-for(i in 1:length(para.range.list)){
-    for(j in 1:length(para.smooth.list)){
-        plot(range.seq,result2[[i]][[j]],xlab=bquote(lambda),ylab="Values",main=bquote(lambda==.(para.range.list[i])~nu==.(para.smooth.list[j])),type="l")
-        lines(range.seq,result1[[i]][[j]],col="red")
+for(j in 1:length(para.smooth.list)){
+    for(i in 1:length(para.range.list)){
+        plot(range.seq,result2[[i]][[j]],xlab=bquote(lambda),ylab="Log likelihood",main=bquote(lambda==.(para.range.list[i])~~nu==.(para.smooth.list[j])),type="l",lwd=2)
+        lines(range.seq,result1[[i]][[j]],col="red",lwd=2)
         idx.min = which.min(result2[[i]][[j]])
-        abline(v=range.seq[idx.min],col="grey")
-        abline(v=para.range.list[i],col="blue")
+        abline(v=range.seq[idx.min],col="grey",lwd=2)
+        abline(v=para.range.list[i],col="blue",lwd=2)
     }
 }
 dev.off()
