@@ -373,7 +373,7 @@ dev.off()
 
 ## plot the extremal coef for the application ##
 load("data/data_application.RData")
-load("data/application_results_new_2.RData",e<-new.env())
+load("data/application_results_new_3.RData",e<-new.env())
 e$results2$par
 e$results4$par
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
@@ -393,8 +393,8 @@ diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extco
 diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,]<0)}))
 sum(diff.col.sums > 0.5)
 
-idx.centers = apply(maxima.frechet[which(rowmeans(maxima.frechet)>14),],1,function(x) which.max(x))
-
+idx.centers = apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,function(x) which.max(x))
+idx.centers = e$idx.centers
 p1 <- p2 <- p3 <- p5 <- list()
 #diff.extcoef = c()
 for(i in 1:length(idx.centers)){
@@ -454,7 +454,7 @@ for(i in 1:length(idx.centers)){
 
 
 pdf("figures/extcoef_application.pdf",width=5*4,height=5*length(idx.centers),onefile=TRUE)
-layout = matrix(1:(4*length(idx.centers)),ncol=length(idx.centers),byrow=TRUE)
+layout = matrix(1:(4*length(idx.centers)),nrow=length(idx.centers),byrow=FALSE)
 grid.arrange(grobs=c(p1,p2,p3,p5),layout_matrix=layout)
 dev.off()
 
@@ -545,6 +545,12 @@ dev.off()
 
 
 save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+
+
+
+
+
+
 
 
 
