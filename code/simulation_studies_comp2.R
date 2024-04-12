@@ -44,6 +44,7 @@ file.samples = paste0(DataPath,"data/samples/simulation_logskew_comp2_",id,"_",m
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
 pairs.idx = rank(diff.mat[t(all.pairs)]) < 2000
+if(file.exists(file2save)){stop("job already finished")}
 ## compute the basis ###
 if(basis.idx == 1){
     centers <- rbind(c(0.25,0.25),c(0.25,0.25),c(0.75,0.75))*d
