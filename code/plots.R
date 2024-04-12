@@ -290,18 +290,20 @@ for(j in 1:length(para.smooth.list)){
 dev.off()
 
 ## plot the boxplot for the simulation study ## 
-load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
-load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
-data = cbind(1,rep(1:6,times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
-data = rbind(data,cbind(2,rep(1:6,times=sapply(e1$est.mat.list[[2]],nrow)),1,do.call(rbind,e1$est.mat.list[[2]])))
-data = rbind(data,cbind(1,rep(1:6,times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
-data = rbind(data,cbind(2,rep(1:6,times=sapply(e2$est.mat.list[[2]],nrow)),2,do.call(rbind,e2$est.mat.list[[2]])))
+# load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
+# load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
+load("data/simulation_study_logskew_results_vario_1.RData",e1<-new.env())
+load("data/simulation_study_logskew_results_vario_2.RData",e2<-new.env())
+data = cbind(1,rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
+#data = rbind(data,cbind(2,rep(1:6,times=sapply(e1$est.mat.list[[2]],nrow)),1,do.call(rbind,e1$est.mat.list[[2]])))
+data = rbind(data,cbind(1,rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
+# data = rbind(data,cbind(2,rep(1:6,times=sapply(e2$est.mat.list[[2]],nrow)),2,do.call(rbind,e2$est.mat.list[[2]])))
 data = as.data.frame(data);names(data) = c("thres","id","type","lambda","nu","alpha[1]","alpha[2]")
 str(data)
 
 # Reshape the data to a long format
 data_long <- pivot_longer(data, -c(thres, id, type), names_to = "variable", values_to = "value")
-data_long$facet = paste0(data_long$variable, "~" ,"Spline~Type==", data_long$type)
+data_long$facet = paste0("Spline~Type==", data_long$type,"~~",data_long$variable)
 data_long$facet = factor(data_long$facet)
 par.skew.normal = as.data.frame(e1$par.skew.normal)
 colnames(par.skew.normal) = c("lambda","nu","alpha[1]","alpha[2]")
@@ -312,14 +314,16 @@ par.skew.normal = rbind(par.skew.normal,par.skew.normal)
 par.skew.normal$thres = rep(1:2,each=nrow(par.skew.normal)/2) 
 
 par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type,thres), names_to = "variable", values_to = "value")
-par.skew.normal_long$facet = factor(paste0(par.skew.normal_long$variable, "~" ,"Spline~Type==", par.skew.normal_long$type),levels=levels(data_long$facet))
+levels=levels(data_long$facet)[c(3,4,1,2,7,8,5,6)]
+par.skew.normal_long$facet = factor(paste0("Spline~Type==", par.skew.normal_long$type,"~~",par.skew.normal_long$variable),levels=levels)
 
-p <- ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres,labels=c("95%","90%")))) +
+#p <- ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres,labels=c("95%","90%")))) +
+p <- ggplot(data_long, aes(x = factor(id), y = value)) +
   geom_violin(position = position_dodge(width=0.75),draw_quantiles = NULL) + 
   geom_boxplot(position = position_dodge(width=0.75),width=0.2, color="grey", alpha=0.8) +
   geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,position=position_dodge(width = 0.75)) +
   facet_wrap(~ facet, scales = "free",nrow=2,ncol=4,labeller = label_parsed) +
-  labs(title = "Efficiency of the angular density estimation method with 1000 replicates on a 15 by 15 grid",
+  labs(title = "Efficiency of the angular density estimation method with 2000 replicates on a 15 by 15 grid",
        x = "Cases",
        y = "Value",
        fill = "Threshold") +
@@ -334,10 +338,12 @@ pdf("figures/simulation_est_boxplots_final.pdf",width=4*4-2,height=4*2,onefile=T
 p
 dev.off()
 
-load("data/simulation_study_logskew_results_final_3.RData",e1<-new.env())
-load("data/simulation_study_logskew_results_final_4.RData",e2<-new.env())
-data = cbind(rep(1:6,times=sapply(e1$est.mat.list,nrow)),1,do.call(rbind,e1$est.mat.list))
-data = rbind(data,cbind(rep(1:6,times=sapply(e2$est.mat.list,nrow)),2,do.call(rbind,e2$est.mat.list)))
+# load("data/simulation_study_logskew_results_final_3.RData",e1<-new.env())
+# load("data/simulation_study_logskew_results_final_4.RData",e2<-new.env())
+load("data/simulation_study_logskew_results_vario_BR.RData",e1<-new.env())
+load("data/simulation_study_logskew_results_vario_BR_comp.RData",e2<-new.env())
+data = cbind(rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
+data = rbind(data,cbind(rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
 data = as.data.frame(data);names(data) = c("id","type","lambda","nu","alpha[1]","alpha[2]")
 data = data[,1:4]
 str(data)
@@ -352,13 +358,14 @@ par.skew.normal = rbind(par.skew.normal,par.skew.normal)
 par.skew.normal$type = rep(1:2,each=nrow(par.skew.normal)/2)
 par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type), names_to = "variable", values_to = "value")
 par.skew.normal_long$facet = factor(par.skew.normal_long$variable)
+
 p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("Angular","Composite")))) +
   geom_violin(position = position_dodge(width=0.75),draw_quantiles = NULL) + 
   geom_boxplot(position = position_dodge(width=0.75),width=0.2, color="grey", alpha=0.8) +
   geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,
   position=position_dodge(width = 0.75)) +
   facet_wrap(~ facet, scales = "free",ncol=2,nrow=1,labeller = label_parsed) +
-  labs(title = "Comparing angular method and pairwise likelihood with 100 replicates on a 15 by 15 grid",
+  labs(title = "Comparing angular method and pairwise likelihood with 500 replicates on a 15 by 15 grid",
        x = "Cases",
        y = "Value",
        fill = "Method") +
@@ -373,8 +380,9 @@ pdf("figures/simulation_est_boxplots_final_BR.pdf",width=5*2,height=4,onefile=TR
 p
 dev.off()
 
-
-## plot the extremal coef for the application ##
+######################################################################
+## plot the extremal coef for the application ########################
+######################################################################
 load("data/data_application.RData")
 load("data/application_results_new_3.RData",e<-new.env())
 e$results2$par
