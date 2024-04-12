@@ -72,38 +72,36 @@ for(idx in 1:2){
     for(idx.case in 1:length(par.list.1)){
         true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.1[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
         data <- rbind(data,data.frame( x = coord[idx2,1],
-                            y = coord[idx2,2],
-                            z = true.ext.coef,idx.case=paste0("setting==1","~b[1]==",para.alpha[idx.case,1],"~b[2]==",para.alpha[idx.case,2]),idx.center=idx))
-        if(idx.case!=1){
-            true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.2[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
-            data <- rbind(data,data.frame( x = coord[idx2,1],
-                            y = coord[idx2,2],
-                            z = true.ext.coef,idx.case=paste0("setting==2","~b[1]==",para.alpha[idx.case,1],"~b[2]==",para.alpha[idx.case,2]),idx.center=idx))
-        }else{
+                        y = coord[idx2,2],
+                        z = true.ext.coef,idx.case=paste0("b[1]==",para.alpha[idx.case,1],"~b[2]==",para.alpha[idx.case,2]),idx.center=idx))
+        true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.2[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
+
+        if(idx.case == 1 ){
             true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=list(par.list.1[[1]][[1]],rep(0,nrow(coord))),model="logskew1",mc.cores=5,mc.set.seed = FALSE))
             data <- rbind(data,data.frame( x = coord[idx2,1],
                             y = coord[idx2,2],
                             z = true.ext.coef,idx.case="Brown-Resnick",idx.center=idx))
         }
-}}
+    }
+}
 
 brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
 data1 = subset(data,idx.center==1)
-labels = unique(data$idx.case)[c(1,3,5,2,4,6)]
+labels = unique(data$idx.case)[c(2,1,3,4)]
 data1$idx.case = factor(data1$idx.case,levels=labels,labels=labels)
 levels(data1$idx.case)
-p1 <- ggplot(subset(data1,idx.case %in% labels[c(1,3,4,6)]), aes(x = x, y = y, z = z))  + 
+p1 <- ggplot(data1, aes(x = x, y = y, z = z))  + 
         geom_tile(aes(fill = z)) + 
         facet_wrap(~ idx.case, labeller = label_parsed) +
         scale_fill_distiller(palette = "RdBu") +
         geom_contour(colour = "black", breaks = brks) + 
         geom_dl(aes(label = ..level..), method = "bottom.pieces", breaks = brks, stat = "contour") + 
-        theme(axis.text = element_text(size = 10), 
-              strip.text = element_text(size = 14),
-              axis.title.x = element_text(size = 14), 
-              axis.title.y = element_text(size = 14), 
-              plot.title = element_text(hjust = 0.5, size = 14),
-              legend.title = element_text(size = 14)) + 
+        theme(axis.text = element_text(size = 12), 
+              strip.text = element_text(size = 16),
+              axis.title.x = element_text(size = 16), 
+              axis.title.y = element_text(size = 16), 
+              plot.title = element_text(hjust = 0.5, size = 16),
+              legend.title = element_text(size = 16)) + 
         coord_fixed() + 
         labs(x = expression(s[1]), y = expression(s[2]), fill = expression(theta[2])) +
         # Add a star to the center of the grid
@@ -112,17 +110,17 @@ p1
 
 data2 = subset(data,idx.center==2)
 data2$idx.case = factor(data2$idx.case,levels=labels,labels=labels)
-p2 <- ggplot(subset(data2,idx.case %in% labels[c(1,3,4,6)]), aes(x = x, y = y,z=z))  + 
+p2 <- ggplot(data2, aes(x = x, y = y,z=z))  + 
         geom_tile(aes(fill=z)) + facet_wrap(~ idx.case,labeller=label_parsed) +
         scale_fill_distiller(palette="RdBu") +
         geom_contour(colour="black",breaks=brks) + 
         geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
-        theme(axis.text = element_text(size=10), 
-                            strip.text = element_text(size = 14),
-                            axis.title.x = element_text(size=14), 
-                            axis.title.y = element_text(size=14), 
-                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14)) + coord_fixed() + 
+        theme(axis.text = element_text(size=12), 
+                            strip.text = element_text(size = 16),
+                            axis.title.x = element_text(size=16), 
+                            axis.title.y = element_text(size=16), 
+                            plot.title = element_text(hjust = 0.5,size=16),legend.title = element_text(size=16)) + coord_fixed() + 
         labs(x = expression(s[1]), y = expression(s[2]),fill=expression(theta[2])) + 
         geom_text(aes(x = coord.center[2,1], y = coord.center[2,2], label = "*"), size = 10, color = "red", vjust = 0.8, hjust = 0.5)
 p2
@@ -175,10 +173,12 @@ for(i in 1:length(sigma.22.vec)){
             geom_contour(colour="black",breaks=brks) + 
             geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks,stat="contour") + 
             labs(title=bquote(Bivariate~extremal~coefficient:~sigma[22]==.(sigma.22)),x=expression(eta[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
-            theme(axis.text = element_text(size=10), 
-                                axis.title.x = element_text(size=14), 
-                                axis.title.y = element_text(size=14), 
-                                plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.position = "none")
+            theme(axis.text = element_text(size=12), 
+                            strip.text = element_text(size = 16),
+                            axis.title.x = element_text(size=16), 
+                            axis.title.y = element_text(size=16), 
+                            plot.title = element_text(hjust = 0.5,size=16),legend.title = element_text(size=16),legend.position = "none")
+            
 }
 
 p.list[[length(sigma.22.vec)+1]] <- as_ggplot(get_legend(p.list[[1]]+theme(legend.position = "right")))
@@ -200,7 +200,7 @@ for(i in 1:length(df)){
     true.ext.t <- unlist(lapply(1:length(par.truncT.list),function(id) mev::expme(z=rep(1,2),par=list(Sigma=par.truncT.list[[id]][[1]],df=par.truncT.list[[id]][[2]]),model="xstud") ))
     data = rbind(data,data.frame(x=rho,truncT=true.ext.truncT,extT = true.ext.t,df=df[i]))
 }
-new_labels <- paste0("nu==",df)
+new_labels <- paste0("Delta==",df)
 data$df <- factor(data$df,labels=new_labels)
 p <- ggplot(data) + geom_line(aes(x=x,y=truncT,color="Truncated extremal-t"),,linewidth=1) + 
 geom_line(aes(x=x,y=extT,color="Extremal-t"),linewidth=1) + coord_cartesian(ylim = c(1, 2)) + geom_hline(yintercept=c(1,2),linetype="dashed") +
@@ -327,12 +327,12 @@ p <- ggplot(data_long, aes(x = factor(id), y = value)) +
        x = "Cases",
        y = "Value",
        fill = "Threshold") +
-  theme(axis.text = element_text(size = 10),
-        axis.title.x = element_text(size = 14),
-        strip.text = element_text(size = 14),
-        axis.title.y = element_text(size = 14),
-        plot.title = element_text(hjust = 0.5, size = 14),
-        legend.title = element_text(size = 14))
+  theme(axis.text = element_text(size = 12),
+        axis.title.x = element_text(size = 16),
+        strip.text = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16))
 
 pdf("figures/simulation_est_boxplots_final.pdf",width=4*4-2,height=4*2,onefile=TRUE)
 p
@@ -369,12 +369,12 @@ p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("
        x = "Cases",
        y = "Value",
        fill = "Method") +
-  theme(axis.text = element_text(size = 10),
-        strip.text = element_text(size = 14),
-        axis.title.x = element_text(size = 14),
-        axis.title.y = element_text(size = 14),
-        plot.title = element_text(hjust = 0.5, size = 14),
-        legend.title = element_text(size = 14))
+  theme(axis.text = element_text(size = 12),
+        strip.text = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16))
 
 pdf("figures/simulation_est_boxplots_final_BR.pdf",width=5*2,height=4,onefile=TRUE)
 p
