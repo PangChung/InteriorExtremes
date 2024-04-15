@@ -291,15 +291,15 @@ dev.off()
 
 ## plot the boxplot for the simulation study ## 
 # load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
-# load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
-#load("data/simulation_study_logskew_results_vario_1.RData",e1<-new.env())
-load("data/simulation_study_logskew_results_vario_50_1.RData",e1<-new.env())
+## load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
+load("data/simulation_study_logskew_results_vario_1.RData",e1<-new.env())
+#load("data/simulation_study_logskew_results_vario_50_1.RData",e1<-new.env())
 #load("data/simulation_study_logskew_results_vario_2.RData",e2<-new.env())
 data = cbind(1,rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
 #data = rbind(data,cbind(2,rep(1:6,times=sapply(e1$est.mat.list[[2]],nrow)),1,do.call(rbind,e1$est.mat.list[[2]])))
 #data = rbind(data,cbind(1,rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
 # data = rbind(data,cbind(2,rep(1:6,times=sapply(e2$est.mat.list[[2]],nrow)),2,do.call(rbind,e2$est.mat.list[[2]])))
-data = as.data.frame(data);names(data) = c("thres","id","type","lambda","nu","alpha[1]","alpha[2]")
+data = as.data.frame(data);names(data) = c("thres","id","type","hat(lambda)","hat(nu)","hat(b)[1]","hat(b)[2]")
 str(data)
 
 # Reshape the data to a long format
@@ -308,7 +308,7 @@ data_long <- pivot_longer(data, -c(thres, id, type), names_to = "variable", valu
 data_long$facet = paste0(data_long$variable)
 data_long$facet = factor(data_long$facet)
 par.skew.normal = as.data.frame(e1$par.skew.normal)
-colnames(par.skew.normal) = c("lambda","nu","alpha[1]","alpha[2]")
+colnames(par.skew.normal) = c("hat(lambda)","hat(nu)","hat(b)[1]","hat(b)[2]")
 par.skew.normal$id = 1:nrow(par.skew.normal)
 
 par.skew.normal$type = 1
@@ -340,17 +340,18 @@ p <- ggplot(data_long, aes(x = factor(id), y = value)) +
         plot.title = element_text(hjust = 0.5, size = 16),
         legend.title = element_text(size = 16))
 
-pdf("figures/simulation_est_boxplots_final_50.pdf",width=10,height=6,onefile=TRUE)
+pdf("figures/simulation_est_boxplots_final.pdf",width=10,height=6,onefile=TRUE)
 p
 dev.off()
 
 # load("data/simulation_study_logskew_results_final_3.RData",e1<-new.env())
 # load("data/simulation_study_logskew_results_final_4.RData",e2<-new.env())
-load("data/simulation_study_logskew_results_vario_50_BR.RData",e1<-new.env())
+#load("data/simulation_study_logskew_results_vario_50_BR.RData",e1<-new.env())
+load("data/simulation_study_logskew_results_vario_BR.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_vario_BR_comp.RData",e2<-new.env())
 data = cbind(rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
 data = rbind(data,cbind(rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
-data = as.data.frame(data);names(data) = c("id","type","lambda","nu","alpha[1]","alpha[2]")
+data = as.data.frame(data);names(data) = c("id","type","hat(lambda)","hat(nu)","hat(b)[1]","hat(b)[2]")
 data = data[,1:4]
 str(data)
 
@@ -358,7 +359,7 @@ str(data)
 data_long <- pivot_longer(data, -c(id, type), names_to = "variable", values_to = "value")
 data_long$facet = factor(data_long$variable)
 par.skew.normal = as.data.frame(e1$par.skew.normal[,1:2])
-colnames(par.skew.normal) = c("lambda","nu")
+colnames(par.skew.normal) = c("hat(lambda)","hat(nu)")
 par.skew.normal$id = 1:nrow(par.skew.normal)
 par.skew.normal = rbind(par.skew.normal,par.skew.normal)
 par.skew.normal$type = rep(1:2,each=nrow(par.skew.normal)/2)
@@ -382,7 +383,7 @@ p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("
         plot.title = element_text(hjust = 0.5, size = 16),
         legend.title = element_text(size = 16))
 
-pdf("figures/simulation_est_boxplots_final_BR_50.pdf",width=5*2,height=4,onefile=TRUE)
+pdf("figures/simulation_est_boxplots_final_BR.pdf",width=5*2,height=4,onefile=TRUE)
 p
 dev.off()
 
