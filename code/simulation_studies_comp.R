@@ -1,7 +1,7 @@
 args <- commandArgs(TRUE)
 id = 1
 computer = "local"
-d <- 10## 10 * 10 grid on [0,1]^2
+d <- 15
 m <- 500 ## number of samples
 # loading library and setting path
 for (arg in args) eval(parse(text = arg))
@@ -53,7 +53,6 @@ pairs.idx = rank(diff.mat[t(all.pairs)]) < nrow(coord)*10
 
 ##compute the basis ###
 basis = matrix(0,nrow=nrow(coord),ncol=3)
-#basis[,2] = rep(0,d^2);basis[1:floor(d^2/2),2] = 0.1; basis[(d^2-floor(d^2/2)+1):d^2,2] = -0.1
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
@@ -79,7 +78,7 @@ for(i in 1:nrow(par.skew.normal)){
         samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
     }
     # system.time(samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores))
-    init = par.skew.normal[i,]
+    # init = par.skew.normal[i,]
     # fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,T,F,T,T),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,thres=50,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
     fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T),loc=coord,FUN=vario.func,alpha.func=alpha.func,thres=100,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
     # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
