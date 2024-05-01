@@ -33,6 +33,8 @@ library(ggplot2)
 library(Rfast)
 library(matrixStats)
 library(splines)
+library(numDeriv)
+library(cubature)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
@@ -258,13 +260,14 @@ fit.logskew.angular[[i]]$par - e$par.skew.normal[i,]
 sum(idx)
 
 
-library(numDeriv)
-?numDeriv::grad()
+
+source("code/likelihood_inference.R")
 x=c(5,2)
-par.logskew = list(matrix(c(1,0.6,0.6,1),2,2),c(-1,1))
+par.logskew = alpha2delta(list(matrix(c(1,0.6,0.6,1),2,2),c(-1,1)))
 partialV_logskew(x,idx=1,par.logskew,alpha.para=TRUE)
 partialV_logskew(x,idx=2,par.logskew,alpha.para=TRUE)
 func <- function(x.i){
-    -V_logskew(c(3,x.i),par.logskew,alpha.para=TRUE)
+    nloglik(par.logskew,x.i,model="logskew")
 }
-grad(func,2)
+
+func(matrix(c(1,2),nrow=1))
