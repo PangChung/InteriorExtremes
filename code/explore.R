@@ -271,3 +271,4 @@ func <- function(x.i){
 }
 
 func(matrix(c(1,2),nrow=1))
+hcubature(func,lower=c(0,0),upper=c(Inf,Inf))
