@@ -145,7 +145,7 @@ nVI <- function(data,sigma,I,logval=FALSE){
         gamma.inv <- t(K01)%*%A%*%K01
         tryCatch({
             gamma <- chol2inv(chol(gamma.inv))
-            mu <- -gamma%*%(t(K01)%*%A%*%K10%*%t(log.data.I) + c(t(K01)%*%( (q + 1/2*q%*%t(q)%*%sigma.DD )/sum(q)-1/2*sigma.inv%*%sigma.DD )) )
+            mu <- -gamma%*%(t(K01)%*%A%*%K10%*%t(log.data.I) + c(t(K01)%*%( (q - 1/2*q%*%t(q)%*%sigma.DD )/sum(q)+1/2*sigma.inv%*%sigma.DD )) )
             eval.x <- log(data[,-I])-t(mu)
             sigma.q.II <- t(sigma.II)%*%q.I
             q.I.sum <- sum(q.I)
