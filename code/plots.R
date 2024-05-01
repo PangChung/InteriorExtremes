@@ -325,9 +325,9 @@ levels=levels(data_long$facet)[c(3,4,1,2,7,8,5,6)]
 par.skew.normal_long$facet = factor(paste0(par.skew.normal_long$variable),levels=levels)
 #p <- ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres,labels=c("95%","90%")))) +
 p <- ggplot(data_long, aes(x = factor(id), y = value)) +
-  geom_violin(position = position_dodge(width=0.75),draw_quantiles = NULL,width=1.5) + 
-  geom_boxplot(position = position_dodge(width=0.75),width=0.4, color="grey", alpha=1) +
-  geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,position=position_dodge(width = 0.75)) +
+  geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+#   geom_boxplot(position = position_dodge(width=0.75),width=0.4, color="grey", alpha=1) +
+  geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,position=position_dodge(width = 1)) +
   facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
   labs(title = "Efficiency of the angular density estimation method with 2000 replicates on a 15 by 15 grid",
        x = "Cases",
@@ -367,10 +367,10 @@ par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type), names_to = "v
 par.skew.normal_long$facet = factor(par.skew.normal_long$variable)
 
 p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("Angular","Composite")))) +
-  geom_violin(position = position_dodge(width=0.75),draw_quantiles = NULL,width=1.5) + 
-  geom_boxplot(position = position_dodge(width=0.75),width=0.4, color="grey", alpha=1) +
+  geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+  #geom_boxplot(position = position_dodge(width=0.75),width=0.4, color="grey", alpha=1) +
   geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,
-  position=position_dodge(width = 0.75)) +
+  position=position_dodge(width = 1)) +
   facet_wrap(~ facet, scales = "free",ncol=2,nrow=1,labeller = label_parsed) +
   labs(title = "Comparing angular method and pairwise likelihood with 500 replicates on a 15 by 15 grid",
        x = "Cases",
@@ -386,6 +386,47 @@ p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("
 pdf("figures/simulation_est_boxplots_final_BR.pdf",width=5*2,height=4,onefile=TRUE)
 p
 dev.off()
+
+load("data/simulation_study_truncT_results_final_2000.RData",e1<-new.env())
+data = cbind(rep(1:nrow(e1$par.truncT),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
+data = rbind(data,cbind(rep(1:nrow(e1$par.truncT),times=sapply(e1$est.mat.list[[2]],nrow)),2,do.call(rbind,e1$est.mat.list[[2]])))
+data = rbind(data,cbind(rep(1:nrow(e1$par.truncT),times=sapply(e1$est.mat.list[[3]],nrow)),3,do.call(rbind,e1$est.mat.list[[3]])))
+data = as.data.frame(data);names(data) = c("id","thres","hat(lambda)","hat(nu)","hat(Delta)")
+data = subset(data[,1:4],id %in% 1:2)
+str(data)
+
+# Reshape the data to a long format
+data_long <- pivot_longer(data, -c(id, thres), names_to = "variable", values_to = "value")
+data_long$facet = factor(data_long$variable)
+par.truncT = as.data.frame(e1$par.truncT[1:2,1:2])
+colnames(par.truncT) = c("hat(lambda)","hat(nu)")
+par.truncT$id = 1:nrow(par.truncT)
+par.truncT = rbind(par.truncT,par.truncT,par.truncT)
+par.truncT$thres = rep(1:3,each=nrow(par.truncT)/3)
+par.truncT_long <- pivot_longer(par.truncT, -c(id,thres), names_to = "variable", values_to = "value")
+par.truncT_long$facet = factor(par.truncT_long$variable)
+
+p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(thres,labels=c("98%","95%","90%")))) +
+  geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+  #geom_boxplot(position = position_dodge(width=0.75),width=0.4, color="grey", alpha=1) +
+  geom_point(data=par.truncT_long,aes(x=factor(id),y=value),color="black",size=1,
+  position=position_dodge(width = 1)) +
+  facet_wrap(~ facet, scales = "free",ncol=2,nrow=1,labeller = label_parsed) +
+  labs(title = "Comparing angular method and pairwise likelihood with 2000 replicates on a 10 by 10 grid",
+       x = "Cases",
+       y = "Value",
+       fill = "Threshold") +
+  theme(axis.text = element_text(size = 14),
+        strip.text = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16))
+
+pdf("figures/simulation_est_boxplots_final_truncT.pdf",width=5*2,height=4,onefile=TRUE)
+p
+dev.off()
+
 
 ######################################################################
 ## plot the extremal coef for the application ########################
