@@ -412,7 +412,7 @@ p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(thres,labels=c(
   geom_point(data=par.truncT_long,aes(x=factor(id),y=value),color="black",size=1,
   position=position_dodge(width = 1)) +
   facet_wrap(~ facet, scales = "free",ncol=2,nrow=1,labeller = label_parsed) +
-  labs(title = "Comparing angular method and pairwise likelihood with 2000 replicates on a 10 by 10 grid",
+  labs(title = "Efficiency of the angular density estimation method with 2000 replicates on a 10 by 10 grid",
        x = "Cases",
        y = "Value",
        fill = "Threshold") +
