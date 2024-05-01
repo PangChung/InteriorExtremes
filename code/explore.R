@@ -263,12 +263,12 @@ sum(idx)
 
 source("code/likelihood_inference.R")
 x=c(5,2)
-par.logskew = alpha2delta(list(matrix(c(1,0.6,0.6,1),2,2),c(-1,1)))
+par.logskew = alpha2delta(list(matrix(c(1,0.6,0.6,1),2,2),c(2,-2)))
 partialV_logskew(x,idx=1,par.logskew,alpha.para=TRUE)
 partialV_logskew(x,idx=2,par.logskew,alpha.para=TRUE)
 func <- function(x.i){
-    nloglik(par.logskew,x.i,model="logskew")
+    exp(-nloglik(par.logskew,x.i,model="logskew"))
 }
 
 func(matrix(c(1,2),nrow=1))
-hcubature(func,lower=c(0,0),upper=c(Inf,Inf))
+hcubature(func,lowerLimit =c(0,0),upperLimit=c(Inf,Inf))

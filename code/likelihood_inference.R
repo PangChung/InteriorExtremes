@@ -208,7 +208,7 @@ nVI.biv <- function(data,sigma,I){
 nloglik <- function(par,data,model="BR"){
     #fix random seed (and save the current random seed to restore it at the end)
     if(!is.matrix(data)){data <- matrix(data,nrow=1)}
-    D <- ncol(data)
+    D <- ncol(data);n <- nrow(data)
     all_combn <- lapply(1:D,FUN=Rfast::comb_n,n=D,simplify=FALSE) 
     all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
     if(model == "BR"){
@@ -226,7 +226,10 @@ nloglik <- function(par,data,model="BR"){
     }
     get.nVI <- function(I){
       nI <- length(I)
-      return(all_nVI[[nI]][which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
+      if(n==1){
+        return(all_nVI[[nI]][which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
+      }
+      return(all_nVI[[nI]][,which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
     }
     parts <- listParts(D) ## using package `partitions'
     contribution.partition <- function(partition){
