@@ -260,6 +260,11 @@ sum(idx)
 
 library(numDeriv)
 ?numDeriv::grad()
-x=c(1,1)
-par.logskew = list(matrix(c(1,0.5,0.5,1),2,2),c(1,-1))
-partialV_logskew()
+x=c(5,2)
+par.logskew = list(matrix(c(1,0.6,0.6,1),2,2),c(-1,1))
+partialV_logskew(x,idx=1,par.logskew,alpha.para=TRUE)
+partialV_logskew(x,idx=2,par.logskew,alpha.para=TRUE)
+func <- function(x.i){
+    -V_logskew(c(3,x.i),par.logskew,alpha.para=TRUE)
+}
+grad(func,2)
