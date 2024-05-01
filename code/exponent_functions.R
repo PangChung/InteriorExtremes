@@ -405,7 +405,7 @@ V_bi_logskew <- function(x,delta,sigma){
 }
 
 ## this function returns the partial derivatives of the exponent function
-## for the truncated extremal-t max-stable processes
+## for the skewed-Brown-Resnick max-stable processes
 partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     # set a random seed
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
@@ -457,78 +457,6 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
         mu.val = c(xi.tilde[-idx] - mu.tilde, tau.tilde)
         phi = pnorm(tau.tilde)
         intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
-        val = intensity.marginal/phi * mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]]
-        return(val)
-    }
-    if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
-    }
-    else{
-        val = unlist(lapply(1:nrow(x),func))
-    }
-    assign(".Random.seed", oldSeed, envir=globalenv())
-    if(log){
-        return(log(val))
-    }
-    else{
-        return(val)
-    }
-}
-
-partialV_logskew2 <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
-    # set a random seed
-    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
-    set.seed(747380)
-    sigma = par[[1]]
-    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-    n = ncol(x)
-    if(length(idx)==0){
-        val = V_logskew(x,par,alpha.para,ncores=ncores)
-        if(log) return(log(val))
-        else return(val)
-    }
-    if(length(idx)==n){
-        val = intensity_logskew(x,par,alpha.para,ncores,log)
-        return(val)
-    }
-    ones <- rep(1,n)
-    one.mat <- matrix(1,n,n)
-    I <- diag(1,n)
-    sigma.chol = chol(sigma)
-    sigma.inv = chol2inv(sigma.chol)
-    sum.sigma.inv = sum(sigma.inv)
-    
-    if(alpha.para){
-        alpha = par[[2]]
-        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
-    }else{
-        delta = par[[2]]
-        alpha = c(1 - delta %*% sigma.inv %*% delta)^(-1/2) * c(sigma.inv %*% delta)
-    }
-
-    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
-    H =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
-
-    sigma.tilde.inv = H[-idx,-idx,drop=FALSE]
-    sigma.tilde.inv.chol = chol(sigma.tilde.inv)
-    sigma.tilde = chol2inv(sigma.tilde.inv.chol)
-
-    b = c(alpha %*% ones/sqrt(sum.sigma.inv))
-    beta =  c(alpha %*% (diag(n) - one.mat %*% sigma.inv/sum.sigma.inv) * (1+b^2)^(-1/2))    
-    delta.hat = (1+b^2)^(-1/2)*b
-    alpha.tilde = beta[-idx] 
-    b1 =c((1 + alpha.tilde %*% sigma.tilde %*% alpha.tilde)^(-1/2))
-
-    func <- function(i){
-        xi.log = log(x[i,])
-        xi.tilde = xi.log + a
-        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv))
-        tau.tilde = c(b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde))
-        b2 = c(-b1 * sigma.tilde %*% alpha.tilde)
-        scale.val = unname(cbind(rbind(sigma.tilde, b2),c(b2,1)))
-        mu.val = c(xi.tilde[-idx] - mu.tilde, tau.tilde)
-        phi = pnorm(tau.tilde)
-        intensity.marginal = c(intensity_logskew2(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
         val = intensity.marginal/phi * mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]]
         return(val)
     }

@@ -258,5 +258,8 @@ fit.logskew.angular[[i]]$par - e$par.skew.normal[i,]
 sum(idx)
 
 
-
-
+library(numDeriv)
+?numDeriv::grad()
+x=c(1,1)
+par.logskew = list(matrix(c(1,0.5,0.5,1),2,2),c(1,-1))
+partialV_logskew()
