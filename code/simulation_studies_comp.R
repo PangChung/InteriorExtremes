@@ -53,7 +53,6 @@ pairs.idx = rank(diff.mat[t(all.pairs)]) < nrow(coord)*10
 
 ##compute the basis ###
 basis = matrix(0,nrow=nrow(coord),ncol=3)
-#basis[,2] = rep(0,d^2);basis[1:floor(d^2/2),2] = 0.1; basis[(d^2-floor(d^2/2)+1):d^2,2] = -0.1
 
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
