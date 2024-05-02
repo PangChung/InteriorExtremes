@@ -264,7 +264,7 @@ sum(idx)
 source("code/likelihood_inference.R")
 
 x=c(0.01,1)
-par.logskew = alpha2delta(list(matrix(c(1,0.6,0.6,1),2,2),c(1,-1)))
+par.logskew = alpha2delta(list(matrix(c(0.5,0.4,0.4,0.5),2,2),c(0.5,-0.5)))
 partialV_logskew(x,idx=2,par.logskew,alpha.para=FALSE)
 func <- function(x.i){
     -V_logskew(c(x[1],x.i),par.logskew,alpha.para=FALSE)
