@@ -245,53 +245,53 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
 # }
 
 ## slant parameter without normlized by the variance
-intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
-    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
-    set.seed(747380)
-    sigma = par[[1]]
-    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-    n = ncol(x)
-    if(n==1) return(1/(x^2))
-    chol.sigma = chol(sigma)
-    inv.sigma = chol2inv(chol.sigma)
-    logdet.sigma = sum(log(diag(chol.sigma)))*2
-    if(alpha.para){
-        alpha = par[[2]]
-        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
-    }else{
-        delta = par[[2]]
-        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
-    }
-    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
-    sum.inv.sigma = sum(inv.sigma)
-    one.mat = matrix(1,n,n)
-    one.vec = rep(1,n)
-    beta.hat =  c(alpha %*%  (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma))
-    A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
-    func <- function(idx){
-        x_log = log(x[idx,])
-        x_circ = x_log + a
-        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta.hat %*% x_circ,log.p=TRUE) -
-            1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
-        val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
-        return(val)
-    }
+# intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+#     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+#     set.seed(747380)
+#     sigma = par[[1]]
+#     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+#     n = ncol(x)
+#     if(n==1) return(1/(x^2))
+#     chol.sigma = chol(sigma)
+#     inv.sigma = chol2inv(chol.sigma)
+#     logdet.sigma = sum(log(diag(chol.sigma)))*2
+#     if(alpha.para){
+#         alpha = par[[2]]
+#         delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
+#     }else{
+#         delta = par[[2]]
+#         alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
+#     }
+#     a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
+#     sum.inv.sigma = sum(inv.sigma)
+#     one.mat = matrix(1,n,n)
+#     one.vec = rep(1,n)
+#     beta.hat =  c(alpha %*%  (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma))
+#     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
+#     func <- function(idx){
+#         x_log = log(x[idx,])
+#         x_circ = x_log + a
+#         val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta.hat %*% x_circ,log.p=TRUE) -
+#             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
+#         val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
+#         return(val)
+#     }
     
-    if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
-    }
-    else{
-        val = unlist(lapply(1:nrow(x),func))
-    }
-    assign(".Random.seed", oldSeed, envir=globalenv())
-    if(log)
-        return(val)
-    else
-        return(exp(val))    
-}
+#     if(!is.null(ncores)){
+#         val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+#     }
+#     else{
+#         val = unlist(lapply(1:nrow(x),func))
+#     }
+#     assign(".Random.seed", oldSeed, envir=globalenv())
+#     if(log)
+#         return(val)
+#     else
+#         return(exp(val))    
+# }
 
 ## slant paramter nomalized by the variance, where the variance is constant and sum(alpha)=0
-intensity_logskew2 <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     sigma = par[[1]]
