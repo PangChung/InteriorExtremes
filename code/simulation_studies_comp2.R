@@ -3,7 +3,7 @@ args <- commandArgs(TRUE)
 computer = "local"
 id = 2
 d <- 5 ## 10 * 10 grid on [0,1]^2
-m <- 200 ## number of samples
+m <- 2000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
 #model = "truncT"; # "logskew" or "truncT"
@@ -19,9 +19,9 @@ diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(c
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(5,10) # range for the covariance function ##      
 para.nu = 10 # ## variance parameter for the covariance function ##
-para.shape = c(1,1.5) #c(1,1.5) ## smoothness parameter for the covariance function ##
+para.shape = c(1) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
-para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -40,8 +40,8 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
-file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,"_",basis.idx,".RData")
-file.samples = paste0(DataPath,"data/samples/simulation_","model","_",id,"_",m,"_",basis.idx,".RData")
+file2save = paste0(DataPath,"data/simulation_study2_",model,"_",id,"_",m,"_",basis.idx,".RData")
+file.samples = paste0(DataPath,"data/samples/simulation2_","model","_",id,"_",m,"_",basis.idx,".RData")
 if(file.exists(file2save)){stop("job already finished")}
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
