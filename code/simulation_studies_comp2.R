@@ -2,8 +2,8 @@ rm(list=ls())
 args <- commandArgs(TRUE)
 computer = "local"
 id = 2
-d <- 15 ## 10 * 10 grid on [0,1]^2
-m <- 2000 ## number of samples
+d <- 5 ## 10 * 10 grid on [0,1]^2
+m <- 200 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
 #model = "truncT"; # "logskew" or "truncT"
