@@ -261,19 +261,25 @@ sum(idx)
 
 
 
-source("code/likelihood_inference.R")
 
-x=c(0.01,1)
-par.logskew = alpha2delta(list(matrix(c(0.5,0.4,0.4,0.5),2,2),c(0.5,-0.5)))
+source("code/exponent_functions.R")
+x=c(5,3)
+coord = cbind(1,c(1,5))
+par.logskew = alpha2delta(list(vario.func(coord,c(2,0.5)),c(0,0)))
 partialV_logskew(x,idx=2,par.logskew,alpha.para=FALSE)
+set.seed(1)
+
 func <- function(x.i){
-    -V_logskew(c(x[1],x.i),par.logskew,alpha.para=FALSE)
+    x.new <- x;x.new[2] <- x.i
+    -V_logskew(x.new,par.logskew,alpha.para=FALSE)
 }
+
 grad(func,x[2])
 
 partialV_logskew(x,idx=1,par.logskew,alpha.para=FALSE)
 func <- function(x.i){
-    -V_logskew(c(x.i,x[2]),par.logskew,alpha.para=FALSE)
+    x.new <- x;x.new[1] <- x.i
+    -V_logskew(x.new,par.logskew,alpha.para=FALSE)
 }
 grad(func,x[1])
 
@@ -281,5 +287,4 @@ func <- function(x.i){
     exp(-nloglik(par.logskew,x.i,model="logskew"))
 }
 
-func(matrix(c(1,2),nrow=1))
-hcubature(func,lowerLimit =c(0,0),upperLimit=c(Inf,Inf))
+hcubature(func,lowerLimit = rep(0,nrow(coord)),upperLimit=rep(Inf,nrow(coord)))
