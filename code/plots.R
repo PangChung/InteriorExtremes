@@ -339,7 +339,7 @@ p <- ggplot(data_long, aes(x = factor(id), y = value)) +
         axis.title.y = element_text(size = 16),
         plot.title = element_text(hjust = 0.5, size = 16),
         legend.title = element_text(size = 16))
-
+p
 pdf("figures/simulation_est_boxplots_final.pdf",width=10,height=6,onefile=TRUE)
 p
 dev.off()
