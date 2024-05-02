@@ -264,7 +264,7 @@ sum(idx)
 
 source("code/exponent_functions.R")
 set.seed(1)
-x=c(1,2)
+x=c(20,1)
 coord = cbind(1,c(1,5))
 par.logskew = alpha2delta(list(vario.func(coord,c(2,1)),c(-2,2)))
 par.logskew = alpha2delta(list(matrix(c(1,0.5,0.5,1),2,2),c(-2,2)))
