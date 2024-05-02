@@ -457,7 +457,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
         mu.val = c(xi.tilde[-idx] - mu.tilde, tau.tilde)
         phi = pnorm(tau.tilde)
         intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
-        val = intensity.marginal/phi * mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]]
+        val = intensity.marginal/phi * max(mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]],.Machine$double.xmin)
         return(val)
     }
     if(!is.null(ncores)){

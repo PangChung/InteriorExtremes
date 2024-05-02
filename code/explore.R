@@ -263,25 +263,26 @@ sum(idx)
 
 
 source("code/exponent_functions.R")
-x=c(5,3)
-coord = cbind(1,c(1,5))
-par.logskew = alpha2delta(list(vario.func(coord,c(2,0.5)),c(0,0)))
-partialV_logskew(x,idx=2,par.logskew,alpha.para=FALSE)
 set.seed(1)
+x=c(1,2)
+coord = cbind(1,c(1,5))
+par.logskew = alpha2delta(list(vario.func(coord,c(2,1)),c(-2,2)))
+par.logskew = alpha2delta(list(matrix(c(1,0.5,0.5,1),2,2),c(-2,2)))
 
 func <- function(x.i){
     x.new <- x;x.new[2] <- x.i
     -V_logskew(x.new,par.logskew,alpha.para=FALSE)
 }
-
 grad(func,x[2])
+partialV_logskew(x,idx=2,par.logskew,alpha.para=FALSE)
 
-partialV_logskew(x,idx=1,par.logskew,alpha.para=FALSE)
+
 func <- function(x.i){
     x.new <- x;x.new[1] <- x.i
     -V_logskew(x.new,par.logskew,alpha.para=FALSE)
 }
 grad(func,x[1])
+partialV_logskew(x,idx=1,par.logskew,alpha.para=FALSE)
 
 func <- function(x.i){
     exp(-nloglik(par.logskew,x.i,model="logskew"))
