@@ -276,7 +276,6 @@ func <- function(x.i){
 grad(func,x[2])
 partialV_logskew(x,idx=2,par.logskew,alpha.para=FALSE)
 
-
 func <- function(x.i){
     x.new <- x;x.new[1] <- x.i
     -V_logskew(x.new,par.logskew,alpha.para=FALSE)
