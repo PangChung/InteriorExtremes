@@ -404,7 +404,7 @@ V_bi_logskew <- function(x,delta,sigma){
     return(val)
 }
 
-## this function returns the partial derivatives of the exponent function
+## this function returns negative partial derivatives of the exponent function
 ## for the skewed-Brown-Resnick max-stable processes
 partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     # set a random seed
