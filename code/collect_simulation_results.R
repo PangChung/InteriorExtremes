@@ -6,7 +6,7 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = "vario_50";basis.idx="1"
+idx.file = "vario_30";basis.idx="BR_comp"
 # files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
 files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_comp_\\d+.RData"),full.names=TRUE,recursive=FALSE)
 load(files.list[[1]],e<-new.env())
@@ -30,8 +30,8 @@ extract_results <- function(files){
         #                   return(e$fit.logskew.angular[[id.1]]$others[[idx]])
         # })
         # fit.results[[i]] <- fit.logskew.angular
-         fit.results[[i]] <- e$fit.logskew.angular
-        #fit.results[[i]] <- e$fit.logskew.comp
+        #  fit.results[[i]] <- e$fit.logskew.angular
+        fit.results[[i]] <- e$fit.logskew.comp
     }
     est.mat.list <- create_lists(c(n2,n1))
     for(i in 1:n1){

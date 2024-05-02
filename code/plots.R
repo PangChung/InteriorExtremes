@@ -344,11 +344,12 @@ pdf("figures/simulation_est_boxplots_final.pdf",width=10,height=6,onefile=TRUE)
 p
 dev.off()
 
-# load("data/simulation_study_logskew_results_final_3.RData",e1<-new.env())
-# load("data/simulation_study_logskew_results_final_4.RData",e2<-new.env())
 #load("data/simulation_study_logskew_results_vario_50_BR.RData",e1<-new.env())
-load("data/simulation_study_logskew_results_vario_BR.RData",e1<-new.env())
-load("data/simulation_study_logskew_results_vario_BR_comp.RData",e2<-new.env())
+# load("data/simulation_study_logskew_results_vario_BR.RData",e1<-new.env())
+# load("data/simulation_study_logskew_results_vario_BR_comp.RData",e2<-new.env())
+load("data/simulation_study_logskew_results_vario_30_BR.RData",e1<-new.env())
+load("data/simulation_study_logskew_results_vario_30_BR_comp.RData",e2<-new.env())
+
 data = cbind(rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
 data = rbind(data,cbind(rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
 data = as.data.frame(data);names(data) = c("id","type","hat(lambda)","hat(nu)","hat(b)[1]","hat(b)[2]")
@@ -383,7 +384,7 @@ p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("
         plot.title = element_text(hjust = 0.5, size = 16),
         legend.title = element_text(size = 16))
 
-pdf("figures/simulation_est_boxplots_final_BR.pdf",width=5*2,height=4,onefile=TRUE)
+pdf("figures/simulation_est_boxplots_final_BR_30.pdf",width=5*2,height=4,onefile=TRUE)
 p
 dev.off()
 
