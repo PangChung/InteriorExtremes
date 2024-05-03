@@ -285,10 +285,11 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
         if(opt){ 
             val = mean(val,na.rm=TRUE)
-            #print(c(par2,val))
+            print(c(par2,val))
         }
         return(val)
     }
+    browser()
     if(sum(!fixed)==1){
         opt <- optim(par=init[!fixed],fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method="Brent",control=list(maxit=maxit,trace=trace),hessian=hessian)
     }else{
