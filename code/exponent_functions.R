@@ -452,7 +452,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
         xi.log = log(x[i,])
         xi.tilde = xi.log + a
         mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.log[idx] + ((sigma.inv %*% ones)/sum.sigma.inv+H%*%a)[-idx]))
-        tau.tilde = c(b1 * (alpha[idx] %*% xi.tilde[idx] + alpha[-idx] %*% mu.tilde))
+        tau.tilde = c(b1 * (alpha[idx] %*% xi.log[idx] + alpha %*% a + alpha[-idx] %*% mu.tilde))
         scale.val = unname(cbind(rbind(sigma.tilde, -delta.tilde),c(-delta.tilde,1)))
         mu.val = c(xi.log[-idx] - mu.tilde, tau.tilde)
         phi = pnorm(tau.tilde)
