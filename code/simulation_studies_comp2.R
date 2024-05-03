@@ -17,11 +17,11 @@ switch(computer,
 coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(5,10) # range for the covariance function ##      
+para.range = c(3) # range for the covariance function ##      
 para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
-para.alpha = rbind(c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -70,7 +70,7 @@ if(model == "logskew"){
     # init = c(1,para.nu,1,0,0)
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
     ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
-    init = c(1,1,0,0)
+    init = c(1,1,rep(0,ncol(para.alpha)))
     # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
     # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
     par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
@@ -87,10 +87,10 @@ if(model == "logskew"){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         }
         init = par.skew.normal[i,]
-        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para)
+        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=100,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         print(fit.logskew.angular[[i]]$par)
         print(par.skew.normal[i,])
-        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
+        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
         print(fit.logskew.comp[[i]]$par)
         print(i)
     }

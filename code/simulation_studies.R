@@ -21,7 +21,7 @@ para.range = c(5,10) # range for the covariance function ##
 para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1,1.5) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
-para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(1,0,0),c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -69,7 +69,7 @@ if(model == "logskew"){
     # init = c(1,para.nu,1,0,0)
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
     ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
-    init = c(1,1,0,0)
+    init = c(1,1,0,0,0)
     # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
     # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
     par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
@@ -90,9 +90,9 @@ if(model == "logskew"){
         # true.ext.coef <- unlist(mclapply(all.pairs.list,true_extcoef,par=alpha2delta(par.skew.list[[i]]),model="logskew1",mc.cores=ncores,mc.set.seed = FALSE))
         # print(range(true.ext.coef))
         # samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-        init = par.skew.normal[i,]
+        # init = par.skew.normal[i,]
         # fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,F,F),basis=basis,thres=30,model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
-        fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F),basis=basis,thres=100,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
+        fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=100,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         print(fit.result1$par)
         print(par.skew.normal[i,])
         fit.logskew.angular[[i]] <- fit.result1

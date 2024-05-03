@@ -457,7 +457,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
         mu.val = c(xi.tilde[-idx] - mu.tilde, tau.tilde)
         phi = pnorm(tau.tilde)
         intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
-        val = intensity.marginal/phi * max(mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]],.Machine$double.xmin)
+        val = intensity.marginal/phi * max(mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]],0)
         return(val)
     }
     if(!is.null(ncores)){
@@ -546,7 +546,7 @@ cov.func <- function(distmat,par){
 }
 
 alpha.func <- function(par,b.mat=basis){
-    alpha <- c(c(1,par) %*% t(b.mat))
+    alpha <- c(par %*% t(b.mat))
     return(alpha)
 }
 
@@ -564,16 +564,17 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
     if(is.null(lb)){lb=rep(-Inf,length(init))}
     if(is.null(ub)){ub=rep(Inf,length(init))}
+    fixed2 = fixed
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         object.func <- function(par,opt=TRUE,ncore=NULL){
             #if(trace) print(par)
-            par2 = init; par2[!fixed] = par
+            par2 = init; par2[!fixed2] = par
             par.1 = par2[idx.para];par.2 = par2[-idx.para]
             cov.mat = FUN(loc,par.1)
             b.mat <- basis #/ sqrt(diag(cov.mat))
             alpha = alpha.func(par=par.2,b.mat= b.mat)
-            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
+            if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
             val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
             if(opt) return(-mean(val)) else return(-mean(val))
@@ -605,10 +606,10 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     }
     if(opt){
         if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
             opt.result$value = object.func(opt.result$par,opt=FALSE,ncore=ncores)
         }else{
-            opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
             opt.result$value = object.func(opt.result$par,opt=FALSE,ncore=ncores)
         }
         if(model=="logskew" & any(!fixed[-idx.para]) & step2){
@@ -620,11 +621,13 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
                 a = matrix(rnorm(ncores*n.alpha),ncol=n.alpha)
                 a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             }
-            init[!fixed] = opt.result$par
-            a = cbind(matrix(init[idx.para],ncol=length(idx.para),nrow=nrow(a),byrow=T),a)[,!fixed]
+            init[!fixed2] = opt.result$par
+            fixed2[-idx.para] = fixed[-idx.para]
+            fixed2[idx.para] = TRUE
+            a = cbind(matrix(init[idx.para],ncol=length(idx.para),nrow=nrow(a),byrow=T),a)[,!fixed2]
             init.list = split(a,row(a)) 
             if(method=="L-BFGS-B"){
-                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }else{
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }
@@ -644,7 +647,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
         opt.result$hessian.inv = solve(opt.result$hessian)
         opt.result$sigma = opt.result$hessian.inv %*% opt.result$K %*% opt.result$hessian.inv
     }
-    par2 = init; par2[!fixed] = opt.result$par
+    par2 = init; par2[!fixed2] = opt.result$par
     opt.result$par = par2
     opt.result$time <- proc.time() - t0
     return(opt.result)
