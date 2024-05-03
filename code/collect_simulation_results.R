@@ -6,9 +6,9 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = "vario_30";basis.idx="logskew"
-# files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
-files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
+idx.file = "vario_100";basis.idx="1"
+files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
+# files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
 # files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_comp_\\d+.RData"),full.names=TRUE,recursive=FALSE)
 load(files.list[[1]],e<-new.env())
 par.skew.normal = e$par.skew.normal
@@ -27,14 +27,18 @@ extract_results <- function(files){
         # })
         # fit.results[[i]] <- fit.logskew.angular
         
-        # fit.logskew.angular = lapply(1:n1,function(id.1){
-        #                   idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){max(abs(x$par[1:2]))})))
-        #                    e$fit.logskew.angular[[id.1]]$par[3:4] <- e$fit.logskew.angular[[id.1]]$others[[idx]]$par
-        #                 #   idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){x$value})))
-        #                   return(e$fit.logskew.angular[[id.1]])
-        # })
-        # fit.results[[i]] <- fit.logskew.angular
-        fit.results[[i]] <- e$fit.logskew.angular
+        fit.logskew.angular = lapply(1:n1,function(id.1){
+            # idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){max(abs(x$par[1:2]))})))
+            # e$fit.logskew.angular[[id.1]]$par <- e$fit.logskew.angular[[id.1]]$others[[idx]]$par
+            # idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){x$value})))
+            par = e$fit.logskew.angular[[id.1]]$par
+            par[3:5] = par[3:5]/par[3]
+            e$fit.logskew.angular[[id.1]]$par <- par[-3]
+            return(e$fit.logskew.angular[[id.1]])
+        })
+        fit.results[[i]] <- fit.logskew.angular
+
+        # fit.results[[i]] <- e$fit.logskew.angular
         # fit.results[[i]] <- e$fit.logskew.comp
     }
     est.mat.list <- create_lists(c(n2,n1))
@@ -86,8 +90,8 @@ for(idx.thres in 1:n2){
         data = matrix(unlist(apply(est.mat.list[[idx.thres]][[idx.case]],1,function(x){x- par.skew.normal[idx.case,]})),ncol=4,byrow = TRUE)
         data = as.data.frame(data)
         data_long <- pivot_longer(data, everything(), names_to = "Variable", values_to = "Value")
-        p<- ggplot(data_long, aes(x = Variable, y = Value)) + ylim(-100,100) + 
-        geom_boxplot() + scale_x_discrete(labels=variable.names)  +
+        p<- ggplot(data_long, aes(x = Variable, y = Value)) + 
+        geom_boxplot() + scale_x_discrete(labels=variable.names)  + ylim(-5,5) +
         theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5,size=10),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: 50"," with 2000 replicates")) + 
         geom_hline(yintercept = 0, linetype="dashed", color = "red")
         p.list[[idx.thres]][[idx.case]] <- p
