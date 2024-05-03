@@ -1,7 +1,7 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
 computer = "local"
-id = 2
+id = 19
 d <- 5 ## 10 * 10 grid on [0,1]^2
 m <- 2000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
@@ -97,7 +97,22 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
+par.skew.list[[i]] <- list(sigma=vario.func(coord,c(0.5,1.5)))
+par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
+par.skew <- alpha2delta(par.skew.list[[i]]) 
+par.logskew = list(par.skew[[1]][1:2,1:2],par.skew[[2]][1:2])
+par.logskew[[2]] = c(0,0)
+data=samples.skew.normal[[i]][,1:2]
+summary(nloglik(par=par.logskew,data,model="logskew"))
+summary(nloglik(par=par.logskew,data,model="BR"))
+summary(V_logskew(data,par.logskew,alpha.para=FALSE))
+summary(V(data,par.logskew[[1]]))
 
+summary(partialV_logskew(data,1,par.logskew,alpha.para=FALSE))
+summary(nVI(data,par.logskew[[1]],1))
+
+summary(intensity_logskew(data,par.logskew,alpha.para=FALSE,log=FALSE))
+summary(nVI(data,par.logskew[[1]],c(1,2)))
 print(t0 <- proc.time() - t0)
 
 if(model == "truncT"){

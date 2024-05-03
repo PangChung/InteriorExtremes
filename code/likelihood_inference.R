@@ -289,7 +289,6 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         }
         return(val)
     }
-    browser()
     if(sum(!fixed)==1){
         opt <- optim(par=init[!fixed],fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method="Brent",control=list(maxit=maxit,trace=trace),hessian=hessian)
     }else{
