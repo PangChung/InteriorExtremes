@@ -236,7 +236,7 @@ nloglik <- function(par,data,model="BR"){
       return( matrixStats::rowProds(as.matrix(as.data.frame(lapply(partition,FUN=get.nVI) ))))
     }
     tmp = log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition)))))
-    if(any(is.nan(tmp))){print(data);browser()}
+    #if(any(is.nan(tmp))){print(data);browser()}
     res <- log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition))))) - Vdata
     if(any(!is.finite(res))){return(rep(Inf,nrow(data)))}
     return(-res)
