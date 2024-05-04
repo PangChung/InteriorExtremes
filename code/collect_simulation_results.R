@@ -11,7 +11,7 @@ files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0
 # files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
 # files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_comp_\\d+.RData"),full.names=TRUE,recursive=FALSE)
 load(files.list[[1]],e<-new.env())
-par.skew.normal = e$par.skew.normal
+par.skew.normal = e$par.skew.normal[,-3]
 n1 = nrow(par.skew.normal);n2 = 1 #length(e$fit.logskew.angular[[1]])
 extract_results <- function(files){
     fit.results <- list()
@@ -31,11 +31,17 @@ extract_results <- function(files){
             # idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){max(abs(x$par[1:2]))})))
             # e$fit.logskew.angular[[id.1]]$par <- e$fit.logskew.angular[[id.1]]$others[[idx]]$par
             # idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){x$value})))
-            par = e$fit.logskew.angular[[id.1]]$par
-            par[3:5] = par[3:5]/par[3]
-            e$fit.logskew.angular[[id.1]]$par <- par[-3]
+            idx = unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){par=c(x$par[4:5]/x$par[3]);max(abs(par-par.skew.normal[id.1,3:4]))<3}))
+            # idx.value = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others[idx],function(x){max(abs(x$par[3:5]/x$par[3]))})))
+            # par = e$fit.logskew.angular[[id.1]]$others[idx][[idx.value]]$par
+            # par[3:5] = par[3:5]/par[3]
+            # e$fit.logskew.angular[[id.1]]$others[idx][[idx.value]]$par <- par[-3]
+            # return(e$fit.logskew.angular[[id.1]]$others[idx][[idx.value]])
+            est <- matrix(unlist(lapply(e$fit.logskew.angular[[id.1]]$others[idx],function(x1){par=x1$par;c(par[1:2],par[4:5]/par[3])})),nrow=sum(idx),byrow=TRUE)
+            e$fit.logskew.angular[[id.1]]$par <- apply(est,2,median)
             return(e$fit.logskew.angular[[id.1]])
         })
+
         fit.results[[i]] <- fit.logskew.angular
 
         # fit.results[[i]] <- e$fit.logskew.angular
@@ -55,6 +61,11 @@ extract_results <- function(files){
     #     est.mat.list[[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)
     # }
     return(list(est.mat.list,time.used.list))
+}
+
+extract_id <- function(e){
+    est <- lapply(e$fit.logskew.angular,function(x){matrix(unlist(lapply(x$others,function(x1){c(x1$par,x1$value)})),nrow=length(e$fit.logskew.angular[[1]]$others),byrow=TRUE)})
+    return(est)
 }
 
 # mse.max = matrix(NA,nrow=length(files.list),ncol=nrow(par.skew.normal)*2)
@@ -91,7 +102,7 @@ for(idx.thres in 1:n2){
         data = as.data.frame(data)
         data_long <- pivot_longer(data, everything(), names_to = "Variable", values_to = "Value")
         p<- ggplot(data_long, aes(x = Variable, y = Value)) + 
-        geom_boxplot() + scale_x_discrete(labels=variable.names)  + ylim(-5,5) +
+        geom_boxplot() + scale_x_discrete(labels=variable.names)  + #ylim(-5,5) +
         theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5,size=10),plot.title = element_text(hjust = 0.5)) + ggtitle(paste0("Threshold: 50"," with 2000 replicates")) + 
         geom_hline(yintercept = 0, linetype="dashed", color = "red")
         p.list[[idx.thres]][[idx.case]] <- p
