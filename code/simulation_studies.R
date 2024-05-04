@@ -40,7 +40,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
-file2save = paste0(DataPath,"data/simulation_study_",model,"_",id,"_",m,"_",basis.idx,".RData")
+file2save = paste0(DataPath,"data/simulation_study2_",model,"_",id,"_",m,"_",basis.idx,".RData")
 file.samples = paste0(DataPath,"data/samples/simulation_","model","_",id,"_",m,"_",basis.idx,".RData")
 if(file.exists(file2save)){stop("job already finished")}
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
@@ -92,7 +92,7 @@ if(model == "logskew"){
         # samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # init = par.skew.normal[i,]
         # fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,F,F),basis=basis,thres=30,model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
-        fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=100,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
+        fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         print(fit.result1$par)
         print(par.skew.normal[i,])
         fit.logskew.angular[[i]] <- fit.result1
