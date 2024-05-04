@@ -567,6 +567,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     fixed2 = fixed
     if(model == "logskew"){
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
+        fixed2[-idx.para] = TRUE
         object.func <- function(par,opt=TRUE,ncore=NULL){
             #if(trace) print(par)
             par2 = init; par2[!fixed2] = par
@@ -622,8 +623,8 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
                 a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             }
             init[!fixed2] = opt.result$par
-            # fixed2[-idx.para] = fixed[-idx.para]
-            # fixed2[idx.para] = TRUE
+            fixed2[-idx.para] = fixed[-idx.para]
+            fixed2[idx.para] = TRUE
             a = cbind(matrix(init[idx.para],ncol=length(idx.para),nrow=nrow(a),byrow=T),a)[,!fixed2]
             init.list = split(a,row(a)) 
             if(method=="L-BFGS-B"){
