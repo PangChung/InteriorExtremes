@@ -89,11 +89,11 @@ if(model == "logskew"){
         fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         print(fit.logskew.angular[[i]]$par)
         print(par.skew.normal[i,])
-        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
+        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
         init = fit.logskew.comp[[i]]$par
-        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(T,T,T,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
+        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(T,T,T,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
         init = fit.logskew.comp[[i]]$par
-        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
+        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
         print(fit.logskew.comp[[i]]$par)
         print(i)
     }
@@ -101,22 +101,22 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
-par.skew.list[[i]] <- list(sigma=vario.func(coord,c(0.5,1.5)))
-par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
-par.skew <- alpha2delta(par.skew.list[[i]]) 
-par.logskew = list(par.skew[[1]][1:2,1:2],par.skew[[2]][1:2])
-par.logskew[[2]] = c(0,0)
-data=samples.skew.normal[[i]][,1:2]
-summary(nloglik(par=par.logskew,data,model="logskew"))
-summary(nloglik(par=par.logskew,data,model="BR"))
-summary(V_logskew(data,par.logskew,alpha.para=FALSE))
-summary(V(data,par.logskew[[1]]))
+# par.skew.list[[i]] <- list(sigma=vario.func(coord,c(0.5,1.5)))
+# par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
+# par.skew <- alpha2delta(par.skew.list[[i]]) 
+# par.logskew = list(par.skew[[1]][1:2,1:2],par.skew[[2]][1:2])
+# par.logskew[[2]] = c(0,0)
+# data=samples.skew.normal[[i]][,1:2]
+# summary(nloglik(par=par.logskew,data,model="logskew"))
+# summary(nloglik(par=par.logskew,data,model="BR"))
+# summary(V_logskew(data,par.logskew,alpha.para=FALSE))
+# summary(V(data,par.logskew[[1]]))
 
-summary(partialV_logskew(data,1,par.logskew,alpha.para=FALSE))
-summary(nVI(data,par.logskew[[1]],1))
+# summary(partialV_logskew(data,1,par.logskew,alpha.para=FALSE))
+# summary(nVI(data,par.logskew[[1]],1))
 
-summary(intensity_logskew(data,par.logskew,alpha.para=FALSE,log=FALSE))
-summary(nVI(data,par.logskew[[1]],c(1,2)))
+# summary(intensity_logskew(data,par.logskew,alpha.para=FALSE,log=FALSE))
+# summary(nVI(data,par.logskew[[1]],c(1,2)))
 
 if(model == "truncT"){
     lb=c(0.01,0.01,0.01,0)
