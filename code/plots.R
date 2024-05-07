@@ -292,7 +292,8 @@ dev.off()
 ## plot the boxplot for the simulation study ## 
 # load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
 ## load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
-load("data/simulation_study_logskew_results_vario_1.RData",e1<-new.env())
+# load("data/simulation_study_logskew_results_vario_1.RData",e1<-new.env())
+load("data/simulation_study_logskew_results_vario_100_new.RData",e1<-new.env())
 #load("data/simulation_study_logskew_results_vario_50_1.RData",e1<-new.env())
 #load("data/simulation_study_logskew_results_vario_2.RData",e2<-new.env())
 data = cbind(1,rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
@@ -329,10 +330,8 @@ p <- ggplot(data_long, aes(x = factor(id), y = value)) +
 #   geom_boxplot(position = position_dodge(width=0.75),width=0.4, color="grey", alpha=1) +
   geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,position=position_dodge(width = 1)) +
   facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
-  labs(title = "Efficiency of the angular density estimation method with 2000 replicates on a 15 by 15 grid",
-       x = "Cases",
-       y = "Value",
-       fill = "Threshold") +
+    labs(x = "Cases",
+            y = "Value") + 
   theme(axis.text = element_text(size = 14),
         axis.title.x = element_text(size = 16),
         strip.text = element_text(size = 16),
@@ -373,16 +372,14 @@ p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("
   geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,
   position=position_dodge(width = 1)) +
   facet_wrap(~ facet, scales = "free",ncol=2,nrow=1,labeller = label_parsed) +
-  labs(title = "Comparing angular method and pairwise likelihood with 500 replicates on a 15 by 15 grid",
-       x = "Cases",
-       y = "Value",
-       fill = "Method") +
+  labs(x = "Cases",
+       y = "Value")  + 
   theme(axis.text = element_text(size = 14),
         strip.text = element_text(size = 16),
         axis.title.x = element_text(size = 16),
         axis.title.y = element_text(size = 16),
         plot.title = element_text(hjust = 0.5, size = 16),
-        legend.title = element_text(size = 16))
+        legend.title = element_text(size = 16),legend.position = "none")
 
 pdf("figures/simulation_est_boxplots_final_BR_30.pdf",width=5*2,height=4,onefile=TRUE)
 p
@@ -413,16 +410,14 @@ p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(thres,labels=c(
   geom_point(data=par.truncT_long,aes(x=factor(id),y=value),color="black",size=1,
   position=position_dodge(width = 1)) +
   facet_wrap(~ facet, scales = "free",ncol=2,nrow=1,labeller = label_parsed) +
-  labs(title = "Efficiency of the angular density estimation method with 2000 replicates on a 10 by 10 grid",
-       x = "Cases",
-       y = "Value",
-       fill = "Threshold") +
+  labs(x = "Cases",
+       y = "Value") + 
   theme(axis.text = element_text(size = 14),
         strip.text = element_text(size = 16),
         axis.title.x = element_text(size = 16),
         axis.title.y = element_text(size = 16),
         plot.title = element_text(hjust = 0.5, size = 16),
-        legend.title = element_text(size = 16))
+        legend.title = element_text(size = 16),legend.position = "none")
 
 pdf("figures/simulation_est_boxplots_final_truncT.pdf",width=5*2,height=4,onefile=TRUE)
 p
