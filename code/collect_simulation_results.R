@@ -6,9 +6,10 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = "vario_100";basis.idx="new"
+idx.file = "vario_100";basis.idx="comp2"
 # files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
-files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
+# files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
+files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_comp2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
 # files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_comp_\\d+.RData"),full.names=TRUE,recursive=FALSE)
 load(files.list[[1]],e<-new.env())
 par.skew.normal = e$par.skew.normal[,-3]
@@ -31,14 +32,13 @@ extract_results <- function(files){
             # idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){max(abs(x$par[1:2]))})))
             # e$fit.logskew.angular[[id.1]]$par <- e$fit.logskew.angular[[id.1]]$others[[idx]]$par
             # idx = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x){x$value})))
-            # est <- matrix(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x1){par=x1$par;c(par[1:2],par[4:5]/par[3])})),nrow=length(e$fit.logskew.angular[[id.1]]$others),byrow=TRUE)
-            # idx = which.min(apply(est,1,function(x){max(abs(x-par.skew.normal[id.1,]))}))
+            # est <- matrix(unlist(lapply(e$fit.logskew.angular[[id.1]]$others,function(x1){par=x1$par;c(e$fit.logskew.angular[[id.1]]$par[1:2],par[2:3]/par[1])})),nrow=length(e$fit.logskew.angular[[id.1]]$others),byrow=TRUE)
+            # idx = which.min(apply(est,1,function(x){max(abs(x[-c(1:2)]-par.skew.normal[id.1,-c(1:2)]))}))
             # idx.value = which.min(unlist(lapply(e$fit.logskew.angular[[id.1]]$others[idx],function(x){max(abs(x$par[3:5]/x$par[3]))})))
             # par = e$fit.logskew.angular[[id.1]]$others[idx][[idx.value]]$par
             # par[3:5] = par[3:5]/par[3]
             # e$fit.logskew.angular[[id.1]]$others[idx][[idx.value]]$par <- par[-3]
             # return(e$fit.logskew.angular[[id.1]]$others[idx][[idx.value]])
-            
             # e$fit.logskew.angular[[id.1]]$par <- apply(est,2,median)
             par = e$fit.logskew.angular[[id.1]]$par
             par = c(par[1:2],par[4:5]/par[3])   
