@@ -441,8 +441,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     H =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
 
     sigma.tilde.inv = H[-idx,-idx,drop=FALSE]
-    sigma.tilde.inv.chol = chol(sigma.tilde.inv)
-    sigma.tilde = chol2inv(sigma.tilde.inv.chol)
+    sigma.tilde = chol2inv(chol(sigma.tilde.inv))
 
     alpha.tilde = alpha[-idx]
     b1 =c((1 + alpha.tilde %*% sigma.tilde %*% alpha.tilde)^(-1/2))
@@ -451,7 +450,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     func <- function(i){
         xi.log = log(x[i,])
         xi.tilde = xi.log + a
-        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.log[idx] + ((sigma.inv %*% ones)/sum.sigma.inv+H%*%a)[-idx]))
+        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.log[idx] + ((sigma.inv %*% ones)/sum.sigma.inv + H%*%a)[-idx]))
         tau.tilde = c(b1 * (alpha[idx] %*% xi.log[idx] + alpha %*% a + alpha[-idx] %*% mu.tilde))
         scale.val = unname(cbind(rbind(sigma.tilde, -delta.tilde),c(-delta.tilde,1)))
         mu.val = c(xi.log[-idx] - mu.tilde, tau.tilde)
