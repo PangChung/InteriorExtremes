@@ -343,7 +343,7 @@ pdf("figures/simulation_est_boxplots_final.pdf",width=10,height=6,onefile=TRUE)
 p
 dev.off()
 
-#load("data/simulation_study_logskew_results_vario_50_BR.RData",e1<-new.env())
+# load("data/simulation_study_logskew_results_vario_50_BR.RData",e1<-new.env())
 # load("data/simulation_study_logskew_results_vario_BR.RData",e1<-new.env())
 # load("data/simulation_study_logskew_results_vario_BR_comp.RData",e2<-new.env())
 load("data/simulation_study_logskew_results_vario_30_BR.RData",e1<-new.env())
