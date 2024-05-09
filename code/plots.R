@@ -428,12 +428,13 @@ dev.off()
 ## plot the extremal coef for the application ########################
 ######################################################################
 load("data/data_application.RData")
-load("data/application_results_new_3.RData",e<-new.env())
-e$results2$par
+load("data/application_results_new_2.RData",e<-new.env())
+par = e$results2$par;par[4:5] = par[4:5]/par[3]
+e$results2$par = par[-3]
 e$results4$par
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
 par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
-par.list[[2]] = alpha.func(par=e$results2$par[-c(1:2)],b.mat=e$basis)
+par.list[[2]] = alpha.func(par=c(1,e$results2$par[-c(1:2)]),b.mat=e$basis)
 par.list = alpha2delta(par.list)
 pairs = comb_n(1:ncol(distmat),2)
 library(Matrix)
@@ -508,7 +509,7 @@ for(i in 1:length(idx.centers)){
             geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
 }
 
-pdf("figures/extcoef_application.pdf",width=4*3+2,height=6,onefile=TRUE)
+pdf("figures/extcoef_application_2.pdf",width=4*3+2,height=6,onefile=TRUE)
 for(i in 1:length(idx.centers)){
     grid.arrange(grobs=list(p1[[i]],p2[[i]],p3[[i]]),nrow=1,widths=c(4,5,5))
 }
