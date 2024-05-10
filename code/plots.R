@@ -429,12 +429,12 @@ dev.off()
 ######################################################################
 load("data/data_application.RData")
 load("data/application_results_new_2.RData",e<-new.env())
-par = e$results2$par;par[4:5] = par[4:5]/par[3]
-e$results2$par = par[-3]
-e$results4$par
+# par = e$results2$par;par[4:5] = par[4:5]/par[3]
+e$results2$par;e$results2$time
+e$results4$par;e$results4$time
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
 par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
-par.list[[2]] = alpha.func(par=c(1,e$results2$par[-c(1:2)]),b.mat=e$basis)
+par.list[[2]] = alpha.func(par=c(e$results2$par[-c(1:2)]),b.mat=e$basis)
 par.list = alpha2delta(par.list)
 pairs = comb_n(1:ncol(distmat),2)
 library(Matrix)
@@ -449,7 +449,7 @@ diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extco
 diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,]<0)}))
 sum(diff.col.sums > 0.5)
 
-idx.centers = apply(maxima.frechet[which(rowmeans(maxima.frechet)>14),],1,function(x) which.max(x))
+idx.centers = c(apply(maxima.frechet[which(rowmeans(maxima.frechet)>14),],1,function(x) which.min(x)),apply(maxima.frechet[which(rowmeans(maxima.frechet)>14),],1,function(x) which.max(x)))
 idx.centers = c(idx.centers,e$idx.centers)
 p1 <- p2 <- p3 <- p5 <- list()
 #diff.extcoef = c()
