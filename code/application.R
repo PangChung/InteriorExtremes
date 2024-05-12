@@ -28,7 +28,7 @@ idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)
 #plot(x=loc.sub.trans[,1],y=loc.sub.trans[,2],xlab="x",ylab="y",main="Data",pch=20)
 #points(x=loc.sub.trans[idx.centers,1],y=loc.sub.trans[idx.centers,2],col="red",pch=20)
 
-loc.sub.trans = apply(loc.sub.trans,2,function(x) x-min(x)+1)
+#loc.sub.trans = apply(loc.sub.trans,2,function(x) x-min(x)+1)
 
 # basis <- matrix(0,nrow=D,ncol=length(idx.centers))
 # basis[1:floor(D/2),1] = 0.1;basis[(D-floor(D/2)+1):D,1] = -0.1

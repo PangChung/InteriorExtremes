@@ -430,8 +430,8 @@ dev.off()
 load("data/data_application.RData")
 load("data/application_results_new_2.RData",e<-new.env())
 # par = e$results2$par;par[4:5] = par[4:5]/par[3]
-e$results2$par;e$results2$time
-e$results4$par;e$results4$time
+e$results2$par;e$results2$value;e$results2$time
+e$results4$par;e$results4$value;e$results4$time
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
 par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
 par.list[[2]] = alpha.func(par=c(e$results2$par[-c(1:2)]),b.mat=e$basis)
