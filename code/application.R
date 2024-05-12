@@ -44,7 +44,7 @@ idx.para = 1:2
 switch(id,
     results1 <- fit.model(data=maxima.frechet,loc=distmat,init=init,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=2,model="logskew",maxit=1000,FUN=cov.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para), 
     
-    {results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init[idx.para],fixed=c(F,T),thres=14,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
+    {results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init[idx.para],fixed=c(F,F),thres=14,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
     init[1:2] = results4$par
     results2 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=14,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,step2=TRUE,idx.para=1:2)},
 
