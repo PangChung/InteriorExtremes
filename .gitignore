@@ -5,3 +5,5 @@
 *.log
 *.err
 *.OU
+*.DS_Store
+.DS_Store
