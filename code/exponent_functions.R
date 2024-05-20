@@ -606,9 +606,9 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     }
     if(opt){
         if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian,ncore=ncores)
         }else{
-            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian,ncore=ncores)
         }
         if(model=="logskew" & any(!fixed[-idx.para]) & step2){
             n.alpha = sum(!fixed[-idx.para])
