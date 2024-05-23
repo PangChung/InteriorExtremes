@@ -86,10 +86,7 @@ if(model == "logskew"){
         # par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
         if(!file.exists(file.samples)){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-        }
-        data = simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),riskr=sum,ncores=ncores)
-        fit.result1 <- fit.model.pareto(data=data,loc=coord,init=init,fixed=c(F,F,T,T,T),basis=basis,thres=0.5,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,step2=FALSE,idx.para=idx.para)
-        
+        }        
         # true.ext.coef <- unlist(mclapply(all.pairs.list,true_extcoef,par=alpha2delta(par.skew.list[[i]]),model="logskew1",mc.cores=ncores,mc.set.seed = FALSE))
         # print(range(true.ext.coef))
         # samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
@@ -107,6 +104,13 @@ if(model == "logskew"){
 
 
 print(t0 <- proc.time() - t0)
+
+init = c(5,1.5,1,1,1)
+m = 2000
+par <- list(sigma=vario.func(coord,init[idx.para]))
+par$alpha <- alpha.func(par=init[-idx.para],b.mat=basis)
+data = simu_Pareto_logskew(m=m,par=alpha2delta(par),riskr=sum,ncores=ncores)
+fit.result1 <- fit.model.pareto(data=data,loc=coord,init=init,fixed=c(F,F,T,T,T),basis=basis,thres=1,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,step2=FALSE,idx.para=idx.para)
 
 if(model == "truncT"){
     lb=c(0.01,0.01,0.01,0)

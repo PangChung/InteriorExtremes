@@ -701,7 +701,7 @@ fit.model.pareto <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",
     idx.thres = data.sum > thres*n #& data.sum < 1000*n 
     print(paste("#sampels: ",sum(idx.thres)))
     if(sum(idx.thres)<3){idx.thres = which(order(data.sum,decreasing=TRUE)<=3)}
-    #data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
+    # data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
     data = data[idx.thres,]
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
     if(is.null(lb)){lb=rep(-Inf,length(init))}
