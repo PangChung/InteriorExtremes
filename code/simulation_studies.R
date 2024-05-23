@@ -87,6 +87,7 @@ if(model == "logskew"){
         if(!file.exists(file.samples)){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         }
+        # data = simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
         # true.ext.coef <- unlist(mclapply(all.pairs.list,true_extcoef,par=alpha2delta(par.skew.list[[i]]),model="logskew1",mc.cores=ncores,mc.set.seed = FALSE))
         # print(range(true.ext.coef))
         # samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)

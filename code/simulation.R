@@ -162,12 +162,8 @@ simu_logskew <- function(m,par,ncores=NULL){
 simu_logskew2 <- function(m,par,ncores=NULL){  
     delta = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
-    omega = diag(sqrt(diag(sigma)))
-    omega.inv = diag(diag(omega)^(-1))
-    sigma.bar = omega.inv %*% sigma %*% omega.inv
-    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    tau.new = delta * diag(omega)
-    sigma.star = rbind(cbind(sigma.bar, delta), c(delta, 1))
+    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
+    sigma.star = rbind(cbind(sigma, delta), c(delta, 1))
     sigma.star.chol = chol(sigma.star)
     # Simulate the max-stable process
     idx.loc = cbind(1:m,1)
@@ -179,7 +175,7 @@ simu_logskew2 <- function(m,par,ncores=NULL){
         if(m.idx.j==0){return(NULL)}
         func.i <- function(i){
             x <- c(t(sigma.star.chol) %*% rnorm(n+1))
-            while(x[n+1] + tau.new[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+            while(x[n+1] + delta[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
             x0 <- c(omega %*% x[1:n] + sigma[,j])
             val <- exp(x0-a);val <- val/val[j]
             return(val)
@@ -249,18 +245,14 @@ simu_logskew2 <- function(m,par,ncores=NULL){
             print(paste0(c(count,sum(idx.finish),m),collapse = "/"))
         }
     }
-    return(Z)
+    return(z)
 }
 
 simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
     delta = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
-    omega = diag(sqrt(diag(sigma)))
-    omega.inv = diag(diag(omega)^(-1))
-    sigma.bar = omega.inv %*% sigma %*% omega.inv
-    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    tau.new = delta * diag(omega)
-    sigma.star = rbind(cbind(sigma.bar, delta), c(delta, 1))
+    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
+    sigma.star = rbind(cbind(sigma, delta), c(delta, 1))
     sigma.star.chol = chol(sigma.star)
     Z = matrix(NA,ncol=n,nrow=m)
     # Simulate the r-Pareto process 
@@ -268,7 +260,7 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
         func.i <- function(i){
             j = sample(1:n,1)
             x <- c(t(sigma.star.chol) %*% rnorm(n+1))
-            while(x[n+1] + tau.new[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+            while(x[n+1] + delta[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
             x0 <- c(omega %*% x[1:n] + sigma[,j])
             val <- exp(x0-a);val <- val/val[j]
             return(val/sum(val))
