@@ -264,7 +264,6 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
     sigma.star.chol = chol(sigma.star)
     Z = matrix(NA,ncol=n,nrow=m)
     # Simulate the r-Pareto process 
-    r = mev::rgp(m,1,1,1)
     func <- function(m.i){
         func.i <- function(i){
             j = sample(1:n,1)
@@ -281,8 +280,8 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
         }
         return(do.call(rbind,z))
     }
-    z = func(m)
-    z = z *  r
+    r = mev::rgp(m,1,1,1)
+    z = func(m)*r
     idx.finish <- apply(z,1,riskr) > 1
     Z[idx.finish,] = z[idx.finish,]
     while(any(!idx.finish)){
@@ -315,7 +314,7 @@ simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
     a = T_j_val/phi*2^((nu-2)/2)*gamma_1*(pi^(-1/2))
     Z = matrix(NA,ncol=n,nrow=m)
     # Simulate the r-Pareto process
-    r = mev::rgp(m,1,1,1)
+    
     func <- function(m.i){
         j = sample(1:n,1)
         if(m.i > 0 & j<=n){
@@ -326,8 +325,8 @@ simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
         }
         return(NULL)
     }
-    z = func(m)
-    z = z *  r
+    r = mev::rgp(m,1,1,1)
+    z = func(m)*r
     idx.finish <- apply(z,1,riskr) > 1
     Z[idx.finish,] = z[idx.finish,]
     while(any(!idx.finish)){
