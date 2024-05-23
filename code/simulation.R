@@ -252,20 +252,92 @@ simu_logskew2 <- function(m,par,ncores=NULL){
     return(Z)
 }
 
-ks.test.new <- function(x,n=1000){
-    y = runif(length(x))
-    ks.test.boot <- function(x,y){
-        func <- function(idx){
-            ind.sample.x <- sample(1:length(x),n,replace=FALSE)
-            ind.sample.y <- sample(1:length(y),n,replace=FALSE)
-            val = ks.test(x[ind.sample.x],y[ind.sample.y])$statistic
-            return(val)
+simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
+    delta = par[[2]];sigma = par[[1]]
+    n = nrow(sigma)
+    omega = diag(sqrt(diag(sigma)))
+    omega.inv = diag(diag(omega)^(-1))
+    sigma.bar = omega.inv %*% sigma %*% omega.inv
+    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
+    tau.new = delta * diag(omega)
+    sigma.star = rbind(cbind(sigma.bar, delta), c(delta, 1))
+    sigma.star.chol = chol(sigma.star)
+    Z = matrix(NA,ncol=n,nrow=m)
+    # Simulate the r-Pareto process 
+    r = mev::rgp(m,1,1,1)
+    func <- function(m.i){
+        func.i <- function(i){
+            j = sample(1:n,1)
+            x <- c(t(sigma.star.chol) %*% rnorm(n+1))
+            while(x[n+1] + tau.new[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
+            x0 <- c(omega %*% x[1:n] + sigma[,j])
+            val <- exp(x0-a);val <- val/val[j]
+            return(val/sum(val))
         }
-        val = unlist(lapply(1:1000,func))
-        return(val)
+        if(!is.null(ncores)){
+            z = mclapply(1:m.i,func.i,mc.cores=ncores)    
+        }else{
+            z = lapply(1:m.i,func.i)
+        }
+        return(do.call(rbind,z))
     }
-    stat.cut.thres <- min(quantile(ks.test.boot(x,x),0.95),quantile(ks.test.boot(y,y),0.95))
-    val = median(ks.test.boot(x,y))
-    return(val < stat.cut.thres)
+    z = func(m)
+    z = z *  r
+    idx.finish <- apply(z,1,riskr) > 1
+    Z[idx.finish,] = z[idx.finish,]
+    while(any(!idx.finish)){
+        m.temp = sum(!idx.finish)
+        z.temp = func(m.temp)*mev::rgp(m.temp,1,1,1)
+        idx.finish.temp = apply(z.temp,1,riskr) > 1
+        if(any(idx.finish.temp)){
+            idx.finish[!idx.finish] = idx.finish.temp
+            Z[!idx.finish[idx.finish.temp],] = z.temp[idx.finish.temp,]
+        }
+    }
+    return(Z)
 }
 
+simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
+    nu = par[[2]];sigma = par[[1]]
+    n = nrow(sigma)
+    phi = mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),mean=rep(0,n),sigma=sigma)[[1]]
+    gamma_1 = gamma((nu+1)/2)
+    a_fun <- function(j,upper){
+        sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j]) 
+        sigma.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F]/sigma[j,j])/(nu+1)/sigma[j,j] 
+        val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j]/sigma[j,j],upper=upper-sigma[-j,j]/sigma[j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[[1]]
+        return(list(val,sigma.j))
+    }
+    if(!is.null(ncores)) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
+    T_j_val = sapply(T_j,function(x) x[[1]])
+    sigma.list = lapply(T_j,function(x) x[[2]])
+    sigma.chol = lapply(sigma.list,chol)
+    a = T_j_val/phi*2^((nu-2)/2)*gamma_1*(pi^(-1/2))
+    Z = matrix(NA,ncol=n,nrow=m)
+    # Simulate the r-Pareto process
+    r = mev::rgp(m,1,1,1)
+    func <- function(m.i){
+        j = sample(1:n,1)
+        if(m.i > 0 & j<=n){
+            val = TruncatedNormal::rtmvt(n=m.i,mu=sigma[,j]/sigma[j,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
+            if(!is.matrix(val)){ val = matrix(val,nrow=m.i)}
+            val = t(t(val)^nu * a[j]/a)
+            return(val/sum(val))
+        }
+        return(NULL)
+    }
+    z = func(m)
+    z = z *  r
+    idx.finish <- apply(z,1,riskr) > 1
+    Z[idx.finish,] = z[idx.finish,]
+    while(any(!idx.finish)){
+        m.temp = sum(!idx.finish)
+        z.temp = func(m.temp)*mev::rgp(m.temp,1,1,1)
+        idx.finish.temp = apply(z.temp,1,riskr) > 1
+        if(any(idx.finish.temp)){
+            idx.finish[!idx.finish] <- idx.finish.temp
+            Z[!idx.finish[idx.finish.temp],] <- z.temp[idx.finish.temp,]
+        }
+    }
+    return(Z)
+}
