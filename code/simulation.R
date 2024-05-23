@@ -340,3 +340,4 @@ simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
     }
     return(Z)
 }
+

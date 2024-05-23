@@ -693,3 +693,111 @@ vario.func <- function(loc,par){ ##return a covariance matrix
     cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
     return(cov.mat + .Machine$double.eps * diag(n))
 }
+
+fit.model.pareto <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
+                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2){
+    t0 <- proc.time()
+    n = ncol(data)
+    data.sum = apply(data,1,sum)
+    idx.thres = data.sum > thres*n #& data.sum < 1000*n 
+    print(paste("#sampels: ",sum(idx.thres)))
+    if(sum(idx.thres)<3){idx.thres = which(order(data.sum,decreasing=TRUE)<=3)}
+    #data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
+    data = data[idx.thres,]
+    if(is.null(fixed)){fixed = rep(FALSE,length(init))}
+    if(is.null(lb)){lb=rep(-Inf,length(init))}
+    if(is.null(ub)){ub=rep(Inf,length(init))}
+    fixed2 = fixed
+    if(model == "logskew"){
+    ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
+        # fixed2[-idx.para] = TRUE
+        object.func <- function(par,opt=TRUE,ncore=NULL){
+            #if(trace) print(par)
+            par2 = init; par2[!fixed2] = par
+            par.1 = par2[idx.para];par.2 = par2[-idx.para]
+            cov.mat = FUN(loc,par.1)
+            b.mat <- basis #/ sqrt(diag(cov.mat))
+            alpha = alpha.func(par=par.2,b.mat= b.mat)
+            if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
+            para.temp = list(sigma=cov.mat,alpha=alpha)
+            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
+            if(opt) return(-mean(val)) else return(-mean(val))
+        }
+    }
+    if(model == "truncT"){
+    ## 3 parameters: 2 for the covariance function; 1 for the df parameter
+        object.func <- function(par,opt=TRUE,ncore=NULL){
+            #if(trace) print(par)
+            par2 = init; par2[!fixed] = par
+            par.1 = par2[idx.para];nu = par2[-idx.para]
+            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
+            cov.mat = cov.func(loc,par.1)
+            para.temp = list(sigma=cov.mat,nu=nu)
+            val = intensity_truncT(data,par=para.temp,T_j=a_fun(para.temp,ncores=ncores),log=TRUE,ncores=ncore) 
+            if(opt) return(-mean(val)) else return(-mean(val))
+        }
+    }
+    if(model == "BR"){
+    ## 3 parameters: 2 for the covariance function;
+        object.func <- function(par,opt=TRUE,ncore=NULL){
+            par2 = init; par2[!fixed] = par
+            par.1 = par2[idx.para]
+            cov.mat = FUN(loc,par.1)
+            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
+            val = nVI(data,cov.mat,1:n,logval=TRUE)
+            if(opt) return(-mean(val)) else return(-mean(val))
+        }
+    }
+    if(opt){
+        if(method=="L-BFGS-B"){
+            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian,ncore=ncores)
+        }else{
+            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian,ncore=ncores)
+        }
+        if(model=="logskew" & any(!fixed[-idx.para]) & step2){
+            n.alpha = sum(!fixed[-idx.para])
+            if(n.alpha==2){
+                a = seq(0,2*pi,length.out=ncores)
+                a = cbind(cos(a),sin(a))
+            } else {
+                a = matrix(rnorm(ncores*n.alpha),ncol=n.alpha)
+                a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
+            }
+            init[!fixed2] = opt.result$par
+            fixed2[-idx.para] = fixed[-idx.para]
+            fixed2[idx.para] = TRUE
+            a = cbind(matrix(init[idx.para],ncol=length(idx.para),nrow=nrow(a),byrow=T),a)[,!fixed2]
+            init.list = split(a,row(a)) 
+            if(method=="L-BFGS-B"){
+                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+            }else{
+                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+            }
+            opt.values <- unlist(lapply(opt.result2,function(x){x$value}))
+            opt.result = opt.result2[[which.min(opt.values)]]
+            init[!fixed2] = opt.result$par
+            fixed2 = fixed;fixed2[-idx.para]=TRUE
+            if(method=="L-BFGS-B"){
+                opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+            }else{
+                opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+            }
+            opt.result$others = opt.result2
+        }
+    }else{
+        return(object.func(init[!fixed],opt,ncores))
+    }
+    if(hessian){
+        h = 1e-3
+        par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
+        val.object = object.func(opt.result$par,opt=FALSE)
+        val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
+        opt.result$K = var(val.object.grad)
+        opt.result$hessian.inv = solve(opt.result$hessian)
+        opt.result$sigma = opt.result$hessian.inv %*% opt.result$K %*% opt.result$hessian.inv
+    }
+    par2 = init; par2[!fixed2] = opt.result$par
+    opt.result$par = par2
+    opt.result$time <- proc.time() - t0
+    return(opt.result)
+}
