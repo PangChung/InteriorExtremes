@@ -693,6 +693,7 @@ vario.func <- function(loc,par){ ##return a covariance matrix
     return(cov.mat + .Machine$double.eps * diag(n))
 }
 
+## fit the r-Pareto processes ##
 fit.model.pareto <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
                     ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2){
     t0 <- proc.time()

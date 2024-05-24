@@ -248,6 +248,7 @@ simu_logskew2 <- function(m,par,ncores=NULL){
     return(z)
 }
 
+## simulate the r-Pareto process associated with the log-skew normal process ##
 simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
     delta = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
@@ -288,6 +289,7 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
     return(Z)
 }
 
+## simulate the r-Pareto process associated with the truncated process ##
 simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
     nu = par[[2]];sigma = par[[1]]
     n = nrow(sigma)
