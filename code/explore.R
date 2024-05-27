@@ -293,45 +293,51 @@ func <- function(x.i){
 hcubature(func,lowerLimit = rep(0,2),upperLimit=rep(Inf,2))
 
 coord = cbind(1,c(1,5))
-a.true = c(-4,-2,-1,0.1,0,0.1,1,2,4)
+a.true = seq(-4,0,length.out=9)#c(-4,-2,-1,0.1,0,0.1,1,2,4)
+a.est = a.true
 par(mfrow=c(3,3),mar=c(3,3,2,1))
 for(i in 1:length(a.true)){
     par.logskew = alpha2delta(list(matrix(c(1,0.5,0.5,1),2,2),c(-a.true[i],a.true[i])))
     samples.logskew <- simu_logskew(m=10^3,par=par.logskew,ncores=10)
-    a = seq(-5,5,0.1)
+    a = seq(-10,0,0.1)
     values = unlist(mclapply(a,FUN=function(ai){par.log = alpha2delta(list(matrix(c(1,0.5,0.5,1),2,2),c(-ai,ai)));mean(nloglik(par.log,samples.logskew,model="logskew"))},mc.cores=10,mc.set.seed = FALSE))
-
     plot(a,values,pch=20)
+    a.est[i] = a[which.min(values)]
     abline(v=a[which.min(values)],col="red")
     abline(v=a.true[i],col="blue")
 }
+cbind(a.true,a.est)
 
 coord = cbind(1,c(1,5))
-a.true = c(-4,-2,-1,0.1,0,0.1,1,2,4)
+a.true = seq(-4,0,length.out=9)#c(-4,-2,-1,0.1,0,0.1,1,2,4)
+a.est = a.true
 par(mfrow=c(3,3),mar=c(3,3,2,1))
 for(i in 1:length(a.true)){
     par.logskew = alpha2delta(list(matrix(c(1,0.5,0.5,1),2,2)*10,c(-a.true[i],a.true[i])))
     samples.logskew <- simu_logskew(m=10^3,par=par.logskew,ncores=10)
-    a = seq(-5,5,0.1)
+    a = seq(-10,0,0.1)
     values = unlist(mclapply(a,FUN=function(ai){par.log = alpha2delta(list(matrix(c(1,0.5,0.5,1),2,2)*5,c(-ai,ai)));mean(nloglik(par.log,samples.logskew,model="logskew"))},mc.cores=10,mc.set.seed = FALSE))
-
     plot(a,values,pch=20)
+    a.est[i] = a[which.min(values)]
     abline(v=a[which.min(values)],col="red")
     abline(v=a.true[i]/sqrt(10),col="blue")
 }
+cbind(a.true,a.est)
 
 coord = cbind(1,c(1,5))
-a.true = c(-4,-2,-1,0.1,0,0.1,1,2,4)
+a.true = seq(-4,0,length.out=9)#c(-4,-2,-1,0.1,0,0.1,1,2,4)
+a.est = a.true
 par(mfrow=c(3,3),mar=c(3,3,2,1))
 for(i in 1:length(a.true)){
     par.logskew = alpha2delta(list(vario.func(coord,c(3,1.5)),c(-a.true[i],a.true[i])))
     samples.logskew <- simu_logskew(m=10^3,par=par.logskew,ncores=10)
-    a = seq(-5,5,0.1)
-    values = unlist(mclapply(a,FUN=function(ai){par.log = alpha2delta(list(vario.func(coord,c(2,1)),c(-ai,ai)));mean(nloglik(par.log,samples.logskew,model="logskew"))},mc.cores=10,mc.set.seed = FALSE))
-
+    a = seq(-10,0,0.1)
+    values = unlist(mclapply(a,FUN=function(ai){par.log = alpha2delta(list(vario.func(coord,c(3,1.5)),c(-ai,ai)));mean(nloglik(par.log,samples.logskew,model="logskew"))},mc.cores=10,mc.set.seed = FALSE))
     plot(a,values,pch=20)
+    a.est[i] = a[which.min(values)]
     abline(v=a[which.min(values)],col="red")
     abline(v=a.true[i],col="blue")
 }
+cbind(a.true,a.est)
 
 
