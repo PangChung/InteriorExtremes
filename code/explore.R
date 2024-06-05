@@ -325,7 +325,7 @@ for(i in 1:length(a.true)){
 cbind(a.true,a.est)
 
 coord = cbind(1,c(1,5))
-a.true = seq(-4,0,length.out=9)#c(-4,-2,-1,0.1,0,0.1,1,2,4)
+a.true = seq(-4,0,length.out=9) #c(-4,-2,-1,0.1,0,0.1,1,2,4)
 a.est = a.true
 par(mfrow=c(3,3),mar=c(3,3,2,1))
 for(i in 1:length(a.true)){
