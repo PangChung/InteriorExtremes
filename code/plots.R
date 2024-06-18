@@ -172,18 +172,18 @@ for(i in 1:length(sigma.22.vec)){
             scale_fill_distiller(palette="RdBu",limits=c(1,2)) +
             geom_contour(colour="black",breaks=brks) + 
             geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks,stat="contour") + 
-            labs(title=bquote(Bivariate~extremal~coefficient:~sigma[22]==.(sigma.22)),x=expression(eta[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
-            theme(axis.text = element_text(size=12), 
-                            strip.text = element_text(size = 16),
-                            axis.title.x = element_text(size=16), 
-                            axis.title.y = element_text(size=16), 
-                            plot.title = element_text(hjust = 0.5,size=16),legend.title = element_text(size=16),legend.position = "none")
+            labs(title=bquote(~sigma[22]==.(sigma.22)),x=expression(eta[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
+            theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14), 
+                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.position = "none")
             
 }
 
 p.list[[length(sigma.22.vec)+1]] <- as_ggplot(get_legend(p.list[[1]]+theme(legend.position = "right")))
 
-pdf("figures/bivariate_extcoef_rho_alpha.pdf",width=5*length(sigma.22.vec)+1,height = 4,onefile = TRUE)
+pdf("figures/bivariate_extcoef_rho_alpha.pdf",width=10,height = 3,onefile = TRUE)
 grid.arrange(grobs=p.list,nrow=1,widths=c(rep(5,length(sigma.22.vec)),1))
 dev.off()
 
@@ -200,18 +200,18 @@ for(i in 1:length(df)){
     true.ext.t <- unlist(lapply(1:length(par.truncT.list),function(id) mev::expme(z=rep(1,2),par=list(Sigma=par.truncT.list[[id]][[1]],df=par.truncT.list[[id]][[2]]),model="xstud") ))
     data = rbind(data,data.frame(x=rho,truncT=true.ext.truncT,extT = true.ext.t,df=df[i]))
 }
-new_labels <- paste0("Delta==",df)
+new_labels <- paste0("nu==",df)
 data$df <- factor(data$df,labels=new_labels)
-p <- ggplot(data) + geom_line(aes(x=x,y=truncT,color="Truncated extremal-t"),,linewidth=1) + 
+p <- ggplot(data) + geom_line(aes(x=x,y=truncT,color="Truncated extremal-t"),linewidth=1) + 
 geom_line(aes(x=x,y=extT,color="Extremal-t"),linewidth=1) + coord_cartesian(ylim = c(1, 2)) + geom_hline(yintercept=c(1,2),linetype="dashed") +
-facet_wrap(~df,labeller =label_parsed) + theme(legend.position = "bottom") + labs(title="Bivariate extremal coefficient",x=expression(rho),y=expression(theta[2]),color="Model") +
+facet_wrap(~df,labeller =label_parsed) + theme(legend.position = "none") + labs(x=expression(rho),y=expression(theta[2]),color=" ") +
 theme(axis.text = element_text(size=10), 
             strip.text = element_text(size = 14), 
             axis.title.x = element_text(size=14), 
             axis.title.y = element_text(size=14), 
             plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.text = element_text(size=14))
 
-pdf("figures/bivariate_extcoef_truncT.pdf",width=8,height = 3,onefile = TRUE)
+pdf("figures/bivariate_extcoef_truncT.pdf",width=10,height = 3,onefile = TRUE)
 p
 dev.off()
 
@@ -300,7 +300,7 @@ data = cbind(1,rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],
 #data = rbind(data,cbind(2,rep(1:6,times=sapply(e1$est.mat.list[[2]],nrow)),1,do.call(rbind,e1$est.mat.list[[2]])))
 #data = rbind(data,cbind(1,rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
 # data = rbind(data,cbind(2,rep(1:6,times=sapply(e2$est.mat.list[[2]],nrow)),2,do.call(rbind,e2$est.mat.list[[2]])))
-data = as.data.frame(data);names(data) = c("thres","id","type","hat(lambda)","hat(nu)","hat(b)[1]","hat(b)[2]")
+data = as.data.frame(data);names(data) = c("thres","id","type","hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 str(data)
 
 # Reshape the data to a long format
@@ -309,7 +309,7 @@ data_long <- pivot_longer(data, -c(thres, id, type), names_to = "variable", valu
 data_long$facet = paste0(data_long$variable)
 data_long$facet = factor(data_long$facet)
 par.skew.normal = as.data.frame(e1$par.skew.normal)
-colnames(par.skew.normal) = c("hat(lambda)","hat(nu)","hat(b)[1]","hat(b)[2]")
+colnames(par.skew.normal) = c("hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 par.skew.normal$id = 1:nrow(par.skew.normal)
 
 par.skew.normal$type = 1
@@ -351,20 +351,30 @@ load("data/simulation_study_logskew_results_vario_30_BR_comp.RData",e2<-new.env(
 
 data = cbind(rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
 data = rbind(data,cbind(rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
-data = as.data.frame(data);names(data) = c("id","type","hat(lambda)","hat(nu)","hat(b)[1]","hat(b)[2]")
+data = as.data.frame(data);names(data) = c("id","type","hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 data = data[,1:4]
 str(data)
+
+
 
 # Reshape the data to a long format
 data_long <- pivot_longer(data, -c(id, type), names_to = "variable", values_to = "value")
 data_long$facet = factor(data_long$variable)
 par.skew.normal = as.data.frame(e1$par.skew.normal[,1:2])
-colnames(par.skew.normal) = c("hat(lambda)","hat(nu)")
+colnames(par.skew.normal) = c("hat(lambda)","hat(vartheta)")
 par.skew.normal$id = 1:nrow(par.skew.normal)
 par.skew.normal = rbind(par.skew.normal,par.skew.normal)
 par.skew.normal$type = rep(1:2,each=nrow(par.skew.normal)/2)
 par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type), names_to = "variable", values_to = "value")
 par.skew.normal_long$facet = factor(par.skew.normal_long$variable)
+
+rel_bias_1 <- rel_bias_2 <- matrix(NA,nrow=6,ncol=2)
+for(idx in 1:6){
+    data_sub_1 = subset(data,id==idx & type==1)
+    data_sub_2 = subset(data,id==idx & type==2)
+    rel_bias_1[idx,] <- c(mean(data_sub_1[,3]-par.skew.normal[idx,1])/par.skew.normal[idx,1],mean(data_sub_1[,4]-par.skew.normal[idx,2])/par.skew.normal[idx,2])
+    rel_bias_2[idx,] <- c(mean(data_sub_2[,3]-par.skew.normal[idx,1])/par.skew.normal[idx,1],mean(data_sub_2[,4]-par.skew.normal[idx,2])/par.skew.normal[idx,2])
+}
 
 p <- ggplot(data_long, aes(x = factor(id), y = value,fill=factor(type,labels=c("Angular","Composite")))) +
   geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
@@ -389,7 +399,7 @@ load("data/simulation_study_truncT_results_final_2000.RData",e1<-new.env())
 data = cbind(rep(1:nrow(e1$par.truncT),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
 data = rbind(data,cbind(rep(1:nrow(e1$par.truncT),times=sapply(e1$est.mat.list[[2]],nrow)),2,do.call(rbind,e1$est.mat.list[[2]])))
 data = rbind(data,cbind(rep(1:nrow(e1$par.truncT),times=sapply(e1$est.mat.list[[3]],nrow)),3,do.call(rbind,e1$est.mat.list[[3]])))
-data = as.data.frame(data);names(data) = c("id","thres","hat(lambda)","hat(nu)","hat(Delta)")
+data = as.data.frame(data);names(data) = c("id","thres","hat(lambda)","hat(vartheta)","hat(nu)")
 data = subset(data[,1:4],id %in% 1:2)
 str(data)
 
@@ -397,7 +407,7 @@ str(data)
 data_long <- pivot_longer(data, -c(id, thres), names_to = "variable", values_to = "value")
 data_long$facet = factor(data_long$variable)
 par.truncT = as.data.frame(e1$par.truncT[1:2,1:2])
-colnames(par.truncT) = c("hat(lambda)","hat(nu)")
+colnames(par.truncT) = c("hat(lambda)","hat(vartheta)")
 par.truncT$id = 1:nrow(par.truncT)
 par.truncT = rbind(par.truncT,par.truncT,par.truncT)
 par.truncT$thres = rep(1:3,each=nrow(par.truncT)/3)
