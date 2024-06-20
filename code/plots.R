@@ -460,7 +460,7 @@ diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extco
 diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,]<0)}))
 sum(diff.col.sums > 0.5)
 
-idx.centers = c(apply(maxima.frechet[which(rowmeans(maxima.frechet)>14),],1,function(x) which.min(x)),apply(maxima.frechet[which(rowmeans(maxima.frechet)>14),],1,function(x) which.max(x)))
+idx.centers = c(apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,function(x) which.min(x)),apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,function(x) which.max(x)))
 idx.centers = c(idx.centers,e$idx.centers)
 p1 <- p2 <- p3 <- p5 <- list()
 #diff.extcoef = c()
