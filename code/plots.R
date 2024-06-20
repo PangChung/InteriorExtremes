@@ -439,6 +439,7 @@ dev.off()
 ######################################################################
 load("data/data_application.RData")
 load("data/application_results_new_2.RData",e<-new.env())
+load("data/application_results_new_4.RData",e)
 # par = e$results2$par;par[4:5] = par[4:5]/par[3]
 e$results2$par;e$results2$value;e$results2$time
 e$results4$par;e$results4$value;e$results4$time
@@ -612,6 +613,8 @@ dev.off()
 
 
 save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+
+
 
 
 
