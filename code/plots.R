@@ -484,9 +484,12 @@ for(i in 1:length(idx.centers)){
             geom_tile(aes(fill=z)) +
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
             geom_contour(colour="black",breaks=brks) + 
-            # geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
-            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "none") + coord_fixed() + 
-            labs(title = paste("Fitted skewed Brown-Resnick"), x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
+            labs( x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 14, color = "black", vjust = 0.8, hjust = 0.5) + 
+            theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14), 
+                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.position = "none") + coord_fixed() 
 
 
     data$z = true.ext.coef.BR
@@ -495,9 +498,12 @@ for(i in 1:length(idx.centers)){
             geom_tile(aes(fill=z)) +
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
             geom_contour(colour="black",breaks=brks) + 
-            # geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
-            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "none") + coord_fixed() + 
-            labs(title = paste("Fitted Brown-Resnick"), x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
+            labs(x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 14, color = "black", vjust = 0.8, hjust = 0.5) + 
+            theme(axis.text = element_text(size=12), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14), 
+                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.position = "none") + coord_fixed() 
 
    
     data$z = empirical.extcoef
@@ -505,10 +511,12 @@ for(i in 1:length(idx.centers)){
     p3[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
             geom_tile(aes(fill=z)) +
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
-            #geom_contour(colour="black",breaks=brks) + 
-            #geom_dl(aes(label=after_stat(level)),method="bottom.pieces",breaks=brks, stat="contour") + 
-            theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "right") + coord_fixed() + 
-            labs(title = paste("Empirical"), x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
+            labs(x = "Longitude", y = "Latitude",fill=expression(hat(theta)[2])) +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 14, color = "black", vjust = 0.8, hjust = 0.5) + 
+            theme(axis.text = element_text(size=12), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14), 
+                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.position = "right") + coord_fixed() 
 
     data$z = abs(true.ext.coef - empirical.extcoef) - abs(true.ext.coef.BR - empirical.extcoef)
     p5[[i]] <- ggplot(data, aes(x = x, y = y, fill=as.factor(z<0)))  + 
@@ -520,9 +528,9 @@ for(i in 1:length(idx.centers)){
             geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
 }
 
-pdf("figures/extcoef_application_2.pdf",width=4*3+2,height=6,onefile=TRUE)
+pdf("figures/extcoef_application_2.pdf",width=3.5*3+1,height=5,onefile=TRUE)
 for(i in 1:length(idx.centers)){
-    grid.arrange(grobs=list(p1[[i]],p2[[i]],p3[[i]]),nrow=1,widths=c(4,5,5))
+    grid.arrange(grobs=list(p1[[i]],p2[[i]],p3[[i]]),nrow=1,widths=c(3.5,3.5,4.35))
 }
 dev.off()
 
