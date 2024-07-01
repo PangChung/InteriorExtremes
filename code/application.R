@@ -22,7 +22,7 @@ set.seed(12342)
 load("data/data_application.RData")
 D = ncol(maxima.frechet)
 ncores = NULL # floor(detectCores()/2)
-idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
+idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=3)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
 #idx.centers = floor(matrix(seq(1,nrow(distmat),length.out=6),ncol=2,3))
 
 #plot(x=loc.sub.trans[,1],y=loc.sub.trans[,2],xlab="x",ylab="y",main="Data",pch=20)
@@ -52,12 +52,15 @@ switch(id,
     results3 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init[idx.para],fixed=c(F,T),thres=16,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)}
 )
 
-results2 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=14,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,step2=FALSE,idx.para=1:2)
 
-results21 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=results2$par,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=14,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=TRUE,opt=FALSE,trace=TRUE,step2=FALSE,idx.para=1:2)
+results2 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=10,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=FALSE,opt=TRUE,trace=TRUE,step2=FALSE,idx.para=1:2)
 
-results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init[idx.para],fixed=c(F,F),thres=16,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="Nelder-Mead",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
+results21 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=results2$par,fixed=c(F,F,rep(F,n.alpha)),basis=basis,thres=10,model="logskew",maxit=1000,FUN=vario.func,alpha.func=alpha.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0,rep(-Inf,n.alpha)),ub=c(Inf,1.99,rep(Inf,n.alpha)),hessian=TRUE,opt=FALSE,trace=TRUE,step2=FALSE,idx.para=1:2)
 
-results41 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=results4$par[idx.para],fixed=c(F,F),thres=12,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=TRUE,opt=FALSE,trace=TRUE,idx.para=1:2)
+results4 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=init[idx.para],fixed=c(F,F),thres=10,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=1:2)
+
+results41 <- fit.model(data=maxima.frechet,loc=loc.sub.trans,init=results4$par[idx.para],fixed=c(F,F),thres=10,model="BR",maxit=1000,FUN=vario.func,ncores=ncores,method="L-BFGS-B",lb=c(0.01,0.0),ub=c(Inf,1.99),hessian=TRUE,opt=FALSE,trace=TRUE,idx.para=1:2)
+
+solve(results21$K)
 
 save.image(file=paste0(DataPath,"data/application_results_new_",id,".RData"))
