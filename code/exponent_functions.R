@@ -652,12 +652,12 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     }
     if(hessian){
         h = 1e-3
-        par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
-        val.object = object.func(opt.result$par,opt=FALSE)
-        val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
+        browser()
+        par.mat.grad01 = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h/2,length(opt.result$par))
+        par.mat.grad10 = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) - diag(h/2,length(opt.result$par))
+        val.object.grad = apply(1:sum(!fixed),1,function(i){(object.func(par.mat.grad01[i,],opt=FALSE) - object.func(par.mat.grad10[i,],opt=FALSE))/h})
         opt.result$K = var(val.object.grad)
-        opt.result$hessian.inv = solve(opt.result$hessian)
-        opt.result$sigma = opt.result$hessian.inv %*% opt.result$K %*% opt.result$hessian.inv
+        opt.result$hessian.inv = opt.result$hessian
     }
     par2 = init; par2[!fixed2] = opt.result$par
     opt.result$par = par2
