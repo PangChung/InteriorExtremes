@@ -21,7 +21,7 @@ para.range = c(3) # range for the covariance function ##
 para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
-para.alpha = rbind(c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = c(1,2) #rbind(c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -92,8 +92,8 @@ if(model == "logskew"){
         fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
         init = fit.logskew.comp[[i]]$par
         fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(T,T,F,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
-        # init = fit.logskew.comp[[i]]$par
-        # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]][1:100,],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
+        init = fit.logskew.comp[[i]]$par
+        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx,drop=FALSE],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
         print(fit.logskew.comp[[i]]$par)
         print(i)
     }
@@ -101,22 +101,63 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
-# par.skew.list[[i]] <- list(sigma=vario.func(coord,c(0.5,1.5)))
-# par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
-# par.skew <- alpha2delta(par.skew.list[[i]]) 
-# par.logskew = list(par.skew[[1]][1:2,1:2],par.skew[[2]][1:2])
-# par.logskew[[2]] = c(0,0)
-# data=samples.skew.normal[[i]][,1:2]
-# summary(nloglik(par=par.logskew,data,model="logskew"))
-# summary(nloglik(par=par.logskew,data,model="BR"))
-# summary(V_logskew(data,par.logskew,alpha.para=FALSE))
-# summary(V(data,par.logskew[[1]]))
+par.skew.list[[1]] <- list(sigma=vario.func(coord,c(3,1)))
+par.skew.list[[1]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para]*10,b.mat=basis)
+par.skew.list[[2]] <- list(sigma=vario.func(coord,c(0.3,1.99)))
+par.skew.list[[2]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para]*10,b.mat=basis)
 
-# summary(partialV_logskew(data,1,par.logskew,alpha.para=FALSE))
-# summary(nVI(data,par.logskew[[1]],1))
+data=simu_logskew(m=2000,par=alpha2delta(par.skew.list[[2]]),ncores=ncores)
 
-# summary(intensity_logskew(data,par.logskew,alpha.para=FALSE,log=FALSE))
-# summary(nVI(data,par.logskew[[1]],c(1,2)))
+a0 = nloglik(par=alpha2delta(par.skew.list[[1]]),data,model="logskew")
+b0 = nloglik(par=alpha2delta(par.skew.list[[2]]),data,model="logskew")
+
+a1 = V_logskew(data,par.skew.list[[1]],alpha.para=TRUE)
+a2 = partialV_logskew(data,1,par.skew.list[[1]],alpha.para=TRUE)
+a3 = partialV_logskew(data,2,par.skew.list[[1]],alpha.para=TRUE)
+a4 = partialV_logskew(data,c(1,2),par.skew.list[[1]],alpha.para=TRUE)
+
+h=0.01
+epsilon = matrix(c(h,0),ncol=2,nrow=nrow(data),byrow=TRUE)
+a2_1 = -(V_logskew(data + epsilon,par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon,par.skew.list[[1]],alpha.para=TRUE))/h/2
+summary(a2_1-a2)
+plot(a2_1,a2,pch=20)
+abline(0,1,col="red")
+a3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE))/h/2
+summary(a3_1-a3)
+plot(a3_1,a3,pch=20)
+abline(0,1,col="red")
+
+b1 = V_logskew(data,par.skew.list[[2]],alpha.para=TRUE)
+b2 = partialV_logskew(data,1,par.skew.list[[2]],alpha.para=TRUE)
+b3 = partialV_logskew(data,2,par.skew.list[[2]],alpha.para=TRUE)
+b4 = partialV_logskew(data,c(1,2),par.skew.list[[2]],alpha.para=TRUE)
+
+b2_1 = -(V_logskew(data + epsilon,par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data-epsilon,par.skew.list[[2]],alpha.para=TRUE))/h/2
+summary(b2_1-b2)
+plot(b2_1,b2,pch=20)
+abline(0,1,col="red")
+b3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE))/h/2
+summary(b3_1-b3)
+plot(b3_1,b3,pch=20)
+abline(0,1,col="red")
+
+
+plot(log(data[,1]),log(data[,2]),col=as.numeric(a0-b0<0)+1,pch=20)
+
+plot(log(data[,1]),log(data[,2]),col=as.numeric(a1-b1>0)+1,pch=20)
+
+plot(log(data[,1]),log(data[,2]),col=as.numeric(a2*a3-b2*b3>0)+1,pch=20)
+
+plot(log(data[,1]),log(data[,2]),col=as.numeric((a2*a3+a4)-(b2*b3+b4)>0)+1,pch=20)
+
+plot(log(data[,1]),log(data[,2]),col=as.numeric(-a1+log(a2*a3+a4)+b1-log(b2*b3+b4)>0)+1,pch=20)
+
+plot(log(data[,1]),log(data[,2]),col=as.numeric(a4-b4>0)+1)
+
+which.max(abs(a2-b2))
+which.max(abs(a3-b3))
+which.max(abs(a4-b4))
+
 
 if(model == "truncT"){
     lb=c(0.01,0.01,0.01,0)

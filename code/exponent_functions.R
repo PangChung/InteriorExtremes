@@ -357,6 +357,7 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
     a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
+    # browser()
     func <- function(j){        
         if(j<n){
             A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)])
@@ -446,13 +447,13 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     alpha.tilde = alpha[-idx]
     b1 =c((1 + alpha.tilde %*% sigma.tilde %*% alpha.tilde)^(-1/2))
     delta.tilde = b1 * c(sigma.tilde %*% alpha.tilde)
-
+    scale.val = unname(cbind(rbind(sigma.tilde, -delta.tilde),c(-delta.tilde,1)))
+    # browser()
     func <- function(i){
         xi.log = log(x[i,])
         xi.tilde = xi.log + a
         mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.log[idx] + ((sigma.inv %*% ones)/sum.sigma.inv + H%*%a)[-idx]))
         tau.tilde = c(b1 * (alpha[idx] %*% xi.log[idx] + alpha %*% a + alpha[-idx] %*% mu.tilde))
-        scale.val = unname(cbind(rbind(sigma.tilde, -delta.tilde),c(-delta.tilde,1)))
         mu.val = c(xi.log[-idx] - mu.tilde, tau.tilde)
         phi = pnorm(tau.tilde)
         intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
@@ -474,6 +475,13 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
     }
 }
 
+biv_condnorm <- function(sigma,mu){
+    condsigma = sigma[1,1] - sigma[1,2]^2
+    fun <- function(x){
+        return(dnorm(x,sd=1)*pnorm(mu[1],mean=sigma[1,2]*x,sd=sqrt(condsigma)))
+    }
+    return(integrate(fun,-Inf,mu[2])$value)
+}
 
 # calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
 empirical_extcoef <- function(idx,data){
