@@ -565,7 +565,6 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     data.sum = apply(data,1,sum)
     idx.thres = data.sum > thres*n #& data.sum < 1000*n 
     print(paste("#sampels: ",sum(idx.thres)))
-    if(sum(idx.thres)<3){idx.thres = which(order(data.sum,decreasing=TRUE)<=3)}
     
     data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
@@ -584,7 +583,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
             val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)) else return(-mean(val))
+            if(opt) return(-mean(val)) else return(-val)
         }
     }
     if(model == "truncT"){
@@ -597,7 +596,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
             val = intensity_truncT(data,par=para.temp,T_j=a_fun(para.temp,ncores=ncores),log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)) else return(-mean(val))
+            if(opt) return(-mean(val)) else return(-val)
         }
     }
     if(model == "BR"){
@@ -608,7 +607,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             cov.mat = FUN(loc,par.1)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             val = nVI(data,cov.mat,1:n,logval=TRUE)
-            if(opt) return(-mean(val)) else return(-mean(val))
+            if(opt) return(-mean(val)) else return(-val)
         }
     }
     if(opt){
@@ -652,17 +651,76 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     }
     if(hessian){
         h = 1e-3
-        browser()
         par.mat.grad01 = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h/2,length(opt.result$par))
         par.mat.grad10 = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) - diag(h/2,length(opt.result$par))
-        val.object.grad = apply(1:sum(!fixed),1,function(i){(object.func(par.mat.grad01[i,],opt=FALSE) - object.func(par.mat.grad10[i,],opt=FALSE))/h})
+        val.object.grad = lapply(1:sum(!fixed),function(i){(object.func(par.mat.grad01[i,],opt=FALSE) - object.func(par.mat.grad10[i,],opt=FALSE))/h})
+        val.object.grad = matrix(unlist(val.object.grad),ncol = sum(!fixed),byrow=FALSE)
         opt.result$K = var(val.object.grad)
-        opt.result$hessian.inv = opt.result$hessian
     }
     par2 = init; par2[!fixed2] = opt.result$par
     opt.result$par = par2
     opt.result$time <- proc.time() - t0
     return(opt.result)
+}
+
+partialV_logskew_num <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
+    # set a random seed
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
+    sigma = par[[1]]
+    if(!is.matrix(x)){x <- matrix(x,nrow=1)}
+    n = ncol(x)
+    if(length(idx)==0){
+        val = V_logskew(x,par,alpha.para,ncores=ncores)
+        if(log) return(log(val))
+        else return(val)
+    }
+    if(length(idx)==n){
+        val = intensity_logskew(x,par,alpha.para,ncores,log)
+        return(val)
+    }
+    ones <- rep(1,n)
+    one.mat <- matrix(1,n,n)
+    I <- diag(1,n)
+    sigma.chol = chol(sigma)
+    sigma.inv = chol2inv(sigma.chol)
+    sum.sigma.inv = sum(sigma.inv)
+    
+    if(alpha.para){
+        alpha = par[[2]]
+        delta = c(sigma %*% alpha)/sqrt(c( 1 + alpha %*% sigma %*% alpha))
+    }else{
+        delta = par[[2]]
+        alpha = c(1 - delta %*% sigma.inv %*% delta)^(-1/2) * c(sigma.inv %*% delta)
+    }
+
+    a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
+
+    func <- function(i){
+        xi.log = log(x[i,])
+        xi.tilde = xi.log + a
+        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.log[idx] + ((sigma.inv %*% ones)/sum.sigma.inv + H%*%a)[-idx]))
+        tau.tilde = c(b1 * (alpha[idx] %*% xi.log[idx] + alpha %*% a + alpha[-idx] %*% mu.tilde))
+        mu.val = c(xi.log[-idx] - mu.tilde, tau.tilde)
+        phi = pnorm(tau.tilde)
+        intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
+        val = intensity.marginal * max(mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]],0)/phi
+        return(val)
+    } 
+
+    if(!is.null(ncores)){
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+    }
+    else{
+        val = unlist(lapply(1:nrow(x),func))
+    }
+    assign(".Random.seed", oldSeed, envir=globalenv())
+    if(log){
+        return(log(val))
+    }
+    else{
+        return(val)
+    }
 }
 
 # function to create list of lists: 
