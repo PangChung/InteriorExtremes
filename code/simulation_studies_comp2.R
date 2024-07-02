@@ -21,7 +21,7 @@ para.range = c(3) # range for the covariance function ##
 para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
-para.alpha = matrix(c(1,2),nrow=2,ncol=1) #rbind(c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
