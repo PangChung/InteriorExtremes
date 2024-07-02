@@ -12,7 +12,7 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 set.seed(1)
-para.alpha = rbind(c(0,0),c(-1,-2),c(-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = rbind(c(1,0,0),c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
 d = 32
 coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
@@ -26,7 +26,7 @@ basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 0.1; basis[(d^2-floor(d^2/2)+1)
 basis.list[[1]] <- basis    
 
 idx = floor(matrix(seq(1,nrow(coord),length.out=6),ncol=2,3))
-basis <- sapply(1:(ncol(para.alpha)+1),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
+basis <- sapply(1:(ncol(para.alpha)),function(x){y <- rep(0,nrow(coord));y[idx[x,]] <- c(-2,2);y})
 basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 0.1; basis[(d^2-floor(d^2/2)+1):d^2,1] = -0.1
 basis.list[[2]] <- basis
 
@@ -73,7 +73,7 @@ for(idx in 1:2){
         true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.1[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
         data <- rbind(data,data.frame( x = coord[idx2,1],
                         y = coord[idx2,2],
-                        z = true.ext.coef,idx.case=paste0("b[1]==",para.alpha[idx.case,1],"~b[2]==",para.alpha[idx.case,2]),idx.center=idx))
+                        z = true.ext.coef,idx.case=paste0("b[1]==",para.alpha[idx.case,2],"~b[2]==",para.alpha[idx.case,3]),idx.center=idx))
         true.ext.coef <- unlist(mclapply(all.pairs.list[ind.idx.center],true_extcoef,par=par.list.2[[idx.case]],model="logskew1",mc.cores=5,mc.set.seed = FALSE))
 
         if(idx.case == 1 ){
@@ -132,7 +132,7 @@ dev.off()
 p.list = list()
 sigma.22 = 10
 rho = 1:9/10*sigma.22
-BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),delta=c(0,0),sigma=matrix(c(sigma.22,x,x,sigma.22),2,2))}))
+BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),list(matrix(c(sigma.22,x,x,sigma.22),2,2),c(0,0)))}))
 for(i in 1:length(rho)){
     r = sqrt(min(eigen(matrix(c(1,rho[i]/sigma.22,rho[i]/sigma.22,1),2))$values))
     delta = seq(-r,r,length.out=100)
@@ -141,7 +141,7 @@ for(i in 1:length(rho)){
 
     idx.valid = apply(delta.grid,1,function(x){sum(x^2) < r^2}) # & abs(diff(x))<sqrt(2-2*rho)
     
-    values <- unlist(lapply(delta.grid.list[idx.valid],function(x){V_bi_logskew(c(1,1),delta=x,sigma=matrix(c(sigma.22,rho[i],rho[i],sigma.22),2,2))}))
+    values <- unlist(lapply(delta.grid.list[idx.valid],function(x){V_bi_logskew(c(1,1),list(sigma=matrix(c(sigma.22,rho[i],rho[i],sigma.22),2,2),delta=x))}))
 
     data = data.frame(x=delta.grid[idx.valid,1],y=delta.grid[idx.valid,2],z=values)
     
@@ -159,10 +159,10 @@ sigma.22.vec = c(1,5,10)
 for(i in 1:length(sigma.22.vec)){
     sigma.22 = sigma.22.vec[i]
     rho = seq(0,0.999,length.out=100)*sigma.22
-    BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),delta=c(0,0),sigma=matrix(c(sigma.22,x,x,sigma.22),2,2))}))
+    BR.values = unlist(lapply(rho,function(x){V_bi_logskew(c(1,1),list(matrix(c(sigma.22,x,x,sigma.22),2,2),c(0,0)))}))
     alpha = seq(0,5,length.out=100)
     para.grid = as.matrix(expand.grid(alpha,rho))
-    values <- lapply(split(para.grid,row(para.grid)),function(x){par.list = alpha2delta(list(matrix(c(sigma.22,x[2],x[2],sigma.22),2,2),alpha=c(x[1],-x[1])));V_bi_logskew(c(1,1),delta=par.list[[2]],sigma=par.list[[1]])})
+    values <- lapply(split(para.grid,row(para.grid)),function(x){par.list = alpha2delta(list(matrix(c(sigma.22,x[2],x[2],sigma.22),2,2),alpha=c(x[1],-x[1])));V_bi_logskew(c(1,1),par.list)})
     data = data.frame(x=para.grid[,1],y=para.grid[,2],z=unlist(values))
     data2 = data.frame(x=0,y=para.grid[,2],z=BR.values)
 
