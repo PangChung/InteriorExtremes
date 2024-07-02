@@ -144,7 +144,6 @@ summary(b3_1-b3)
 plot(b3_1,b3,pch=20)
 abline(0,1,col="red")
 
-
 plot(log(data[,1]),log(data[,2]),col=as.numeric(a0-b0<0)+1,pch=20)
 
 plot(log(data[,1]),log(data[,2]),col=as.numeric(a1-b1>0)+1,pch=20)
