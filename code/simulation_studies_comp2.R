@@ -21,7 +21,7 @@ para.range = c(3) # range for the covariance function ##
 para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
-para.alpha = c(1,2) #rbind(c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
+para.alpha = matrix(c(1,2),nrow=2,ncol=1) #rbind(c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
 para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
@@ -101,12 +101,15 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
+coord = coord[c(1,3),]
+par.skew.list <- list()
+basis = matrix(c(1,-1),ncol=1)
 par.skew.list[[1]] <- list(sigma=vario.func(coord,c(3,1)))
-par.skew.list[[1]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para]*10,b.mat=basis)
+par.skew.list[[1]]$alpha <- alpha.func(par=par.skew.normal[1,-idx.para],b.mat=basis)
 par.skew.list[[2]] <- list(sigma=vario.func(coord,c(0.3,1.99)))
-par.skew.list[[2]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para]*10,b.mat=basis)
+par.skew.list[[2]]$alpha <- alpha.func(par=par.skew.normal[1,-idx.para],b.mat=basis)
 
-data=simu_logskew(m=2000,par=alpha2delta(par.skew.list[[2]]),ncores=ncores)
+data=simu_logskew(m=2000,par=alpha2delta(par.skew.list[[1]]),ncores=ncores)
 
 a0 = nloglik(par=alpha2delta(par.skew.list[[1]]),data,model="logskew")
 b0 = nloglik(par=alpha2delta(par.skew.list[[2]]),data,model="logskew")
@@ -153,10 +156,6 @@ plot(log(data[,1]),log(data[,2]),col=as.numeric((a2*a3+a4)-(b2*b3+b4)>0)+1,pch=2
 plot(log(data[,1]),log(data[,2]),col=as.numeric(-a1+log(a2*a3+a4)+b1-log(b2*b3+b4)>0)+1,pch=20)
 
 plot(log(data[,1]),log(data[,2]),col=as.numeric(a4-b4>0)+1)
-
-which.max(abs(a2-b2))
-which.max(abs(a3-b3))
-which.max(abs(a4-b4))
 
 
 if(model == "truncT"){
