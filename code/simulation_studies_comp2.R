@@ -135,7 +135,9 @@ b2 = partialV_logskew(data,1,par.skew.list[[2]],alpha.para=TRUE)
 b3 = partialV_logskew(data,2,par.skew.list[[2]],alpha.para=TRUE)
 b4 = partialV_logskew(data,c(1,2),par.skew.list[[2]],alpha.para=TRUE)
 
-b2_1 = -(V_logskew(data + epsilon,par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data-epsilon,par.skew.list[[2]],alpha.para=TRUE))/h/2
+b2_1 = -(V_logskew(data + epsilon,par.skew.list[[2]]) - V_logskew(data-epsilon,par.skew.list[[2]]))/h/2
+
+b2_1 = -(V_bi_logskew(data + epsilon,alpha2delta(par.skew.list[[2]])) - V_bi_logskew(data-epsilon,alpha2delta(par.skew.list[[2]])))/h/2
 summary(b2_1-b2)
 plot(b2_1,b2,pch=20)
 abline(0,1,col="red")

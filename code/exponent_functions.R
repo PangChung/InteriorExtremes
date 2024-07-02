@@ -357,7 +357,6 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
     a = log(2) + diag(sigma)/2 + sapply(delta,pnorm,log.p=TRUE)
     I.mat1 = diag(rep(1,n))
     I.mat2 = diag(rep(1,n-1))
-    # browser()
     func <- function(j){        
         if(j<n){
             A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)])
@@ -365,10 +364,9 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
             A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1))
         }
         sigma.j = A.j %*% sigma %*% t(A.j)
-        sigma.j.chol = chol(sigma.j)
         u.j = c(A.j %*% sigma[,j])
         b3 = c(A.j %*% delta)
-        sigma_circ = unname(cbind(rbind(sigma.j,b3),c(b3,1)))
+        sigma_circ = unname(cbind(rbind(sigma.j,-b3),c(-b3,1)))
         func_temp <- function(i){
             xi = x[i,]
             mu = c(a[-j] - a[j] + log(xi[-j]/xi[j])-u.j,delta[j])
@@ -392,16 +390,19 @@ V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
     return(val)
 }
 
-V_bi_logskew <- function(x,delta,sigma){
+V_bi_logskew <- function(x,par){
+    delta = par[[2]];sigma = par[[1]]
     phi.delta = pnorm(delta)
     phi.delta.log = log(phi.delta)
-    vario.sqrt = sqrt(sigma[1,1] + sigma[2,2] - 2*sigma[1,2])
+    vario.sqrt = sigma[1,1] + sigma[2,2] - 2*sigma[1,2]
     if(!is.matrix(x)) x <- matrix(x,ncol=2)
-    mu.1 = c((phi.delta.log[2]-phi.delta.log[1]+log(x[,2]/x[,1]))/vario.sqrt + vario.sqrt/2,delta[1])
-    mu.2 = c((phi.delta.log[1]-phi.delta.log[2]+log(x[,1]/x[,2]))/vario.sqrt + vario.sqrt/2,delta[2])
-    sigma.1 = matrix(c(1,(delta[1]-delta[2])/vario.sqrt,(delta[1]-delta[2])/vario.sqrt,1),nrow=2)
-    sigma.2 = matrix(c(1,(delta[2]-delta[1])/vario.sqrt,(delta[2]-delta[1])/vario.sqrt,1),nrow=2)
-    val = 1/x[1]/phi.delta[1]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.1,sigma=sigma.1)[[1]] + 1/x[2]/phi.delta[2]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.2,sigma=sigma.2)[[1]]
+    sigma.1 = matrix(c(vario.sqrt,delta[1]-delta[2],delta[1]-delta[2],1),nrow=2)
+    sigma.2 = matrix(c(vario.sqrt,delta[2]-delta[1],delta[2]-delta[1],1),nrow=2)
+
+    mu.1 = cbind(phi.delta.log[2]-phi.delta.log[1]+log(x[,2]/x[,1]) + vario.sqrt/2,delta[1])
+    mu.2 = cbind(phi.delta.log[1]-phi.delta.log[2]+log(x[,1]/x[,2]) + vario.sqrt/2,delta[2])
+    
+    val = unlist(lapply(1:nrow(x),function(i) 1/x[i,1]/phi.delta[1]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.1[i,],sigma=sigma.1)[[1]] + 1/x[i,2]/phi.delta[2]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.2[i,],sigma=sigma.2)[[1]]))
     return(val)
 }
 
