@@ -101,61 +101,52 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
-# coord = coord[c(1,3),]
-# par.skew.list <- list()
-# basis = matrix(c(1,-1),ncol=1)
-# par.skew.list[[1]] <- list(sigma=vario.func(coord,c(3,1)))
-# par.skew.list[[1]]$alpha <- alpha.func(par=par.skew.normal[1,-idx.para],b.mat=basis)
-# par.skew.list[[2]] <- list(sigma=vario.func(coord,c(0.3,1.99)))
-# par.skew.list[[2]]$alpha <- alpha.func(par=par.skew.normal[1,-idx.para],b.mat=basis)
+coord = coord[c(1,3),]
+par.skew.list <- list()
+basis = matrix(c(1,-1),ncol=1)
+par.skew.list[[1]] <- list(sigma=vario.func(coord,c(3,1)))
+par.skew.list[[1]]$alpha <- alpha.func(par=1,b.mat=basis)
+par.skew.list[[2]] <- list(sigma=vario.func(coord,c(0.1,1.99)))
+par.skew.list[[2]]$alpha <- alpha.func(par=1,b.mat=basis)
 
-# data=simu_logskew(m=2000,par=alpha2delta(par.skew.list[[1]]),ncores=ncores)
+data=simu_logskew(m=2000,par=alpha2delta(par.skew.list[[1]]),ncores=ncores)
 
-# a0 = nloglik(par=alpha2delta(par.skew.list[[1]]),data,model="logskew")
-# b0 = nloglik(par=alpha2delta(par.skew.list[[2]]),data,model="logskew")
+a0 = nloglik(par=alpha2delta(par.skew.list[[1]]),data,model="logskew")
+b0 = nloglik(par=alpha2delta(par.skew.list[[2]]),data,model="logskew")
 
-# a1 = V_logskew(data,par.skew.list[[1]],alpha.para=TRUE)
-# a2 = partialV_logskew(data,1,par.skew.list[[1]],alpha.para=TRUE)
-# a3 = partialV_logskew(data,2,par.skew.list[[1]],alpha.para=TRUE)
-# a4 = partialV_logskew(data,c(1,2),par.skew.list[[1]],alpha.para=TRUE)
+mean(a0-b0)
 
-# h=0.01
-# epsilon = matrix(c(h,0),ncol=2,nrow=nrow(data),byrow=TRUE)
-# a2_1 = -(V_logskew(data + epsilon,par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon,par.skew.list[[1]],alpha.para=TRUE))/h/2
-# summary(a2_1-a2)
-# plot(a2_1,a2,pch=20)
-# abline(0,1,col="red")
-# a3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE))/h/2
-# summary(a3_1-a3)
-# plot(a3_1,a3,pch=20)
-# abline(0,1,col="red")
+a1 = V_logskew(data,par.skew.list[[1]],alpha.para=TRUE)
+a2 = partialV_logskew(data,1,par.skew.list[[1]],alpha.para=TRUE)
+a3 = partialV_logskew(data,2,par.skew.list[[1]],alpha.para=TRUE)
+a4 = partialV_logskew(data,c(1,2),par.skew.list[[1]],alpha.para=TRUE)
 
-# b1 = V_logskew(data,par.skew.list[[2]],alpha.para=TRUE)
-# b2 = partialV_logskew(data,1,par.skew.list[[2]],alpha.para=TRUE)
-# b3 = partialV_logskew(data,2,par.skew.list[[2]],alpha.para=TRUE)
-# b4 = partialV_logskew(data,c(1,2),par.skew.list[[2]],alpha.para=TRUE)
+h=0.01
+epsilon = matrix(c(h,0),ncol=2,nrow=nrow(data),byrow=TRUE)
+a2_1 = -(V_logskew(data + epsilon,par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon,par.skew.list[[1]],alpha.para=TRUE))/h/2
+summary(a2_1-a2)
+plot(a2_1,a2,pch=20)
+abline(0,1,col="red")
+a3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE))/h/2
+summary(a3_1-a3)
+plot(a3_1,a3,pch=20)
+abline(0,1,col="red")
 
-# b2_1 = -(V_bi_logskew(data + epsilon,alpha2delta(par.skew.list[[2]])) - V_bi_logskew(data-epsilon,alpha2delta(par.skew.list[[2]])))/h/2
-# summary(b2_1-b2)
-# plot(b2_1,b2,pch=20)
-# abline(0,1,col="red")
-# b3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE))/h/2
-# summary(b3_1-b3)
-# plot(b3_1,b3,pch=20)
-# abline(0,1,col="red")
+b1 = V_logskew(data,par.skew.list[[2]],alpha.para=TRUE)
+b2 = partialV_logskew(data,1,par.skew.list[[2]],alpha.para=TRUE)
+b3 = partialV_logskew(data,2,par.skew.list[[2]],alpha.para=TRUE)
+b4 = partialV_logskew(data,c(1,2),par.skew.list[[2]],alpha.para=TRUE)
 
-# plot(log(data[,1]),log(data[,2]),col=as.numeric(a0-b0<0)+1,pch=20)
+b2_1 = -(V_bi_logskew(data + epsilon,alpha2delta(par.skew.list[[2]])) - V_bi_logskew(data-epsilon,alpha2delta(par.skew.list[[2]])))/h/2
+summary(b2_1-b2)
+plot(b2_1,b2,pch=20)
+abline(0,1,col="red")
+b3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE))/h/2
+summary(b3_1-b3)
+plot(b3_1,b3,pch=20)
+abline(0,1,col="red")
 
-# plot(log(data[,1]),log(data[,2]),col=as.numeric(a1-b1>0)+1,pch=20)
-
-# plot(log(data[,1]),log(data[,2]),col=as.numeric(a2*a3-b2*b3>0)+1,pch=20)
-
-# plot(log(data[,1]),log(data[,2]),col=as.numeric((a2*a3+a4)-(b2*b3+b4)>0)+1,pch=20)
-
-# plot(log(data[,1]),log(data[,2]),col=as.numeric(-a1+log(a2*a3+a4)+b1-log(b2*b3+b4)>0)+1,pch=20)
-
-# plot(log(data[,1]),log(data[,2]),col=as.numeric(a4-b4>0)+1)
-
+plot(log(data[,1]),log(data[,2]),col=as.numeric(a0-b0<0)+1,pch=20)
 
 if(model == "truncT"){
     lb=c(0.01,0.01,0.01,0)
