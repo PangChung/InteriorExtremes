@@ -280,8 +280,9 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         sigma = FUN(loc,par1[idx.para])
         if(model=="BR"){par.list <- list(sigma=sigma)}
         if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-idx.para]);par.list[[3]] <- a_fun()}
-        if(model=="logskew"){b.mat <- basis #/ sqrt(diag(sigma))
-                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))}
+        if(model=="logskew"){b.mat <- basis 
+                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))
+                            par.list <- alpha2delta(par.list)}
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
         if(opt){ 
             val = mean(val,na.rm=TRUE)
@@ -370,7 +371,8 @@ MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR
         if(model=="BR"){par.list=list(sigma=sigma)}
         if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-idx.para]);par.list[[3]] = a_fun(par.list,ncores=ncores)}
         if(model=="logskew"){b.mat <- basis / sqrt(diag(sigma))
-                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))}
+                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))
+                            par.list <- alpha2delta(par.list)}
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
         if(opt){
             val = mean(val,na.rm=TRUE)
