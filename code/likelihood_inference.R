@@ -266,8 +266,9 @@ nlogcomplik <- function(par,data,index,ncores,model){
       val <- nloglik(par=par.index,data[,ind],model)
     }
     browser()
-    if(!is.null(ncores)) res <- rowSums(matrix(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE) 
-    else res <- rowSums(matrix(unlist(lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE)
+    if(!is.null(ncores)) res <- mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)
+    else res = lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)
+    res <- mean(unlist(res))
     return(res)
 }
 
