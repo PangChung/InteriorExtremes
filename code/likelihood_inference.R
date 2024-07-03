@@ -265,6 +265,7 @@ nlogcomplik <- function(par,data,index,ncores,model){
       if(model == "logskew"){par.index[[1]] = par[[1]][ind,ind];par.index[[2]] = par.index[[2]][ind]} 
       val <- nloglik(par=par.index,data[,ind],model)
     }
+    browser()
     if(!is.null(ncores)) res <- rowSums(matrix(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE) 
     else res <- rowSums(matrix(unlist(lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE)
     return(res)
@@ -374,7 +375,6 @@ MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR
         if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
         sigma = FUN(loc,par1[idx.para])
         if(model=="BR"){par.list=list(sigma=sigma)}
-        if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-idx.para]);par.list[[3]] = a_fun(par.list,ncores=ncores)}
         if(model=="logskew"){b.mat <- basis / sqrt(diag(sigma))
                             par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))
                             par.list <- alpha2delta(par.list)}
