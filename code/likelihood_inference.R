@@ -222,7 +222,7 @@ nloglik <- function(par,data,model="BR"){
     }
     if(model == "logskew"){
         all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_logskew,x=data,par=par,alpha.para=FALSE,log=FALSE)})
-        Vdata = V_logskew(data,par)
+        Vdata = V_logskew(data,par,alpha.para=FALSE)
     }
     get.nVI <- function(I){
       nI <- length(I)
