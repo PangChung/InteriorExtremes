@@ -408,11 +408,8 @@ delta2alpha <- function(par){
 true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
     if(model=="logskew1"){
         delta = par[[2]];sigma = par[[1]]
-        if(length(idx)==2){
-            val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL)
-        }else{
-            val = V_bi_logskew(rep(1,length(idx)),delta[idx],sigma[idx,idx])
-        }
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE)
+        
     }
     if(model == "truncT1"){
         n = nrow(par[[1]])

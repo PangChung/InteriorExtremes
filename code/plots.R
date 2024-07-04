@@ -167,18 +167,18 @@ for(i in 1:length(sigma.22.vec)){
     data2 = data.frame(x=0,y=para.grid[,2],z=BR.values)
 
     brks = round(quantile(data$z,probs=seq(0.01,0.99,length.out=4)),2)
+
     p.list[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
-            geom_tile(aes(fill=z)) +
-            scale_fill_distiller(palette="RdBu",limits=c(1,2)) +
-            geom_contour(colour="black",breaks=brks) + 
-            geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks,stat="contour") + 
-            labs(title=bquote(~sigma[22]==.(sigma.22)),x=expression(eta[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
-            theme(axis.text = element_text(size=10), 
-                            strip.text = element_text(size = 14),
-                            axis.title.x = element_text(size=14), 
-                            axis.title.y = element_text(size=14), 
-                            plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.position = "none")
-            
+        geom_tile(aes(fill=z)) +
+        scale_fill_distiller(palette="RdBu",limits=c(1,2)) +
+        geom_contour(colour="black",breaks=brks) + 
+        geom_dl(aes(label=sprintf("%.2f",..level..)), breaks=brks,stat="contour",method=list(dl.trans(x = max(0.01,x),y=max(0.01,y)), "smart.grid")) + 
+        labs(title=bquote(~sigma[22]==.(sigma.22)),x=expression(eta[1]),y=expression(sigma[12]),fill=expression(theta[2])) +
+        theme(axis.text = element_text(size=10), 
+                        strip.text = element_text(size = 14),
+                        axis.title.x = element_text(size=14), 
+                        axis.title.y = element_text(size=14), 
+                        plot.title = element_text(hjust = 0.5,size=14),legend.title = element_text(size=14),legend.position = "none")            
 }
 
 p.list[[length(sigma.22.vec)+1]] <- as_ggplot(get_legend(p.list[[1]]+theme(legend.position = "right")))
@@ -232,10 +232,10 @@ for(i in 1:length(nu.list)){
     for(j in 1:length(para.range.list)){
         nu = nu.list[i]
         para.range = para.range.list[j]
-        init = cbind(seq(1,20,length.out=100),nu,1,0,0)
-        data <- simu_logskew(m=10000,par=alpha2delta(list(cov.func(diff.mat,c(para.range,nu,1)),alpha.func(c(0,0),basis))),ncores=ncores)
-        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F),loc=diff.mat,FUN=cov.func,thres=100,model="BR",lb=rep(-Inf,3),ub=rep(Inf,3),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
-        result1[[i]][[j]] <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F,F,F),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,5),ub=rep(Inf,5),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
+        init = cbind(seq(1,20,length.out=100),nu,1,0,0,0)
+        data <- simu_logskew(m=10000,par=alpha2delta(list(cov.func(diff.mat,c(para.range,nu,1)),alpha.func(c(0,0,0),basis))),ncores=ncores)
+        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) mean(fit.model(data=data,init=x,fixed=c(F,F,F),loc=diff.mat,FUN=cov.func,thres=100,model="BR",lb=rep(-Inf,3),ub=rep(Inf,3),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value))
+        result1[[i]][[j]] <- apply(init, 1, function(x) mean(fit.model(data=data,init=x,fixed=c(F,F,F,F,F,F),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,6),ub=rep(Inf,6),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value))
     }
 }
 
@@ -265,10 +265,10 @@ for(i in 1:length(para.range.list)){
     for(j in 1:length(para.smooth.list)){
         para.range = para.range.list[i]
         para.smooth = para.smooth.list[j]
-        data <- simu_logskew(m=10000,par=alpha2delta(list(vario.func(coord,c(para.range,para.smooth)),alpha.func(c(0,0),basis))),ncores=ncores)
-        init = cbind(seq(1,20,length.out=100),para.smooth,0,0)
-        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) fit.model(data=data,init=x,fixed=c(F,F),loc=coord,FUN=vario.func,thres=100,model="BR",lb=rep(-Inf,2),ub=rep(Inf,2),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
-        result1[[i]][[j]] <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F,F),loc=coord,FUN=vario.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,4),ub=rep(Inf,4),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para))
+        data <- simu_logskew(m=10000,par=alpha2delta(list(vario.func(coord,c(para.range,para.smooth)),alpha.func(c(0,0,0),basis))),ncores=ncores)
+        init = cbind(seq(1,20,length.out=100),para.smooth,0,0,0)
+        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) mean(fit.model(data=data,init=x,fixed=c(F,F),loc=coord,FUN=vario.func,thres=100,model="BR",lb=rep(-Inf,2),ub=rep(Inf,2),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value))
+        result1[[i]][[j]] <- apply(init, 1, function(x) mean(fit.model(data=data,init=x,fixed=c(F,F,F,F,F),loc=coord,FUN=vario.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,5),ub=rep(Inf,5),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value))
     }
 }
 
