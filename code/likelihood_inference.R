@@ -265,7 +265,6 @@ nlogcomplik <- function(par,data,index,ncores,model){
       if(model == "logskew"){par.index[[1]] = par[[1]][ind,ind];par.index[[2]] = par.index[[2]][ind]} 
       val <- nloglik(par=par.index,data[,ind],model)
     }
-    browser()
     if(!is.null(ncores)) res <- mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)
     else res = lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)
     res <- mean(unlist(res))

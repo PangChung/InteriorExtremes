@@ -484,7 +484,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             alpha = alpha.func(par=par.2,b.mat= basis)
             if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
+            val = intensity_logskew(data,par=para.temp,log=TRUE) 
             if(opt) return(-mean(val)) else return(-val)
         }
     }
@@ -624,7 +624,7 @@ fit.model.pareto <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",
             alpha = alpha.func(par=par.2,b.mat= basis)
             if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
+            val = intensity_logskew(data,par=para.temp,log=TRUE) 
             if(opt) return(-mean(val)) else return(-mean(val))
         }
     }
