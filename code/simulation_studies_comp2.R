@@ -98,53 +98,6 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
-coord = coord[c(1,3),]
-par.skew.list <- list()
-basis = matrix(c(1,-1),ncol=1)
-par.skew.list[[1]] <- list(sigma=vario.func(coord,c(3,1)))
-par.skew.list[[1]]$alpha <- alpha.func(par=1,b.mat=basis)
-par.skew.list[[2]] <- list(sigma=vario.func(coord,c(0.1,1.99)))
-par.skew.list[[2]]$alpha <- alpha.func(par=1,b.mat=basis)
-
-data=simu_logskew(m=2000,par=alpha2delta(par.skew.list[[1]]),ncores=ncores)
-
-a0 = nloglik(par=alpha2delta(par.skew.list[[1]]),data,model="logskew")
-b0 = nloglik(par=alpha2delta(par.skew.list[[2]]),data,model="logskew")
-
-sum(a0-b0)
-
-a1 = V_logskew(data,par.skew.list[[1]],alpha.para=TRUE)
-a2 = partialV_logskew(data,1,par.skew.list[[1]],alpha.para=TRUE)
-a3 = partialV_logskew(data,2,par.skew.list[[1]],alpha.para=TRUE)
-a4 = partialV_logskew(data,c(1,2),par.skew.list[[1]],alpha.para=TRUE)
-
-h=0.01
-epsilon = matrix(c(h,0),ncol=2,nrow=nrow(data),byrow=TRUE)
-a2_1 = -(V_logskew(data + epsilon,par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon,par.skew.list[[1]],alpha.para=TRUE))/h/2
-summary(a2_1-a2)
-plot(a2_1,a2,pch=20)
-
-abline(0,1,col="red")
-a3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE))/h/2
-summary(a3_1-a3)
-
-b1 = V_logskew(data,par.skew.list[[2]],alpha.para=TRUE)
-b2 = partialV_logskew(data,1,par.skew.list[[2]],alpha.para=TRUE)
-b3 = partialV_logskew(data,2,par.skew.list[[2]],alpha.para=TRUE)
-b4 = partialV_logskew(data,c(1,2),par.skew.list[[2]],alpha.para=TRUE)
-
-b2_1 = -(V_logskew(data + epsilon,par.skew.list[[2]]) - V_logskew(data-epsilon,par.skew.list[[2]]))/h/2
-
-range(V_bi_logskew(data,par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data,par.skew.list[[2]]))
-
-summary(b2_1-b2)
-
-b3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE))/h/2
-summary(b3_1-b3)
-
-
-plot(log(data[,1]),log(data[,2]),col=as.numeric(a0-b0<0)+1,pch=20)
-
 if(model == "truncT"){
     lb=c(0.01,0.01,0.01,0)
     ub=c(Inf,Inf,1.99,Inf)
