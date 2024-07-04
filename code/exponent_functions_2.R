@@ -193,99 +193,36 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
 
 # this function computes the intensity function 
 # for the log skew-normal based max-stable processes
-# intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
-#     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
-#     set.seed(747380)
-#     sigma = par[[1]]
-#     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
-#     n = ncol(x)
-#     if(n==1) return(1/(x^2))
-#     omega = diag(sqrt(diag(sigma)))
-#     omega_inv = diag(diag(omega)^(-1))
-#     sigma_bar = omega_inv %*% sigma %*% omega_inv
-#     chol.sigma = chol(sigma)
-#     inv.sigma = chol2inv(chol.sigma)
-#     logdet.sigma = sum(log(diag(chol.sigma)))*2
-#     if(alpha.para){
-#         alpha = par[[2]]
-#         delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
-#     }else{
-#         inv.sigma.bar = omega %*% inv.sigma %*% omega
-#         delta = par[[2]]
-#         alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
-#     }
-#     a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-#     sum.inv.sigma = sum(inv.sigma)
-#     one.mat = matrix(1,n,n)
-#     one.vec = rep(1,n)
-#     b = c(alpha %*% omega_inv %*% one.vec/sqrt(sum.inv.sigma))
-#     beta.hat =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma) * (1+b^2)^(-1/2))
-#     A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
-#     delta.hat = (1+b^2)^(-1/2)*b
-#     func <- function(idx){
-#         x_log = log(x[idx,])
-#         x_circ = x_log + a
-#         val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta.hat %*% x_circ + delta.hat/sqrt(sum.inv.sigma),log.p=TRUE) -
-#             1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
-#         val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
-#         return(val)
-#     }
-    
-#     if(!is.null(ncores)){
-#         val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
-#     }
-#     else{
-#         val = unlist(lapply(1:nrow(x),func))
-#     }
-#     assign(".Random.seed", oldSeed, envir=globalenv())
-#     if(log)
-#         return(val)
-#     else
-#         return(exp(val))    
-# }
-
-intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
+intensity_logskew <- function(x,par,alpha.para=TRUE,log=TRUE){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
     if(n==1) return(1/(x^2))
-    omega = diag(sqrt(diag(sigma)))
-    omega_inv = diag(diag(omega)^(-1))
-    sigma_bar = omega_inv %*% sigma %*% omega_inv
+    omega2 = diag(sigma)
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
     if(alpha.para){
         alpha = par[[2]]
-        delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
     }else{
-        inv.sigma.bar = omega %*% inv.sigma %*% omega
         delta = par[[2]]
-        alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
     }
-    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    sum.inv.sigma = sum(inv.sigma)
-    one.mat = matrix(1,n,n)
-    one.vec = rep(1,n)
-    beta.hat =  c(alpha %*% omega_inv %*% (diag(n) - one.mat %*% inv.sigma/sum.inv.sigma))
-    A = inv.sigma - inv.sigma %*% one.mat %*% inv.sigma/sum.inv.sigma 
-    func <- function(idx){
-        x_log = log(x[idx,])
-        x_circ = x_log + a
-        val = -(n-3)/2 * log(2) - (n-1)/2*log(pi) + pnorm(beta.hat %*% x_circ,log.p=TRUE) -
-            1/2*logdet.sigma - 1/2*log(sum.inv.sigma) - sum(x_log)
-        val = val - 1/2 * c(x_circ %*% A %*% x_circ) - c(one.vec %*% inv.sigma %*% x_circ)/sum.inv.sigma + 1/2/sum.inv.sigma
-        return(val)
-    }
-    
-    if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
-    }
-    else{
-        val = unlist(lapply(1:nrow(x),func))
-    }
+    a = log(2) + pnorm(delta,log.p=TRUE)
+    q = rowSums(inv.sigma)
+    sum.q = sum(q);sum.alpha = sum(alpha)
+    q.mat = matrix(q,n,n,byrow=TRUE)
+    x.log = log(x)
+    x.circ = x.log + matrix(a,nrow=nrow(x),byrow=TRUE)
+    beta = (1+sum.alpha^2/sum.q)^(-0.5)
+    tau.tilde = apply(x.circ,1,function(x.i)  beta * sum((alpha - sum.alpha*q/sum.q) * (x.i + omega2/2))+ beta*sum.alpha/sum.q)
+    A = inv.sigma - q %*% t(q)/sum.q
+    val = -(n-3)/2 * log(2) - (n-1)/2*log(pi)-1/2*logdet.sigma - 1/2*log(sum.q) - 1/2 * (sum(q*omega2)-1)/sum.q - 1/8*c(omega2 %*% A %*% omega2) 
+    val = val - rowSums(x.log) - 1/2 * apply(x.circ,1,function(x.i) c(x.i %*% A %*% x.i) + sum(x.i * (2*q/sum.q + c(A %*% omega2))))
+
     assign(".Random.seed", oldSeed, envir=globalenv())
     if(log)
         return(val)
@@ -296,90 +233,40 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL,log=TRUE){
 
 ## this function computes the exponent function 
 ## for the log skew-normal based max-stable processes
-V_logskew <- function(x,par,alpha.para=TRUE,ncores=NULL){
+V_logskew <- function(x,par,alpha.para=TRUE){
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
     if(n==1) return(1/x)
-    omega = diag(sqrt(diag(sigma)))
-    omega_inv = diag(diag(omega)^(-1))
-    sigma_bar = omega_inv %*% sigma %*% omega_inv
-    chol.sigma = chol(sigma)
-    inv.sigma = chol2inv(chol.sigma)
-    logdet.sigma = sum(log(diag(chol.sigma)))*2
+    omega2 = diag(sigma)
+    inv.sigma = chol2inv(chol(sigma))
     if(alpha.para){
         alpha = par[[2]]
-        delta = c(sigma_bar %*% alpha)/sqrt(c(1+alpha %*% sigma_bar %*% alpha))
+        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
     }else{
-        inv.sigma.bar = omega %*% inv.sigma %*% omega
         delta = par[[2]]
-        alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
     }
-    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    b = c(alpha %*% sigma_bar %*% alpha)
-    I.mat1 = diag(rep(1,n))
-    I.mat2 = diag(rep(1,n-1))
-    func <- function(j){        
-        if(j<n){
-        A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)])
-        }else{
-        A.j = cbind(I.mat2[,0:(j-1)],rep(-1,n-1))
-        }
-        sigma.j = A.j %*% sigma %*% t(A.j)
-        sigma.j.chol = chol(sigma.j)
-        sigma.j.inv = chol2inv(sigma.j.chol)
-        omega.j = sqrt(diag(diag(sigma.j),nrow=n-1))
-        omega.j.inv = diag(diag(omega.j)^(-1),nrow=n-1)
-        sigma.j.bar = omega.j.inv %*% sigma.j %*% omega.j.inv
-        # alpha.hat = c(1 - delta %*% omega %*% t(A.j) %*% sigma.j.inv %*% A.j %*% omega %*% delta)^(-1/2) * c(omega.j %*% 
-        #     sigma.j.inv %*% A.j %*% omega %*% delta)   
-        u.j = c(A.j %*% sigma[,j])
-        #b1 = c(alpha.hat %*% sigma.j.bar %*% alpha.hat)
-        #b3 = c(-(1+b1)^(-1/2)*sigma.j.bar %*% alpha.hat)
-        b3 = omega.j.inv %*% A.j %*% omega %*% delta
-        sigma_circ = unname(cbind(rbind(sigma.j.bar,b3),c(b3,1)))
-        func_temp <- function(i){
-            xi = x[i,]
-            mu = c(omega.j.inv %*% (a[-j] - a[j] + log(xi[-j]/xi[j])-u.j),delta[j]*omega[j,j])
-            val = pnorm(delta[j]*omega[j,j])^(-1)/xi[j] * mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu,sigma=sigma_circ)[[1]]
-            return(val)
-        }
-        val = unlist(lapply(1:nrow(x),func_temp))
-        return(val)
-    }
-    if(!is.null(ncores)){
-        val = parallel::mclapply(1:n,func,mc.cores = ncores)
-        val = matrix(unlist(val),nrow=n,byrow=TRUE)
-        val = apply(val,2,sum)
-    }
-    else{
-        val = lapply(1:n,func)
-        val = matrix(unlist(val),nrow=n,byrow=TRUE)
-        val = apply(val,2,sum)
-    }
+    phi.delta = pnorm(delta,log.p=TRUE)
+    a = log(2) + phi.delta + omega2/2
+    A.j = lapply(1:n,function(j){
+        if(j<n) return(cbind(I.mat2[,0:(j-1)],rep(-1,n-1),I.mat2[,j:(n-1)]))
+        else  return(cbind(I.mat2[,0:(j-1)],rep(-1,n-1))) })
+    mu.j = lapply(1:n, function(j) c(A.j[[j]] %*% sigma[,j]))    
+    sigma.j = lapply(1:n,function(j) A.j[[j]] %*% sigma %*% t(A.j[[j]]))
+    x.circ = log(x) + matrix(a,nrow=nrow(x),byrow=TRUE)
+    mu.val.j = lapply(1:n,function(j) cbind(x.circ[,-j]- matrix(x.circ[,j]+mu.j[[j]],ncol=n-1,nrow=nrow(x),byrow=TRUE),delta[j]))
+    sigma.val.j = lapply(1:n,function(j) b = A.j[[j]] %*% delta; unname(cbind(rbind(sigma.j[[j]],-b),c(-b,1))))
+    val = unlist(lapply(1:nrow(x),function(i) sum(unlist(lapply(1:n,function(j) mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu.val.j[[j]][i,],sigma=sigma.val.j[[j]])[[1]]/exp(phi.delta[j])/x[i,j])))))
     assign(".Random.seed", oldSeed, envir=globalenv())
-    return(val)
-}
-
-V_bi_logskew <- function(x,delta,sigma){
-    delta.sigma = delta * sqrt(diag(sigma))
-    phi.delta = pnorm(delta.sigma)
-    phi.delta.log = log(phi.delta)
-    vario.sqrt = sqrt(sigma[1,1] + sigma[2,2] - 2*sigma[1,2])
-    if(!is.matrix(x)) x <- matrix(x,ncol=2)
-    mu.1 = c((phi.delta.log[2]-phi.delta.log[1]+log(x[,2]/x[,1]))/vario.sqrt + vario.sqrt/2,delta.sigma[1])
-    mu.2 = c((phi.delta.log[1]-phi.delta.log[2]+log(x[,1]/x[,2]))/vario.sqrt + vario.sqrt/2,delta.sigma[2])
-    sigma.1 = matrix(c(1,(delta.sigma[1]-delta.sigma[2])/vario.sqrt,(delta.sigma[1]-delta.sigma[2])/vario.sqrt,1),nrow=2)
-    sigma.2 = matrix(c(1,(delta.sigma[2]-delta.sigma[1])/vario.sqrt,(delta.sigma[2]-delta.sigma[1])/vario.sqrt,1),nrow=2)
-    val = 1/x[1]/phi.delta[1]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.1,sigma=sigma.1)[[1]] + 1/x[2]/phi.delta[2]*mvtnorm::pmvnorm(lower=rep(-Inf,2),upper=mu.2,sigma=sigma.2)[[1]]
     return(val)
 }
 
 ## this function returns the partial derivatives of the exponent function
 ## for the truncated extremal-t max-stable processes
-partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
+partialV_logskew <- function(x,idx,par,alpha.para=TRUE,log=FALSE){
     # set a random seed
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
@@ -395,64 +282,38 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,ncores=NULL,log=FALSE){
         val = intensity_logskew(x,par,alpha.para,ncores,log)
         return(val)
     }
-    ones <- rep(1,n)
-    one.mat <- matrix(1,n,n)
-    I <- diag(1,n)
-    sigma.chol = chol(sigma)
-    sigma.inv = chol2inv(sigma.chol)
-    sum.sigma.inv = sum(sigma.inv)
-    omega = diag(sqrt(diag(sigma)))
-    omega.inv = diag(diag(omega)^(-1))
-    sigma.bar = omega.inv %*% sigma %*% omega.inv
-
-    sigma.bar.11 = sigma.bar[idx,idx]
-    sigma.bar.11.chol = chol(sigma.bar.11)
-    sigma.bar.11.inv = chol2inv(sigma.bar.11.chol)
-    
+    sigma.inv = chol2inv(chol(sigma))
+    omega2 = diag(sigma)
     if(alpha.para){
         alpha = par[[2]]
-        delta = c(sigma.bar %*% alpha)/sqrt(c(1+alpha %*% sigma.bar %*% alpha))
+        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
     }else{
-        inv.sigma.bar = omega %*% sigma.inv %*% omega
         delta = par[[2]]
-        alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+        alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
     }
 
-    a = log(2) + diag(sigma)/2 + sapply(diag(omega)*delta,pnorm,log.p=TRUE)
-    H =  sigma.inv - (sigma.inv %*% one.mat %*% sigma.inv/sum.sigma.inv)
+    a = log(2)  + pnorm(delta,log.p=TRUE)
+    q = rowSums(sigma.inv)
+    sum.q = sum(q);sum.alpha = sum(alpha)
+    A =  sigma.inv - q %*% t(q)/sum.q
 
-    sigma.tilde.inv = H[-idx,-idx,drop=FALSE]
-    sigma.tilde.inv.chol = chol(sigma.tilde.inv)
-    sigma.tilde = chol2inv(sigma.tilde.inv.chol)
-    omega.tilde <- I[-idx,-idx,drop=FALSE];diag(omega.tilde) <- sqrt(diag(sigma.tilde))
-    omega.tilde.inv <- omega.tilde; diag(omega.tilde.inv) <- 1/diag(omega.tilde)
-    sigma.tilde.bar = omega.tilde.inv %*% sigma.tilde %*% omega.tilde.inv
+    sigma.tilde.inv = A[-idx,-idx,drop=FALSE]
+    sigma.tilde = chol2inv(chol(sigma.tilde.inv))
 
-    b = c(alpha %*% omega.inv %*% ones/sqrt(sum.sigma.inv))
-    beta =  c(alpha %*% omega.inv %*% (diag(n) - one.mat %*% sigma.inv/sum.sigma.inv) * (1+b^2)^(-1/2))    
-    delta.hat = (1+b^2)^(-1/2)*b
-    alpha.tilde = c(beta[-idx] %*% omega.tilde) 
-    b1 =c((1 + alpha.tilde %*% sigma.tilde.bar %*% alpha.tilde)^(-1/2))
-
-    func <- function(i){
-        xi.log = log(x[i,])
-        xi.tilde = xi.log + a
-        mu.tilde = c(-sigma.tilde %*% (H[-idx,idx,drop=FALSE] %*% xi.tilde[idx] + (sigma.inv %*% ones)[-idx]/sum.sigma.inv))
-        tau.tilde = c(b1 * (beta[idx] %*% xi.tilde[idx] + delta.hat * sum.sigma.inv^(-1/2) + beta[-idx] %*% mu.tilde))
-        b2 = c(-b1 * sigma.tilde.bar %*% alpha.tilde)
-        scale.val = unname(cbind(rbind(sigma.tilde.bar, b2),c(b2,1)))
-        mu.val = c(omega.tilde.inv %*% (xi.tilde[-idx] - mu.tilde), tau.tilde )
-        phi = pnorm(tau.tilde)
-        intensity.marginal = c(intensity_logskew(x[i,idx],par=list(sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL,log=FALSE))
-        val = intensity.marginal/phi * mvtnorm::pmvnorm(upper=mu.val,sigma=scale.val)[[1]]
-        return(val)
-    }
-    if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
-    }
-    else{
-        val = unlist(lapply(1:nrow(x),func))
-    }
+    beta = (1+sum.alpha^2/sum.q)^(-0.5) * (alpha-sum.alpha*q/sum.q)
+    alpha.tilde = beta[-idx]
+    x.circ  = log(x) + matrix(a,nrow=nrow(x),byrow=TRUE)
+    mu.tilde0 = q[-idx]/sum.q + (A %*% omega2/2)[-idx]
+    mu.tilde = - t(sigma.tilde %*%  (A[-idx,idx] %*% t(x.circ[,idx,drop=FALSE]) + matrix(mu.tilde0,ncol=nrow(x),nrow=length(mu.tilde0),byrow=FALSE))) # dim: nrow(x)*(-idx) 
+    omega2.mat = matrix(omega2/2,nrow=nrow(x),ncol=n,byrow=TRUE)
+    alpha0.tilde =  c((x.circ[,idx,drop=FALSE]+omega2.mat[,idx,drop=FALSE]) %*% beta[idx] + (mu.tilde + omega2.mat[,-idx,drop=FALSE]) %*% beta[-idx]) + (1+sum.alpha^2/sum.q)^(-0.5) * sum.alpha/sum.q # nrow(x) 
+    b0  = c((1+ alpha.tilde %*% sigma.tilde %*% alpha.tilde)^(-0.5))
+    tau.tilde = alpha0.tilde * b0
+    phi.tau.tilde = pnorm(tau.tilde)
+    intensity.marginal = intensity_logskew(x[,idx],par=list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,log=FALSE) # nrow(x)
+    b = alpha.tilde %*% sigma.tilde %*% b0
+    sigma.val = unname(cbind(rbind(sigma.tilde, -b2),c(-b2,1)))
+    val = lapply(1:nrow(x),function(i) mvtnorm::pmvnorm(upper=c(mu.tilde[-i,],tau.tilde[i]),sigma=sigma.val)[[1]]/phi.tau.tilde[i]*intensity.marginal[i]) 
     assign(".Random.seed", oldSeed, envir=globalenv())
     if(log){
         return(log(val))
@@ -469,20 +330,15 @@ empirical_extcoef <- function(idx,data){
 
 alpha2delta <- function(par){
     alpha = par[[2]];sigma = par[[1]]
-    omega = diag(sqrt(diag(sigma)))
-    omega.inv = diag(diag(omega)^(-1))
-    sigma.bar = omega.inv %*% sigma %*% omega.inv
-    delta = c(sigma.bar %*% alpha)/sqrt(c(1+alpha %*% sigma.bar %*% alpha))
+    delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
     return(list(sigma,delta))
 }
 
 delta2alpha <- function(par){
     delta = par[[2]];sigma = par[[1]]
-    omega = diag(sqrt(diag(sigma)))
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
-    inv.sigma.bar = omega %*% inv.sigma %*% omega
-    alpha = c(1 - delta %*% inv.sigma.bar %*% delta)^(-1/2) * c(inv.sigma.bar %*% delta)
+    alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
     return(list(sigma,alpha))
 }
 
@@ -490,11 +346,7 @@ delta2alpha <- function(par){
 true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
     if(model=="logskew1"){
         delta = par[[2]];sigma = par[[1]]
-        if(length(idx)==2){
-            val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL)
-        }else{
-            val = V_bi_logskew(rep(1,length(idx)),delta[idx],sigma[idx,idx])
-        }
+        val = V_logskew(rep(1,length(idx)),list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,ncores=NULL)
     }
     if(model == "truncT1"){
         n = nrow(par[[1]])
@@ -518,17 +370,6 @@ true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
     return(val)
 }
 
-
-# cov.func <- function(loc,par){
-#     r = par[1];v = par[2]
-#     n = nrow(loc)
-#     diff.vector <- cbind(as.vector(outer(loc[,1],loc[,1],'-')),
-#         as.vector(outer(loc[,2],loc[,2],'-')))
-#     cov.mat <- matrix(exp(-(sqrt(diff.vector[,1]^2 + diff.vector[,2]^2)/r)^v), ncol=n) + diag(1e-6,n) 
-#     #cov.mat <- diag(seq(1,2,length.out=n)) %*% cov.mat %*% diag(seq(1,2,length.out=n))
-#     return(cov.mat)
-# }
-
 cov.func <- function(distmat,par){
     r = par[1];v = par[2];n=nrow(distmat)
     cov.mat <- v*exp(-(distmat/r)) + diag(1e-6,n) 
@@ -537,126 +378,7 @@ cov.func <- function(distmat,par){
 }
 
 alpha.func <- function(par,b.mat=basis){
-    alpha <- c(c(1,par) %*% t(b.mat))
+    alpha <- c(par %*% t(b.mat))
     return(alpha)
 }
 
-## inference for simulated data ##  
-fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
-                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2){
-    t0 <- proc.time()
-    data.sum = apply(data,1,sum)
-    idx.thres = which(order(data.sum,decreasing=TRUE)<=thres) #which(data.sum>quantile(data.sum,thres))
-    data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
-    if(is.null(fixed)){fixed = rep(FALSE,length(init))}
-    if(is.null(lb)){lb=rep(-Inf,length(init))}
-    if(is.null(ub)){ub=rep(Inf,length(init))}
-    if(model == "logskew"){
-    ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
-        object.func <- function(par,opt=TRUE,ncore=NULL){
-            #if(trace) print(par)
-            par2 = init; par2[!fixed] = par
-            par.1 = par2[idx.para];par.2 = par2[-idx.para]
-            cov.mat = FUN(loc,par.1)
-            b.mat <- basis / sqrt(diag(cov.mat))
-            alpha = alpha.func(par=par.2,b.mat= b.mat)
-            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
-            para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = intensity_logskew(data,par=para.temp,log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)) else return(-mean(val))
-        }
-    }
-    if(model == "truncT"){
-    ## 3 parameters: 2 for the covariance function; 1 for the df parameter
-        object.func <- function(par,opt=TRUE,ncore=NULL){
-            #if(trace) print(par)
-            par2 = init; par2[!fixed] = par
-            par.1 = par2[idx.para];nu = par2[-idx.para]
-            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
-            cov.mat = cov.func(loc,par.1)
-            para.temp = list(sigma=cov.mat,nu=nu)
-            val = intensity_truncT(data,par=para.temp,T_j=a_fun(para.temp,ncores=ncores),log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)) else return(-mean(val))
-        }
-    }
-    if(opt){
-        if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
-            opt.result$value = object.func(opt.result$par,opt=FALSE,ncore=ncores)
-        }else{
-            opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
-            opt.result$value = object.func(opt.result$par,opt=FALSE,ncore=ncores)
-        }
-        if(model=="logskew" & any(!fixed[-idx.para]) & step2){
-            n.alpha = sum(!fixed[-idx.para])
-            if(n.alpha==2){
-                a = seq(0,2*pi,length.out=ncores)
-                a = cbind(cos(a),sin(a))
-            } else {
-                a = matrix(rnorm(ncores*5*n.alpha),ncol=n.alpha)
-                a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
-            }
-            #init.mat = cbind(matrix(opt.result$par[idx.para],ncol=length(idx.para),nrow=ncores,byrow=TRUE),a)
-            init.list = split(a,row(a)) 
-            init[!fixed] = opt.result$par
-            fixed[idx.para] <- TRUE
-            if(method=="L-BFGS-B"){
-                opt.result2 = mcmapply(optim,par=init.list[1:2],MoreArgs = list(fn=object.func,lower=lb[!fixed],upper=ub[!fixed],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
-            }else{
-                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
-            }
-            opt.values <- unlist(lapply(opt.result2,function(x){x$value}))
-            opt.result = opt.result2[[which.min(opt.values)]]
-            opt.result$others = opt.result2
-        }
-    }else{
-        return(object.func(init[!fixed],opt,ncores))
-    }
-    if(hessian){
-        h = 1e-3
-        par.mat.grad = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h,length(opt.result$par))
-        val.object = object.func(opt.result$par,opt=FALSE)
-        val.object.grad = apply(par.mat.grad,1,function(x){(object.func(x,opt=FALSE) - val.object)/h})
-        opt.result$K = var(val.object.grad)
-        opt.result$hessian.inv = solve(opt.result$hessian)
-        opt.result$sigma = opt.result$hessian.inv %*% opt.result$K %*% opt.result$hessian.inv
-    }
-    par2 = init; par2[!fixed] = opt.result$par
-    opt.result$par = par2
-    opt.result$time <- proc.time() - t0
-    return(opt.result)
-}
-
-# function to create list of lists: 
-# x: number of lists in each layer 
-# n: number of layers
-create_lists <- function(x){
-    if(length(x)==0){
-        return(list())
-    }else{
-        return(lapply(1:x[1],function(i){create_lists(x[-1])}))
-    }
-}
-
-vario.func <- function(loc,par){ ##return a covariance matrix
-    lambda = par[1];alpha = par[2]
-    if(!is.matrix(loc)){loc = matrix(loc,nrow=1)}
-    n = nrow(loc)
-    if(n==1){
-        val=(sqrt(sum(loc[1,]^2))/lambda)^alpha
-        return(val)
-    }
-    vario <- function(coord){
-        if(!is.matrix(coord)) {val <- (sqrt(sum(coord^2))/lambda)^alpha}
-        else {val <- (sqrt(sum((coord[1,]-coord[2,])^2))/lambda)^alpha}
-        return(val)
-    }
-    all.pairs = combn(1:n,2)
-    all.pairs.list = split(all.pairs,col(all.pairs))
-    gamma.vec = unlist(lapply(all.pairs.list,function(idx) vario(loc[idx,])))
-    gamma.origin = sapply(1:n,function(i) vario(loc[i,]))
-    cov.mat = diag(2*gamma.origin)
-    cov.mat[t(all.pairs)] <- sapply(1:length(gamma.vec),function(i){idx = all.pairs[,i];return(gamma.origin[idx[1]] + gamma.origin[idx[2]] - gamma.vec[i])})
-    cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
-    return(cov.mat + .Machine$double.eps * diag(n))
-}
