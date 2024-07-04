@@ -1,9 +1,9 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
 computer = "local"
-id = 19
+id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
-m <- 2000 ## number of samples
+m <- 500 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
 #model = "truncT"; # "logskew" or "truncT"
@@ -89,14 +89,14 @@ if(model == "logskew"){
         fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         print(fit.logskew.angular[[i]]$par)
         print(par.skew.normal[i,])
-        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
+        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,basis=basis,idx.para=idx.para)
         # init = fit.logskew.comp[[i]]$par
         # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(T,T,F,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
         # init = fit.logskew.comp[[i]]$par
         # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx,drop=FALSE],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=200,trace=TRUE,basis=basis,idx.para=idx.para)
         print(fit.logskew.comp[[i]]$par)
         print(i)
-    }
+    }    
     save(fit.logskew.angular,fit.logskew.comp,par.skew.normal,m,d,basis,file=file2save)
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
@@ -106,17 +106,15 @@ par.skew.list <- list()
 basis = matrix(c(1,-1),ncol=1)
 par.skew.list[[1]] <- list(sigma=vario.func(coord,c(3,1)))
 par.skew.list[[1]]$alpha <- alpha.func(par=1,b.mat=basis)
-par.skew.list[[2]] <- list(sigma=vario.func(coord,c(0.5,1.99)))
+par.skew.list[[2]] <- list(sigma=vario.func(coord,c(0.1,1.99)))
 par.skew.list[[2]]$alpha <- alpha.func(par=1,b.mat=basis)
 
-
 data=simu_logskew(m=2000,par=alpha2delta(par.skew.list[[1]]),ncores=ncores)
-
 
 a0 = nloglik(par=alpha2delta(par.skew.list[[1]]),data,model="logskew")
 b0 = nloglik(par=alpha2delta(par.skew.list[[2]]),data,model="logskew")
 
-mean(a0-b0)
+sum(a0-b0)
 
 a1 = V_logskew(data,par.skew.list[[1]],alpha.para=TRUE)
 a2 = partialV_logskew(data,1,par.skew.list[[1]],alpha.para=TRUE)
@@ -132,8 +130,6 @@ plot(a2_1,a2,pch=20)
 abline(0,1,col="red")
 a3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[1]],alpha.para=TRUE))/h/2
 summary(a3_1-a3)
-plot(a3_1,a3,pch=20)
-abline(0,1,col="red")
 
 b1 = V_logskew(data,par.skew.list[[2]],alpha.para=TRUE)
 b2 = partialV_logskew(data,1,par.skew.list[[2]],alpha.para=TRUE)
@@ -145,12 +141,10 @@ b2_1 = -(V_logskew(data + epsilon,par.skew.list[[2]]) - V_logskew(data-epsilon,p
 range(V_bi_logskew(data,par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data,par.skew.list[[2]]))
 
 summary(b2_1-b2)
-plot(b2_1,b2,pch=20)
-abline(0,1,col="red")
+
 b3_1 = -(V_logskew(data + epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE) - V_logskew(data-epsilon[,c(2,1)],par.skew.list[[2]],alpha.para=TRUE))/h/2
 summary(b3_1-b3)
-plot(b3_1,b3,pch=20)
-abline(0,1,col="red")
+
 
 plot(log(data[,1]),log(data[,2]),col=as.numeric(a0-b0<0)+1,pch=20)
 

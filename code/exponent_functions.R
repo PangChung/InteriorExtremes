@@ -554,10 +554,6 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     opt.result$time <- proc.time() - t0
     if(hessian){
         h = 1e-01
-        # par.mat.grad01 = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) + diag(h/2,length(opt.result$par))
-        # par.mat.grad10 = matrix(opt.result$par,nrow=length(opt.result$par),ncol=length(opt.result$par),byrow=TRUE) - diag(h/2,length(opt.result$par))
-        # val.object.grad = lapply(1:sum(!fixed),function(i){(object.func(par.mat.grad01[i,],opt=FALSE) - object.func(par.mat.grad10[i,],opt=FALSE))/h})
-        # val.object.grad = matrix(unlist(val.object.grad),ncol = sum(!fixed),byrow=FALSE)
         opt.result$grad = numDeriv::jacobian(object.func,opt.result$par,opt=FALSE,method="simple")
         opt.result$hessian = numDeriv::hessian(object.func,opt.result$par,opt=TRUE)
         opt.result$K = var(opt.result$grad)

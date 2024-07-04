@@ -209,35 +209,41 @@ nloglik <- function(par,data,model="BR"){
     #fix random seed (and save the current random seed to restore it at the end)
     if(!is.matrix(data)){data <- matrix(data,nrow=1)}
     D <- ncol(data);n <- nrow(data)
-    all_combn <- lapply(1:D,FUN=Rfast::comb_n,n=D,simplify=FALSE) 
-    all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
-    if(model == "BR"){
-        sigma = par[[1]]
-        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,nVI,data=data,sigma=sigma)})
-        Vdata = V(data,sigma)
+    if(n>2){
+        all_combn <- lapply(1:D,FUN=Rfast::comb_n,n=D,simplify=FALSE) 
+        all_nVI <- list() ## will contain all the terms nVI (total number is equal to 2^D-1), used later to assemble the log-likelihood...
+        if(model == "BR"){
+            sigma = par[[1]]
+            all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,nVI,data=data,sigma=sigma)})
+            Vdata = V(data,sigma)
+        }
+        if(model == "logskew"){
+            all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_logskew,x=data,par=par,alpha.para=FALSE,log=FALSE)})
+            Vdata = V_logskew(data,par,alpha.para=FALSE)
+        }
+        get.nVI <- function(I){
+            nI <- length(I)
+            if(n==1){
+            return(all_nVI[[nI]][which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
+            }
+            return(all_nVI[[nI]][,which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
+        }
+        parts <- listParts(D) ## using package `partitions'
+        contribution.partition <- function(partition){
+            return( matrixStats::rowProds(as.matrix(as.data.frame(lapply(partition,FUN=get.nVI) ))))
+        }
+        # tmp = log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition)))))
+        # if(any(is.nan(tmp))){print(data);browser()}
+        res <- log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition))))) - Vdata
+    }else{
+        if(model == "BR"){
+            sigma = par[[1]]
+            res <- log(nVI(data,1:2)+nVI(data,1)*nVI(data,2)) - V(data,sigma)
+        }
+        if(model == "logskew"){
+            res <- log(partialV_logskew(data,1:2,par,alpha.para=FALSE)+partialV_logskew(data,1,par,alpha.para=FALSE)*partialV_logskew(data,2,par,alpha.para=FALSE)) - V_bi_logskew(data,par)
+        }
     }
-    if(model == "truncT"){
-        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_truncT,x=data,par=par[1:2],T_j=par[[3]],log=FALSE)})
-        Vdata = V_truncT(data,par)
-    }
-    if(model == "logskew"){
-        all_nVI <- lapply(all_combn,FUN = function(idx){sapply(idx,partialV_logskew,x=data,par=par,alpha.para=FALSE,log=FALSE)})
-        Vdata = V_logskew(data,par)
-    }
-    get.nVI <- function(I){
-      nI <- length(I)
-      if(n==1){
-        return(all_nVI[[nI]][which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
-      }
-      return(all_nVI[[nI]][,which(sapply(all_combn[[nI]],function(x){return(all(I%in%x))}))])
-    }
-    parts <- listParts(D) ## using package `partitions'
-    contribution.partition <- function(partition){
-      return( matrixStats::rowProds(as.matrix(as.data.frame(lapply(partition,FUN=get.nVI) ))))
-    }
-    # tmp = log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition)))))
-    # if(any(is.nan(tmp))){print(data);browser()}
-    res <- log(rowSums(as.matrix(as.data.frame(lapply(parts,contribution.partition))))) - Vdata
     if(any(!is.finite(res))){return(rep(Inf,nrow(data)))}
     return(-res)
 }
@@ -259,8 +265,10 @@ nlogcomplik <- function(par,data,index,ncores,model){
       if(model == "logskew"){par.index[[1]] = par[[1]][ind,ind];par.index[[2]] = par.index[[2]][ind]} 
       val <- nloglik(par=par.index,data[,ind],model)
     }
-    if(!is.null(ncores)) res <- rowSums(matrix(unlist(mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE) 
-    else res <- rowSums(matrix(unlist(lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)),ncol=ncol(index),byrow=FALSE),na.rm=TRUE)
+    browser()
+    if(!is.null(ncores)) res <- mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)
+    else res = lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)
+    res <- mean(unlist(res))
     return(res)
 }
 
@@ -279,9 +287,9 @@ MCLE <- function(data,init,fixed,loc,FUN,index,ncores,maxit=200,model="BR",hessi
         if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
         sigma = FUN(loc,par1[idx.para])
         if(model=="BR"){par.list <- list(sigma=sigma)}
-        if(model=="truncT"){par.list <- list(sigma=sigma,nu=par1[-idx.para]);par.list[[3]] <- a_fun()}
-        if(model=="logskew"){b.mat <- basis #/ sqrt(diag(sigma))
-                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))}
+        if(model=="logskew"){b.mat <- basis 
+                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))
+                            par.list <- alpha2delta(par.list)}
         val = nlogcomplik(par.list,data=data,index,ncores,model=model)
         if(opt){ 
             val = mean(val,na.rm=TRUE)
@@ -368,9 +376,9 @@ MVLE <- function(data,init,fixed,loc,FUN,vecchia.seq,neighbours,ncores,model="BR
         if( any(par1 < lb) | any( par1 > ub)  ){return(Inf)}
         sigma = FUN(loc,par1[idx.para])
         if(model=="BR"){par.list=list(sigma=sigma)}
-        if(model=="truncT"){par.list=list(sigma=sigma,nu=par1[-idx.para]);par.list[[3]] = a_fun(par.list,ncores=ncores)}
         if(model=="logskew"){b.mat <- basis / sqrt(diag(sigma))
-                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))}
+                            par.list <- list(sigma=sigma,alpha=alpha.func(par=par1[-idx.para],b.mat=b.mat))
+                            par.list <- alpha2delta(par.list)}
         val = nlogVecchialik(par.list,data,vecchia.seq,neighbours,ncores,model)
         if(opt){
             val = mean(val,na.rm=TRUE)
