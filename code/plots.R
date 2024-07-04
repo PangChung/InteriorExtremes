@@ -234,8 +234,8 @@ for(i in 1:length(nu.list)){
         para.range = para.range.list[j]
         init = cbind(seq(1,20,length.out=100),nu,1,0,0,0)
         data <- simu_logskew(m=10000,par=alpha2delta(list(cov.func(diff.mat,c(para.range,nu,1)),alpha.func(c(0,0,0),basis))),ncores=ncores)
-        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) mean(fit.model(data=data,init=x,fixed=c(F,F,F),loc=diff.mat,FUN=cov.func,thres=100,model="BR",lb=rep(-Inf,3),ub=rep(Inf,3),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value))
-        result1[[i]][[j]] <- apply(init, 1, function(x) mean(fit.model(data=data,init=x,fixed=c(F,F,F,F,F,F),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,6),ub=rep(Inf,6),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value))
+        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F),loc=diff.mat,FUN=cov.func,thres=100,model="BR",lb=rep(-Inf,3),ub=rep(Inf,3),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value)
+        result1[[i]][[j]] <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F,F,F,F),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,6),ub=rep(Inf,6),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value)
     }
 }
 
@@ -267,8 +267,8 @@ for(i in 1:length(para.range.list)){
         para.smooth = para.smooth.list[j]
         data <- simu_logskew(m=10000,par=alpha2delta(list(vario.func(coord,c(para.range,para.smooth)),alpha.func(c(0,0,0),basis))),ncores=ncores)
         init = cbind(seq(1,20,length.out=100),para.smooth,0,0,0)
-        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) mean(fit.model(data=data,init=x,fixed=c(F,F),loc=coord,FUN=vario.func,thres=100,model="BR",lb=rep(-Inf,2),ub=rep(Inf,2),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value))
-        result1[[i]][[j]] <- apply(init, 1, function(x) mean(fit.model(data=data,init=x,fixed=c(F,F,F,F,F),loc=coord,FUN=vario.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,5),ub=rep(Inf,5),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value))
+        result2[[i]][[j]] <- apply(init[,idx.para], 1, function(x) fit.model(data=data,init=x,fixed=c(F,F),loc=coord,FUN=vario.func,thres=100,model="BR",lb=rep(-Inf,2),ub=rep(Inf,2),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value)
+        result1[[i]][[j]] <- apply(init, 1, function(x) fit.model(data=data,init=x,fixed=c(F,F,F,F,F),loc=coord,FUN=vario.func,alpha.func=alpha.func,basis=basis,thres=100,model="logskew",lb=rep(-Inf,5),ub=rep(Inf,5),ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=FALSE,hessian=FALSE,idx.para=idx.para)$value)
     }
 }
 

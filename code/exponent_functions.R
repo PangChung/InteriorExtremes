@@ -482,7 +482,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
             val = intensity_logskew(data,par=para.temp,log=TRUE) 
-            if(opt) return(-mean(val)) else return(-val)
+            return(-mean(val)) 
         }
     }
     if(model == "truncT"){
@@ -495,7 +495,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
             val = intensity_truncT(data,par=para.temp,T_j=a_fun(para.temp,ncores=ncores),log=TRUE,ncores=ncore) 
-            if(opt) return(-mean(val)) else return(-val)
+            return(-mean(val)) 
         }
     }
     if(model == "BR"){
@@ -506,7 +506,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             cov.mat = FUN(loc,par.1)
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             val = nVI(data,cov.mat,1:n,logval=TRUE)
-            if(opt) return(-mean(val)) else return(-val)
+            return(-mean(val)) 
         }
     }
     if(opt){
