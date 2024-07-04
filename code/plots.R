@@ -578,7 +578,7 @@ p4[[6]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller
 p4[[6]]
 dev.off()
 
-save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+save(idx.centers,est.sd.jack,est.sd.jack.BR,est.jack,est.jack.BR,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
 
 
 
