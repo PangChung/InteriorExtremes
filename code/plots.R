@@ -290,16 +290,9 @@ for(j in 1:length(para.smooth.list)){
 dev.off()
 
 ## plot the boxplot for the simulation study ## 
-# load("data/simulation_study_logskew_results_final_1.RData",e1<-new.env())
-## load("data/simulation_study_logskew_results_final_2.RData",e2<-new.env())
-# load("data/simulation_study_logskew_results_vario_1.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_vario_100_new.RData",e1<-new.env())
-#load("data/simulation_study_logskew_results_vario_50_1.RData",e1<-new.env())
-#load("data/simulation_study_logskew_results_vario_2.RData",e2<-new.env())
 data = cbind(1,rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
-#data = rbind(data,cbind(2,rep(1:6,times=sapply(e1$est.mat.list[[2]],nrow)),1,do.call(rbind,e1$est.mat.list[[2]])))
-#data = rbind(data,cbind(1,rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
-# data = rbind(data,cbind(2,rep(1:6,times=sapply(e2$est.mat.list[[2]],nrow)),2,do.call(rbind,e2$est.mat.list[[2]])))
+
 data = as.data.frame(data);names(data) = c("thres","id","type","hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 str(data)
 
@@ -315,19 +308,15 @@ par.skew.normal$id = 1:nrow(par.skew.normal)
 par.skew.normal$type = 1
 par.skew.normal$thres = 1
 
-#par.skew.normal = rbind(par.skew.normal,par.skew.normal)
-#par.skew.normal$type = rep(1:2,each=nrow(par.skew.normal)/2)
-#par.skew.normal = rbind(par.skew.normal,par.skew.normal)
-#par.skew.normal$thres = rep(1:2,each=nrow(par.skew.normal)/2) 
+
 
 par.skew.normal_long <- pivot_longer(par.skew.normal, -c(id,type,thres), names_to = "variable", values_to = "value")
 levels=levels(data_long$facet)[c(3,4,1,2,7,8,5,6)]
-#par.skew.normal_long$facet = factor(paste0("Spline~Type==", par.skew.normal_long$type,"~~",par.skew.normal_long$variable),levels=levels)
+
 par.skew.normal_long$facet = factor(paste0(par.skew.normal_long$variable),levels=levels)
-#p <- ggplot(subset(data_long,abs(value)<10), aes(x = factor(id), y = value, fill = factor(thres,labels=c("95%","90%")))) +
+
 p <- ggplot(data_long, aes(x = factor(id), y = value)) +
   geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-#   geom_boxplot(position = position_dodge(width=0.75),width=0.4, color="grey", alpha=1) +
   geom_point(data=par.skew.normal_long,aes(x=factor(id),y=value),color="black",size=1,position=position_dodge(width = 1)) +
   facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
     labs(x = "Cases",
@@ -343,19 +332,14 @@ pdf("figures/simulation_est_boxplots_final.pdf",width=10,height=6,onefile=TRUE)
 p
 dev.off()
 
-# load("data/simulation_study_logskew_results_vario_50_BR.RData",e1<-new.env())
-# load("data/simulation_study_logskew_results_vario_BR.RData",e1<-new.env())
-# load("data/simulation_study_logskew_results_vario_BR_comp.RData",e2<-new.env())
+
 load("data/simulation_study_logskew_results_vario_30_BR.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_vario_30_BR_comp.RData",e2<-new.env())
-
 data = cbind(rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
 data = rbind(data,cbind(rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
 data = as.data.frame(data);names(data) = c("id","type","hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 data = data[,1:4]
 str(data)
-
-
 
 # Reshape the data to a long format
 data_long <- pivot_longer(data, -c(id, type), names_to = "variable", values_to = "value")
@@ -437,30 +421,39 @@ dev.off()
 ######################################################################
 ## plot the extremal coef for the application ########################
 ######################################################################
+library(Matrix)
 load("data/data_application.RData")
-load("data/application_results_new_2.RData",e<-new.env())
-load("data/application_results_new_4.RData",e)
+load("data/application_results_new_.RData",e<-new.env())
+# load("data/application_results_new_2.RData",e<-new.env())
+# load("data/application_results_new_4.RData",e)
 # par = e$results2$par;par[4:5] = par[4:5]/par[3]
 e$results2$par;e$results2$value;e$results2$time
 e$results4$par;e$results4$value;e$results4$time
 par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
+
 par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
 par.list[[2]] = alpha.func(par=c(e$results2$par[-c(1:2)]),b.mat=e$basis)
 par.list = alpha2delta(par.list)
+
 pairs = comb_n(1:ncol(distmat),2)
-library(Matrix)
+
 empirical.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=apply(pairs,2,empirical_extcoef,data=maxima.frechet),symmetric = TRUE,dimnames=NULL)
-fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = par.list[[2]][x],sigma=par.list[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE)),symmetric = TRUE,dimnames=NULL) 
-fitted.extcoef.BR.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),delta = c(0,0),sigma=par.list.BR[[1]][x,x])},mc.cores=5,mc.set.seed = FALSE)),symmetric = TRUE,dimnames=NULL)
+
+fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE)),symmetric = TRUE,dimnames=NULL) 
+
+fitted.extcoef.BR.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list.BR[[1]][x,x],c(0,0),alpha.para=FALSE))},mc.cores=5,mc.set.seed = FALSE)),symmetric = TRUE,dimnames=NULL)
+
 diag(fitted.extcoef.mat) <- diag(fitted.extcoef.BR.mat) <- diag(empirical.extcoef.mat) <- 1
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.mat)^2))
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.BR.mat)^2))
 diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extcoef.mat - fitted.extcoef.BR.mat) 
-#diff.col.sums = colMeans(diff.mat)
+
 diff.col.sums = unlist(lapply(1:ncol(distmat),function(i){mean(diff.mat[i,]<0)}))
+
 sum(diff.col.sums > 0.5)
 
 idx.centers = c(apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,function(x) which.min(x)),apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,function(x) which.max(x)))
+
 idx.centers = c(idx.centers,e$idx.centers)
 p1 <- p2 <- p3 <- p5 <- list()
 #diff.extcoef = c()
@@ -550,32 +543,6 @@ pdf("figures/extcoef_application_diff.pdf",width=5,height=5,onefile=TRUE)
 p4[[1]]
 dev.off()
 
-# data$z = par.list[[2]]
-# data.new = data.frame(x1=loc.sub[idx.centers,1],y1=loc.sub[idx.centers,2])
-# png("figures/extcoef_application_delta.png",width=800,height=800)
-# p4[[9]] <- ggplot(data, aes(x = x, y = y))  + 
-#                 geom_tile(aes(fill=z)) +
-#                 scale_fill_distiller(palette="RdBu") +
-#                 theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
-#                 coord_fixed() + 
-#                 labs(title = paste("Delta"), x = "X", y = "Y",fill="Values") #
-# p4[[9]] <- p4[[9]] + geom_point(data=data.new,aes(x=x1,y=y1),color="black",size=2,shape=20)
-# p4[[9]]
-# dev.off()
-
-# data$z = delta2alpha(par.list)[[2]]
-# data.new = data.frame(x1=loc.sub[idx.centers,1],y1=loc.sub[idx.centers,2])
-# png("figures/extcoef_application_alpha.png",width=800,height=800)
-# p4[[9]] <- ggplot(data, aes(x = x, y = y))  + 
-#                 geom_tile(aes(fill=z)) +
-#                 scale_fill_distiller(palette="RdBu") +
-#                 theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot") + 
-#                 coord_fixed() + 
-#                 labs(title = paste("Alpha"), x = "X", y = "Y",fill="Values") #
-# p4[[9]] <- p4[[9]] + geom_point(data=data.new,aes(x=x1,y=y1),color="black",size=2,shape=20)
-# p4[[9]]
-# dev.off()
-
 ## compare the fitted bivariate extremal coef vs the empirical extremal coef ##
 data = data.frame(x=c(row(empirical.extcoef.mat)),y=c(col(empirical.extcoef.mat)),z=as.vector(empirical.extcoef.mat))
 png("figures/extcoef_application_empirical.png",width=800,height=800)
@@ -595,32 +562,21 @@ p4[[4]] <- ggplot(data,aes(x=x,y=y,z=z)) + geom_tile(aes(fill=z)) + scale_fill_d
 p4[[4]]
 dev.off()
 
-# data$z = as.vector(diff.mat) 
-# png("figures/extcoef_application_diff.png",width=800,height=800)
-# p4[[5]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu")  + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
-# p4[[5]]
-# dev.off()
-
 data$z = as.vector(fitted.extcoef.BR.mat - fitted.extcoef.mat) 
 png("figures/extcoef_application_diff_models.png",width=800,height=800)
 p4[[6]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu") + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
 p4[[6]]
 dev.off()
 
-# data$z = as.vector(fitted.extcoef.mat - empirical.extcoef.mat) 
-# png("figures/extcoef_application_diff_skew_BR.png",width=800,height=800)
-# p4[[7]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu") + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
-# p4[[7]]
-# dev.off()
-
-# data$z = as.vector(fitted.extcoef.BR.mat - empirical.extcoef.mat) 
-# png("figures/extcoef_application_diff_BR.png",width=800,height=800)
-# p4[[8]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller(palette="RdBu") + coord_fixed() + labs(title="Differences",x="X",y="Y",fill="Values")
-# p4[[8]]
-# dev.off()
-
-
 save(idx.centers,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+
+
+
+
+
+
+
+
 
 
 
