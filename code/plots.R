@@ -95,7 +95,7 @@ p1 <- ggplot(data1, aes(x = x, y = y, z = z))  +
         facet_wrap(~ idx.case, labeller = label_parsed) +
         scale_fill_distiller(palette = "RdBu") +
         geom_contour(colour = "black", breaks = brks) + 
-        geom_dl(aes(label = ..level..), method = "bottom.pieces", breaks = brks, stat = "contour") + 
+        geom_dl(aes(label = sprintf("%.2f",..level..)), method = "bottom.pieces", breaks = brks, stat = "contour") + 
         theme(axis.text = element_text(size = 12), 
               strip.text = element_text(size = 16),
               axis.title.x = element_text(size = 16), 
@@ -114,7 +114,7 @@ p2 <- ggplot(data2, aes(x = x, y = y,z=z))  +
         geom_tile(aes(fill=z)) + facet_wrap(~ idx.case,labeller=label_parsed) +
         scale_fill_distiller(palette="RdBu") +
         geom_contour(colour="black",breaks=brks) + 
-        geom_dl(aes(label=..level..),method="bottom.pieces",breaks=brks, 
+        geom_dl(aes(label=sprintf("%.2f",..level..)),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
         theme(axis.text = element_text(size=12), 
                             strip.text = element_text(size = 16),
