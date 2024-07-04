@@ -424,13 +424,23 @@ dev.off()
 library(Matrix)
 load("data/data_application.RData")
 load("data/application_results_new_.RData",e<-new.env())
-# load("data/application_results_new_2.RData",e<-new.env())
-# load("data/application_results_new_4.RData",e)
-# par = e$results2$par;par[4:5] = par[4:5]/par[3]
 e$results2$par;e$results2$value;e$results2$time
 e$results4$par;e$results4$value;e$results4$time
-par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
 
+## estimate the CI using jackknife ##
+est.mat = matrix(unlist(lapply(e$results22, function(x){x$par})),ncol=length(e$results2$par),byrow=TRUE)
+est.mat.BR = matrix(unlist(lapply(e$results42, function(x){x$par})),ncol=length(e$results4$par),byrow=TRUE)
+est.jack = nrow(est.mat) * est.mat - (nrow(est.mat) - 1) * matrix(e$results2$par,nrow=nrow(est.mat),ncol=ncol(est.mat),byrow=TRUE)
+est.jack.BR = nrow(est.mat.BR) * est.mat.BR - (nrow(est.mat.BR) - 1) * matrix(e$results4$par,nrow=nrow(est.mat.BR),ncol=ncol(est.mat.BR),byrow=TRUE)
+
+est.mean.jack = colMeans(est.jack)
+est.mean.jack.BR = colMeans(est.jack.BR)
+
+est.sd.jack = apply(est.jack,2,sd)/sqrt(nrow(est.jack))
+est.sd.jack.BR = apply(est.jack.BR,2,sd)/sqrt(nrow(est.jack.BR))
+
+## compute the extremal coefficients ##
+par.list.BR = alpha2delta(list(vario.func(e$loc.sub.trans,e$results4$par[1:2]),rep(0,ncol(distmat))))
 par.list = list(vario.func(e$loc.sub.trans,e$results2$par[1:2]))
 par.list[[2]] = alpha.func(par=c(e$results2$par[-c(1:2)]),b.mat=e$basis)
 par.list = alpha2delta(par.list)
