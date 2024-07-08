@@ -379,6 +379,37 @@ pdf("figures/simulation_est_boxplots_final_BR_30.pdf",width=5*2,height=4,onefile
 p
 dev.off()
 
+## plot the boxplot for the simulation study:composite for skewedBR ##
+load("data/simulation_comp_results.RData",e<-new.env())
+
+colnames(e$data.est)[1:5] <- c("hat(lambda)","hat(vartheta)","hat(b)[0]","hat(b)[1]","hat(b)[2]")
+data_long <- pivot_longer(e$data.est[,-3], -c(method,step,case), names_to = "variable", values_to = "value")
+names(e$par.skew.normal) <- names(e$data.est)[1:4]
+
+e$par.skew.normal = do.call(rbind,replicate(4,e$par.skew.normal,simplify = FALSE))
+tmp = expand.grid(method=unique(e$data.est$method),step=unique(e$data.est$step),case=unique(e$data.est$case))
+e$par.skew.normal = cbind(e$par.skew.normal[tmp$case,],tmp)
+colnames(e$par.skew.normal) <- colnames(e$data.est[,-3])
+
+par.skew.normal_long <- pivot_longer(e$par.skew.normal, -c(method,step,case), names_to = "variable", values_to = "value")
+
+p <- ggplot(subset(data_long,case==1 & step==2), aes(x = factor(step), y = value,fill=factor(method,labels=c("Angular","Composite")))) +
+  geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+  geom_point(data=subset(par.skew.normal_long,case==1 & step==2),aes(x=factor(step),y=value),color="black",size=1,
+  position=position_dodge(width = 1)) +
+  facet_wrap(~variable, scales = "free",ncol=2,nrow=2,labeller = label_parsed) +
+  labs(x = "Step",
+       y = "Value")  + 
+  theme(axis.text = element_text(size = 14),
+        strip.text = element_text(size = 16),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16),legend.position = "none")
+p
+
+
+## plot the boxplot for the simulation study:composite for truncated-T ##
 load("data/simulation_study_truncT_results_final_2000.RData",e1<-new.env())
 data = cbind(rep(1:nrow(e1$par.truncT),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
 data = rbind(data,cbind(rep(1:nrow(e1$par.truncT),times=sapply(e1$est.mat.list[[2]],nrow)),2,do.call(rbind,e1$est.mat.list[[2]])))

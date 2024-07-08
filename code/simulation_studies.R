@@ -103,21 +103,6 @@ if(model == "logskew"){
 }
 
 
-print(t0 <- proc.time() - t0)
-
-init = c(5,10,1,0,0,0)
-idx.para = c(1:3)
-lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
-ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
-m = 20000
-#par <- list(sigma=vario.func(coord,init[idx.para]))
-par <- list(sigma=cov.func(diff.mat,init[idx.para]))
-par$alpha <- alpha.func(par=init[-idx.para],b.mat=basis)
-data = simu_Pareto_logskew(m=m,par=alpha2delta(par),riskr=sum,ncores=ncores)
-thres = quantile(apply(data,1,sum),probs=0.99)
-# fit.result1 <- fit.model.pareto(data=data,loc=diff.mat,init=init,fixed=c(F,F,T,T,T),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,step2=FALSE,idx.para=idx.para)
-fit.result1 <- fit.model.pareto(data=data,loc=diff.mat,init=init,fixed=c(F,T,F,T,T,T),basis=basis,thres=100,model="logskew",FUN=cov.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,step2=FALSE,idx.para=idx.para)
-
 if(model == "truncT"){
     lb=c(0.01,0.01,0.01,0)
     ub=c(Inf,Inf,1.99,Inf)

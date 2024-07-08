@@ -6,94 +6,51 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-idx.file = "vario_30";basis.idx="BR"
-# files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
-# files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
-# files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_comp2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
-files.list <- list.files(path=paste0("data/simulation_",idx.file),pattern=paste0("simulation_study_comp_\\d+.RData"),full.names=TRUE,recursive=FALSE)
-load(files.list[[1]],e<-new.env())
+files.list1 <- list.files(path="data/simulation_comp/",pattern=paste0("simulation_comp2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
+files.list2 <- list.files(path="data/simulation_comp/",pattern=paste0("simulation_comp2_2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
+load(files.list1[[1]],e<-new.env())
 par.skew.normal = e$par.skew.normal[,-3]
 n1 = nrow(par.skew.normal);n2 = 1 #length(e$fit.logskew.angular[[1]])
-extract_results <- function(files){
+extract_results <- function(files,comp=FALSE){
     fit.results <- list()
     for(i in 1:length(files)){
         load(files[[i]],e<-new.env())
-        # fit.logskew.angular = lapply(1:n1,function(id.1){
-        #     lapply(1:n2,function(id.2){
-        #         value = unlist(lapply(e$fit.logskew.angular[[id.1]][[id.2]]$others,function(x){x$value}))
-        #         #scale = which(unlist(lapply(e$fit.logskew.angular[[id.1]][[id.2]]$others,function(x){max(abs(x$par[3:4]))})) < 10 )
-        #         idx = scale[which.min(value[scale])]
-        #         return(e$fit.logskew.angular[[id.1]][[id.2]]$others[[idx]])
-        #     })
-        # })
-        # fit.results[[i]] <- fit.logskew.angular
-        
-        # fit.logskew.angular = lapply(1:n1,function(id.1){
-        #     par = e$fit.logskew.angular[[id.1]]$par
-        #     par = c(par[1:2],par[4:5]/par[3])   
-        #     e$fit.logskew.angular[[id.1]]$par <- par
-        #     return(e$fit.logskew.angular[[id.1]])
-        #     # par = e$fit.logskew.comp[[id.1]]$par
-        #     # par = c(par[1:2],par[4:5]/par[3])   
-        #     # e$fit.logskew.comp[[id.1]]$par <- par
-        #     # return(e$fit.logskew.comp[[id.1]])
-        # })
-
-        # fit.results[[i]] <- fit.logskew.angular
-
-        # fit.results[[i]] <- e$fit.logskew.angular
-        fit.results[[i]] <- e$fit.logskew.comp
+        if(!comp){fit.results[[i]] <- e$fit.logskew.angular}else{fit.results[[i]] <- e$fit.logskew.comp}
     }
     est.mat.list <- create_lists(c(n2,n1))
     time.used.list <- create_lists(c(n2,n1))
     for(i in 1:n1){
         for(j in 1:n2){
-            #est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]][[j]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)       
-            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)       
+            est.mat.list[[j]][[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]]$par})),ncol=length(fit.results[[1]][[1]]$par),byrow=TRUE)       
             time.used.list[[j]][[i]] <- unlist(lapply(fit.results,function(x){x[[i]]$time[1]}))
         }
     }
-    #est.mat.list = list()
-    # for(i in 1:n1){
-    #     est.mat.list[[i]] <- matrix(unlist(lapply(fit.results,function(x){x[[i]]$par[1:4]})),ncol=ncol(par.skew.normal),byrow=TRUE)
-    # }
     return(list(est.mat.list,time.used.list))
 }
 
-extract_id <- function(e){
-    est <- lapply(e$fit.logskew.angular,function(x){matrix(unlist(lapply(x$others,function(x1){c(x1$par,x1$value)})),nrow=length(e$fit.logskew.angular[[1]]$others),byrow=TRUE)})
-    return(est)
-}
+results.list1.angular <- extract_results(files.list1,comp=F)
+results.list1.comp <- extract_results(files.list1,comp=T)
 
-bias.list <- function(data,i){
-    bias = apply(data,1,function(x){(x[1:2] - par.skew.normal[i,1:2])})
-    bias = rowMeans(bias)/par.skew.normal[i,1:2]
-    return(bias)
-}
+results.list2.angular <- extract_results(files.list2,comp=F)
+results.list2.comp <- extract_results(files.list2,comp=T)
 
+data.est  <- data.frame(results.list1.angular[[1]][[1]][[2]],method=1,step=1,case=1)
+data.est <- rbind(data.est,data.frame(results.list1.angular[[1]][[1]][[2]],method=1,step=1,case=2))
+data.est <- rbind(data.est,data.frame(results.list1.comp[[1]][[1]][[1]],method=2,step=1,case=1))
+data.est <- rbind(data.est,data.frame(results.list1.comp[[1]][[1]][[2]],method=2,step=1,case=2))
 
-# mse.max = matrix(NA,nrow=length(files.list),ncol=nrow(par.skew.normal)*2)
-# for(k in 1:length(files.list)){
-#     load(files.list[k],e<-new.env())    
-#     fit.result <- lapply(1:nrow(par.skew.normal),function(i){values = lapply(1:2,function(j){matrix(unlist(lapply(e$fit.logskew.angular2[[i]][[j]], function(x2){x2$par[1:4]-par.skew.normal[i,]})),ncol=4,byrow=TRUE)})})
-#     fit.result <- unlist(lapply(fit.result,function(x){lapply(x,function(x1){mse=apply(abs(x1[,3:4]),1,mean);sum(mse<1)/length(mse)})}))
-#     mse.max[k,] <- fit.result
-#     print(k)
-# }
+data.est <- rbind(data.est,data.frame(results.list2.angular[[1]][[1]][[1]],method=1,step=2,case=1))
+data.est <- rbind(data.est,data.frame(results.list2.angular[[1]][[1]][[2]],method=1,step=2,case=2))
+data.est <- rbind(data.est,data.frame(results.list2.comp[[1]][[1]][[1]],method=2,step=2,case=1))
+data.est <- rbind(data.est,data.frame(results.list2.comp[[1]][[1]][[2]],method=2,step=2,case=2))
+data.est <- data.est[data.est[,3]>0,]
+data.est[,3:5] <- data.est[,3:5]/data.est[,3]
+names(data.est) <- c("lambda","nu","b0","b1","b2","method","step","case")
 
-# boxplot(mse.max)
-# summary(mse.max)
-# idx= 1
-# max(mse.max[,idx])
-# error.idx = which.max(mse.max[,idx])
-# load(files.list[error.idx],e<-new.env())
-# e$fit.logskew.angular2[[(idx-1) %/% 2 + 1]][[(idx-1) %% 2 + 1]]
-# e$fit.logskew.angular[[(idx-1) %/% 2 + 1]][[(idx-1) %% 2 + 1]]
-# par.skew.normal[(idx-1) %/% 2 + 1,]
-results.list <- extract_results(files.list)
-est.mat.list <- results.list[[1]]
-time.used.list <- results.list[[2]]
+save.image("data/simulation_comp_results.RData")
+
 par.skew.normal = as.data.frame(par.skew.normal)
+
 save.image(file=paste0("data/simulation_study_logskew_results_",idx.file,"_",basis.idx,".RData"))
 
 ## for skewed BR ##
