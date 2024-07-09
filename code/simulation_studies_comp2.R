@@ -70,6 +70,7 @@ if(model == "logskew"){
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
     ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
     init = c(1,1,rep(0,ncol(para.alpha)))
+    init[3] = 1
     # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
     # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
     par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
@@ -85,14 +86,13 @@ if(model == "logskew"){
         if(!file.exists(file.samples)){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]))
         }
-        # init = par.skew.normal[i,]
-        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores/2,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
+        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores/2,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         print(fit.logskew.angular[[i]]$par)
         print(par.skew.normal[i,])
         
-        init2 = init;init2[3] = 1
-        fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init2,fixed=c(F,F,T,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,basis=basis,idx.para=idx.para)
-        print(fit.logskew.comp[[i]]$par)
+        # init2 = init;init2[3] = 1
+        # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init2,fixed=c(F,F,T,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,basis=basis,idx.para=idx.para)
+        # print(fit.logskew.comp[[i]]$par)
         print(i)
     }    
     save(fit.logskew.angular,fit.logskew.comp,par.skew.normal,m,d,basis,file=file2save)

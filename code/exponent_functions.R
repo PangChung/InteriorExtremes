@@ -524,10 +524,8 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
                 a = matrix(rnorm(ncores*n.alpha),ncol=n.alpha)
                 a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             }
-            init[!fixed2] = opt.result$par
             fixed2[-idx.para] = fixed[-idx.para]
-            fixed2[idx.para] = TRUE
-            a = cbind(matrix(init[idx.para],ncol=length(idx.para),nrow=nrow(a),byrow=T),a)[,!fixed2]
+            fixed2[idx.para] = TRUE;init = opt.result$par
             init.list = split(a,row(a)) 
             if(method=="L-BFGS-B"){
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
