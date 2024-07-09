@@ -393,7 +393,7 @@ colnames(e$par.skew.normal) <- colnames(e$data.est[,-3])
 
 par.skew.normal_long <- pivot_longer(e$par.skew.normal, -c(method,step,case), names_to = "variable", values_to = "value")
 
-p <- ggplot(subset(data_long,case==1 & step==2), aes(x = factor(step), y = value,fill=factor(method,labels=c("Angular","Composite")))) +
+p <- ggplot(subset(data_long,case==2 & step==2), aes(x = factor(step), y = value,fill=factor(method,labels=c("Angular","Composite")))) +
   geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
   geom_point(data=subset(par.skew.normal_long,case==1 & step==2),aes(x=factor(step),y=value),color="black",size=1,
   position=position_dodge(width = 1)) +
