@@ -533,8 +533,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             }else{
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }
-            opt.values <- unlist(lapply(opt.result2,function(x){x$value}))
-            opt.b0 <- unlist(lapply(opt.result2,function(x){x$par[1]}))
+            opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$value,error=function(e){return(Inf)})}))
             opt.result = opt.result2[[which.min(opt.values)]]
             init[!fixed2] = opt.result$par
             fixed2 = fixed;fixed2[-idx.para]=TRUE
