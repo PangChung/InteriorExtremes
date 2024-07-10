@@ -481,7 +481,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             alpha = alpha.func(par=par.2,b.mat= basis)
             if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             para.temp = list(sigma=cov.mat,alpha=alpha)
-            val = intensity_logskew(data,par=para.temp,log=TRUE) 
+            val = intensity_logskew_constraint(data,par=para.temp,log=TRUE) 
             return(-mean(val)) 
         }
     }
