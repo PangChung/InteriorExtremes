@@ -6,7 +6,7 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-files.list1 <- list.files(path="data/simulation_comp/",pattern=paste0("simulation_comp2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
+files.list1 <- list.files(path="data/simulation_comp2/",pattern=paste0("simulation_comp2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
 files.list2 <- list.files(path="data/simulation_comp2/",pattern=paste0("simulation_comp2_2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
 load(files.list2[[1]],e<-new.env())
 par.skew.normal = e$par.skew.normal[,-3]
@@ -34,15 +34,19 @@ results.list1.comp <- extract_results(files.list1,comp=T)
 results.list2.angular <- extract_results(files.list2,comp=F)
 results.list2.comp <- extract_results(files.list2,comp=T)
 
-data.est  <- data.frame(results.list1.angular[[1]][[1]][[2]],method=1,step=1,case=1)
+data.est  <- data.frame(results.list1.angular[[1]][[1]][[1]],method=1,step=1,case=1)
 data.est <- rbind(data.est,data.frame(results.list1.angular[[1]][[1]][[2]],method=1,step=1,case=2))
-data.est <- rbind(data.est,data.frame(results.list1.comp[[1]][[1]][[1]],method=2,step=1,case=1))
-data.est <- rbind(data.est,data.frame(results.list1.comp[[1]][[1]][[2]],method=2,step=1,case=2))
 
 data.est <- rbind(data.est,data.frame(results.list2.angular[[1]][[1]][[1]],method=1,step=2,case=1))
 data.est <- rbind(data.est,data.frame(results.list2.angular[[1]][[1]][[2]],method=1,step=2,case=2))
+
+
+data.est <- rbind(data.est,data.frame(results.list1.comp[[1]][[1]][[1]],method=2,step=1,case=1))
+data.est <- rbind(data.est,data.frame(results.list1.comp[[1]][[1]][[2]],method=2,step=1,case=2))
+
 data.est <- rbind(data.est,data.frame(results.list2.comp[[1]][[1]][[1]],method=2,step=2,case=1))
 data.est <- rbind(data.est,data.frame(results.list2.comp[[1]][[1]][[2]],method=2,step=2,case=2))
+
 data.est <- data.est[data.est[,3]>0,]
 data.est[,3:5] <- data.est[,3:5]/data.est[,3]
 names(data.est) <- c("lambda","nu","b0","b1","b2","method","step","case")
