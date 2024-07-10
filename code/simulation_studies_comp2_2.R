@@ -67,7 +67,7 @@ if(model == "logskew"){
     # lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
     # ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
     # init = c(1,para.nu,1,0,0)
-    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)));lb[3]=100
+    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)));lb[3]=0.5
     ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
     # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
     # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
@@ -85,7 +85,7 @@ if(model == "logskew"){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]))
         }
         init = par.skew.normal[i,];init[3]=1000
-        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para)
+        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para)
         print(fit.logskew.angular[[i]]$par)
         print(par.skew.normal[i,])
         # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,basis=basis,idx.para=idx.para)
