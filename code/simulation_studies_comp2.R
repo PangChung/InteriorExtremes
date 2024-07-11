@@ -41,7 +41,7 @@ source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
 file2save = paste0(DataPath,"data/simulation_comp2_",model,"_",id,"_",m,"_",basis.idx,".RData")
-file.samples = paste0(DataPath,"data/samples/simulation_","comp2","_",id,"_",m,"_",basis.idx,".RData")
+file.samples = paste0(DataPath,"data/samples/simulation_","model","_",id,"_",m,"_",basis.idx,".RData")
 if(file.exists(file2save)){stop("job already finished")}
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
