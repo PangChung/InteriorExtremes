@@ -17,7 +17,7 @@ switch(computer,
 coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(3) # range for the covariance function ##      
+para.range = c(5) # range for the covariance function ##      
 para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
