@@ -523,7 +523,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             } else {
                 a = matrix(rnorm(ncores*n.alpha),ncol=n.alpha)
                 a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
-                a[,1] = pmax(a[,1],1000)
+                a[,1] = 1
             }
             init[!fixed2] = opt.result$par
             fixed2[-idx.para] = fixed[-idx.para]

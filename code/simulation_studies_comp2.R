@@ -70,7 +70,7 @@ if(model == "logskew"){
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)));lb[3]=0.5
     ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
     init = c(1,1,rep(0,ncol(para.alpha)))
-    init[3] = 1000
+    init[3] = 1
     # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
     # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
     par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
