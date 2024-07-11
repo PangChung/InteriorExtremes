@@ -1,9 +1,9 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
-computer = "local"
+computer = "hpc"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
-m <- 500 ## number of samples
+m <- 2000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
 #model = "truncT"; # "logskew" or "truncT"
@@ -17,7 +17,7 @@ switch(computer,
 coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
-para.range = c(3) # range for the covariance function ##      
+para.range = c(5) # range for the covariance function ##      
 para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
@@ -41,7 +41,7 @@ source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 ncores=detectCores()
 file2save = paste0(DataPath,"data/simulation_comp2_2_",model,"_",id,"_",m,"_",basis.idx,".RData")
-file.samples = paste0(DataPath,"data/samples/simulation_","comp2","_",id,"_",m,"_",basis.idx,".RData")
+file.samples = paste0(DataPath,"data/samples/simulation_","model","_",id,"_",m,"_",basis.idx,".RData")
 if(file.exists(file2save)){stop("job already finished")}
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
@@ -49,6 +49,7 @@ set.seed(init.seed)
 ## compute the basis ###
 if(basis.idx == 1){
     centers <- rbind(c(0.25,0.25),c(0.25,0.25),c(0.75,0.75))*d
+    
     idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
     basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/sqrt(sum(y^2))})
 }else{
@@ -67,7 +68,7 @@ if(model == "logskew"){
     # lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
     # ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
     # init = c(1,para.nu,1,0,0)
-    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)));lb[3]=0.99
+    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
     ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
     # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
     # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
@@ -77,7 +78,7 @@ if(model == "logskew"){
     ec.logskew <- list()
     tc.logskew <- list()
     fit.logskew.angular <- fit.logskew.comp <- list()
-    if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal} else samples.skew.normal <- list()
+    if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal[c(5,9)]} else samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
         par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
         par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
@@ -85,7 +86,7 @@ if(model == "logskew"){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]))
         }
         init = par.skew.normal[i,]
-        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para)
+        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=100,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para)
         print(fit.logskew.angular[[i]]$par)
         print(par.skew.normal[i,])
         # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,basis=basis,idx.para=idx.para)
@@ -111,7 +112,7 @@ if(model == "truncT"){
         set.seed(init.seed)
         samples.truncT[[i]] <- simu_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
         init[!fixed] = par.truncT[i,!fixed]
-        fit.truncT.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=30,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
+        fit.truncT.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=50,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,T,F,T),loc=diff.mat,FUN=cov.func,index=all.pairs[,pairs.idx],model="truncT",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,idx.para=idx.para)
         print(i)
     }
