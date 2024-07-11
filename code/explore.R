@@ -270,7 +270,7 @@ samples.logskew <- simu_logskew(m=10^3,par=par.logskew,ncores=10)
 
 par.logskew = alpha2delta(list(matrix(c(1,0.5,0.5,1),2,2),c(-2,2)))
 par.logskew = alpha2delta(list(matrix(c(1,0.5,0.5,1),2,2),c(0,0)))
-par.logskew = alpha2delta(list(vario.func(coord,c(2,1)),c(-1,0)))
+par.logskew = alpha2delta(list(vario.func(coord,c(2,1)),c(-1,1)))
 
 x = c(2,5)
 func <- function(x.i){
@@ -288,9 +288,25 @@ grad(func,x[1])
 partialV_logskew(x,idx=1,par.logskew,alpha.para=FALSE)
 
 func <- function(x.i){
+    x.new <- x;x.new[1] <- x.i
+    partialV_logskew(x.new,idx=2,par.logskew,alpha.para=FALSE)
+}
+grad(func,x[1])
+intensity_logskew_constraint(x,par.logskew,alpha.para=FALSE,log=FALSE)
+
+func <- function(x.i){
     exp(-nloglik(par.logskew,x.i,model="logskew"))
 }
 hcubature(func,lowerLimit = rep(0,2),upperLimit=rep(Inf,2))
+
+func <- function(x.i){
+    val1 = intensity_logskew(c(x.i,1-x.i),par.logskew,alpha.para=FALSE,log=FALSE)
+    val2 = intensity_logskew_constraint(c(x.i,1-x.i),par.logskew,alpha.para=FALSE,log=FALSE)
+    return(c(val1,val2))
+}
+
+
+hcubature(func,lowerLimit = 0,upperLimit=1)
 
 coord = cbind(1,c(1,5))
 a.true = seq(-4,0,length.out=9)#c(-4,-2,-1,0.1,0,0.1,1,2,4)

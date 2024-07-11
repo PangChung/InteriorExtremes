@@ -260,7 +260,7 @@ intensity_logskew_constraint <- function(x,par,alpha.para=TRUE,log=TRUE){
     tau.tilde = apply(x.circ,1,function(x.i)  sum(alpha * (x.i + omega2/2)))
     A = inv.sigma - q %*% t(q)/sum.q
     val = -(n-3)/2 * log(2) - (n-1)/2*log(pi)-1/2*logdet.sigma - 1/2*log(sum.q) - 1/2 * (sum(q*omega2)-1)/sum.q - 1/8*c(omega2 %*% A %*% omega2) 
-    val = val - rowSums(x.log) - 1/2 * apply(x.circ,1,function(x.i) c(x.i %*% A %*% x.i) + sum(x.i * (2*q/sum.q + c(A %*% omega2))))
+    val = val - rowSums(x.log) - 1/2 * apply(x.circ,1,function(x.i) c(x.i %*% A %*% x.i) + sum(x.i * (2*q/sum.q + c(A %*% omega2)))) + pnorm(tau.tilde,log.p=TRUE)
     assign(".Random.seed", oldSeed, envir=globalenv())
     if(log)
         return(val)
