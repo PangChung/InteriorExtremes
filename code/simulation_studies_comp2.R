@@ -67,7 +67,7 @@ if(model == "logskew"){
     # lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
     # ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
     # init = c(1,para.nu,1,0,0)
-    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)));lb[3]=0.5
+    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)));lb[3]=-Inf
     ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
     init = c(1,1,rep(0,ncol(para.alpha)))
     init[3] = 1
