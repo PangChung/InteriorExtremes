@@ -49,6 +49,7 @@ set.seed(init.seed)
 ## compute the basis ###
 if(basis.idx == 1){
     centers <- rbind(c(0.25,0.25),c(0.25,0.25),c(0.75,0.75))*d
+    
     idx.centers <- apply(centers,1,function(x){which.min(apply(coord,1,function(y){sum((x-y)^2)}))})
     basis <- sapply(idx.centers,function(x){y=dnorm(diff.mat[x,],mean=0,sd=d*2);y=y-mean(y);y/sqrt(sum(y^2))})
 }else{
@@ -85,7 +86,7 @@ if(model == "logskew"){
             samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]))
         }
         init = par.skew.normal[i,]
-        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para)
+        fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=50,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para)
         print(fit.logskew.angular[[i]]$par)
         print(par.skew.normal[i,])
         # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,F,F),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,basis=basis,idx.para=idx.para)
@@ -111,7 +112,7 @@ if(model == "truncT"){
         set.seed(init.seed)
         samples.truncT[[i]] <- simu_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
         init[!fixed] = par.truncT[i,!fixed]
-        fit.truncT.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=30,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
+        fit.truncT.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=50,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,T,F,T),loc=diff.mat,FUN=cov.func,index=all.pairs[,pairs.idx],model="truncT",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,idx.para=idx.para)
         print(i)
     }
