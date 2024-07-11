@@ -1,6 +1,6 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
-computer = "local"
+computer = "hpc"
 id = 1
 d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 2000 ## number of samples
