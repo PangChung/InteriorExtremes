@@ -393,21 +393,24 @@ colnames(e$par.skew.normal) <- colnames(e$data.est[,-3])
 
 par.skew.normal_long <- pivot_longer(e$par.skew.normal, -c(method,step,case), names_to = "variable", values_to = "value")
 
-p <- ggplot(subset(data_long,case==2 & step==2), aes(x = factor(step), y = value,fill=factor(method,labels=c("Angular","Composite")))) +
+p <- ggplot(subset(data_long,case==1 & step==2), aes(x = factor(step), y = value,fill=factor(method,labels=c("Angular","Composite")))) +
   geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-  geom_point(data=subset(par.skew.normal_long,case==1 & step==2),aes(x=factor(step),y=value),color="black",size=1,
-  position=position_dodge(width = 1)) +
-  facet_wrap(~variable, scales = "free",ncol=2,nrow=2,labeller = label_parsed) +
+  geom_point(data=subset(par.skew.normal_long,case==1 & step==2),aes(x=factor(step),y=value),color="black",size=2, position=position_dodge(width = 1)) +
+  facet_wrap(~variable, scales = "free",ncol=4,nrow=1,labeller = label_parsed) +
   labs(x = "Step",
        y = "Value")  + 
   theme(axis.text = element_text(size = 14),
         strip.text = element_text(size = 16),
-        axis.title.x = element_text(size = 16),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
         axis.title.y = element_text(size = 16),
         plot.title = element_text(hjust = 0.5, size = 16),
         legend.title = element_text(size = 16),legend.position = "none")
 p
 
+pdf("figures/simulation_est_boxplots_final_skewBR_comp.pdf",width=3*4,height=4,onefile=TRUE)
+show(p)
+dev.off()
 
 ## plot the boxplot for the simulation study:composite for truncated-T ##
 load("data/simulation_study_truncT_results_final_2000.RData",e1<-new.env())
