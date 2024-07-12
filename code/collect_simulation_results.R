@@ -6,9 +6,11 @@ library(ggplot2)
 library(gridExtra)
 library(tidyr)
 
-files.list1 <- list.files(path="data/simulation_comp2/",pattern=paste0("simulation_comp2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
-files.list2 <- list.files(path="data/simulation_comp2/",pattern=paste0("simulation_comp2_2_logskew_\\d+_2000_1.RData"),full.names=TRUE,recursive=FALSE)
-files.list2 <- list.files(path="data/simulation_comp3/",pattern=paste0("simulation_comp2_2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
+files.list1 <- list.files(path="data/simulation_comp/",pattern=paste0("simulation_comp2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
+files.list2 <- list.files(path="data/simulation_comp/",pattern=paste0("simulation_comp2_2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
+
+# files.list2 <- list.files(path="data/simulation_comp3/",pattern=paste0("simulation_comp2_2_logskew_\\d+_500_1.RData"),full.names=TRUE,recursive=FALSE)
+
 load(files.list2[[1]],e<-new.env())
 par.skew.normal = e$par.skew.normal[,-3]
 n1 = nrow(par.skew.normal);n2 = 1 #length(e$fit.logskew.angular[[1]])
