@@ -384,7 +384,8 @@ load("data/simulation_comp_results.RData",e<-new.env())
 
 colnames(e$data.est)[1:5] <- c("hat(lambda)","hat(vartheta)","hat(b)[0]","hat(b)[1]","hat(b)[2]")
 data_long <- pivot_longer(e$data.est[,-3], -c(method,step,case), names_to = "variable", values_to = "value")
-names(e$par.skew.normal) <- names(e$data.est)[1:4]
+data_long$variable = factor(data_long$variable,levels=names(e$data.est)[c(1,2,4,5)])
+names(e$par.skew.normal) <- names(e$data.est)[c(1,2,4,5)]
 
 e$par.skew.normal = do.call(rbind,replicate(4,e$par.skew.normal,simplify = FALSE))
 tmp = expand.grid(method=unique(e$data.est$method),step=unique(e$data.est$step),case=unique(e$data.est$case))
@@ -392,7 +393,7 @@ e$par.skew.normal = cbind(e$par.skew.normal[tmp$case,],tmp)
 colnames(e$par.skew.normal) <- colnames(e$data.est[,-3])
 
 par.skew.normal_long <- pivot_longer(e$par.skew.normal, -c(method,step,case), names_to = "variable", values_to = "value")
-
+par.skew.normal_long$variable <- factor(par.skew.normal_long$variable,levels=names(e$data.est)[c(1,2,4,5)])
 p <- ggplot(subset(data_long,case==1 & step==2), aes(x = factor(step), y = value,fill=factor(method,labels=c("Angular","Composite")))) +
   geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
   geom_point(data=subset(par.skew.normal_long,case==1 & step==2),aes(x=factor(step),y=value),color="black",size=2, position=position_dodge(width = 1)) +
@@ -500,6 +501,7 @@ idx.centers = c(apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,func
 
 idx.centers = c(idx.centers,e$idx.centers)
 p1 <- p2 <- p3 <- p5 <- list()
+loc.sub = as.data.frame(loc.sub)
 #diff.extcoef = c()
 for(i in 1:length(idx.centers)){
     idx.center = idx.centers[i]
@@ -517,11 +519,13 @@ for(i in 1:length(idx.centers)){
                             y = loc.sub[-idx.center,2],
                             z = true.ext.coef)
 
-    p1[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
-            geom_tile(aes(fill=z)) +
+    loc.df = data.frame(x = loc.sub[c(idx.centers[i],e$idx.centers),1],y = loc.sub[c(idx.centers[i],e$idx.centers),2],label=c("*",rep(".",5)))
+
+    p1[[i]] <- ggplot() + geom_tile(data=data,aes(x=x,y=y,fill=z)) +
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
-            geom_contour(colour="black",breaks=brks) + 
-            labs( x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 14, color = "black", vjust = 0.8, hjust = 0.5) + 
+            geom_contour(data=data,aes(x=x,y=y,z=z),colour="black",breaks=brks) + 
+            labs( x = "Longitude", y = "Latitude") + geom_point(data=loc.df[-1,],aes(x = x, y = y), size = 2, color = "black") + 
+            geom_point(data=loc.df[1,],aes(x = x, y = y),shape=8, size = 2, color = "black") +
             theme(axis.text = element_text(size=10), 
                             strip.text = element_text(size = 14),
                             axis.title.x = element_text(size=14), 
@@ -530,12 +534,12 @@ for(i in 1:length(idx.centers)){
 
 
     data$z = true.ext.coef.BR
-
-    p2[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
-            geom_tile(aes(fill=z)) +
+ 
+    p2[[i]] <- ggplot() + geom_tile(data=data,aes(x=x,y=y,fill=z)) +
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
-            geom_contour(colour="black",breaks=brks) + 
-            labs(x = "Longitude", y = "Latitude") +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 14, color = "black", vjust = 0.8, hjust = 0.5) + 
+            geom_contour(data=data,aes(x=x,y=y,z=z),colour="black",breaks=brks) + 
+            labs( x = "Longitude", y = "Latitude") + geom_point(data=loc.df[-1,],aes(x = x, y = y), size = 2, color = "black") + 
+            geom_point(data=loc.df[1,],aes(x = x, y = y),shape=8, size = 2, color = "black") + 
             theme(axis.text = element_text(size=12), 
                             strip.text = element_text(size = 14),
                             axis.title.x = element_text(size=14), 
@@ -545,10 +549,12 @@ for(i in 1:length(idx.centers)){
    
     data$z = empirical.extcoef
 
-    p3[[i]] <- ggplot(data, aes(x = x, y = y, z=z))  + 
-            geom_tile(aes(fill=z)) +
+    p3[[i]] <- ggplot() + geom_tile(data=data,aes(x=x,y=y,fill=z)) +
             scale_fill_distiller(palette="RdBu",limits=c(global_min,global_max)) +
-            labs(x = "Longitude", y = "Latitude",fill=expression(hat(theta)[2])) +  geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 14, color = "black", vjust = 0.8, hjust = 0.5) + 
+            # geom_contour(data=data,aes(x=x,y=y,z=z),colour="black",breaks=brks) + 
+            geom_point(data=loc.df[-1,],aes(x = x, y = y), size = 2, color = "black") + 
+            geom_point(data=loc.df[1,],aes(x = x, y = y),shape=8, size = 2, color = "black") +
+            labs(x = "Longitude", y = "Latitude",fill=expression(hat(theta)[2])) + 
             theme(axis.text = element_text(size=12), 
                             strip.text = element_text(size = 14),
                             axis.title.x = element_text(size=14), 
@@ -562,7 +568,8 @@ for(i in 1:length(idx.centers)){
             theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "right") + 
             coord_fixed() + 
             labs(title = paste("Skewed BR is closer to the Empirical?",round(mean(data$z<0)*100,1),"%"), x = "Longitude", y = "Latitude",fill="Values")+
-            geom_text(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2] , label = "*"), size = 10, color = "black", vjust = 0.8, hjust = 0.5)
+            geom_point(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2]),shape=1, size = 2, color = "black") +
+            geom_point(aes(x = loc.sub[e$idx.centers,1], y = loc.sub[e$idx.centers,2]),shape=8, size = 2, color = "black")
 }
 
 pdf("figures/extcoef_application_2.pdf",width=3.5*3+1,height=5,onefile=TRUE)
