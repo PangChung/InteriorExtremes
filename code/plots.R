@@ -458,7 +458,7 @@ dev.off()
 ######################################################################
 library(Matrix)
 load("data/data_application.RData")
-load("data/application_results_new_.RData",e<-new.env())
+load("data/application_results_new_2.RData",e<-new.env())
 e$results2$par;e$results2$value;e$results2$time
 e$results4$par;e$results4$value;e$results4$time
 
@@ -572,7 +572,7 @@ for(i in 1:length(idx.centers)){
             geom_point(aes(x = loc.sub[e$idx.centers,1], y = loc.sub[e$idx.centers,2]),shape=8, size = 2, color = "black")
 }
 
-pdf("figures/extcoef_application_2.pdf",width=3.5*3+1,height=5,onefile=TRUE)
+pdf("figures/extcoef_application_2_2.pdf",width=3.5*3+1,height=5,onefile=TRUE)
 for(i in 1:length(idx.centers)){
     grid.arrange(grobs=list(p1[[i]],p2[[i]],p3[[i]]),nrow=1,widths=c(3.5,3.5,4.35))
 }
@@ -619,7 +619,7 @@ p4[[6]] <- ggplot(data,aes(x=x,y=y,fill=z)) + geom_tile() + scale_fill_distiller
 p4[[6]]
 dev.off()
 
-save(idx.centers,est.sd.jack,est.sd.jack.BR,est.jack,est.jack.BR,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application.RData")
+save(idx.centers,est.sd.jack,est.sd.jack.BR,est.jack,est.jack.BR,p1,p2,p3,p4,par.list,par.list.BR,empirical.extcoef.mat,fitted.extcoef.BR.mat,fitted.extcoef.mat,file="data/plot_application_2.RData")
 
 
 
