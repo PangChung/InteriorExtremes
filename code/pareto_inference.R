@@ -1,6 +1,6 @@
 ### score matching inference for the skewed Brown-Resnick and Truncated extremal-t Process ###
 ################################################################################################
-fit.scoreMatching <- function (par2, obs, loc, vario.fun,idx.para=1:2, alpha.func=NULL, dof=2 weightFun = NULL, dWeightFun = NULL, nCores = 1L, ST = FALSE, ...){
+scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
     ellipsis <- list(...)
     if ("weigthFun" %in% names(ellipsis) && is.null(weightFun)) {
         weightFun <- ellipsis[["weigthFun"]]
@@ -101,5 +101,35 @@ fit.scoreMatching <- function (par2, obs, loc, vario.fun,idx.para=1:2, alpha.fun
         scores <- lapply(1:n, computeScores)
     }
     return(sum(unlist(scores))/n)
+}
+
+fit.scoreMatching <- function(init,par2, obs, loc, model="logskew", vario.fun=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = 1L, ...){
+    if (is.matrix(obs)) {
+        obs <- split(obs, row(obs))
+    }
+    if (is.null(weightFun) | is.null(dWeightFun)) {
+        weightFun <- function(x, u) {
+            x * (1 - exp(-(mean(x/u) - 1)))
+        }
+        dWeightFun <- function(x, u) {
+            (1 - exp(-(mean(x/u) - 1))) + (x/u/length(x)) * exp(-(mean(x/u) - 
+                1))
+        }
+    }
+    fun <- function(par) {
+        par2 = init
+        par2[!fixed] = par
+        val = scoreMatching(par2, obs, loc, model, vario.fun, idx.para, alpha.func, dof, weightFun, dWeightFun, nCores, ...)
+        return(val)
+    }
+    init2 = init[!fixed]
+    t1 = proc.time()
+    result <- optim(init2, fun, control = list(trace = TRUE, 
+        maxit = maxit), method = method, hessian = FALSE)
+    t2 = proc.time() - t1
+    init[!fixed] = result$par
+    result$par = init
+    result$time = t2 - t1
+    return(result)
 }
 
