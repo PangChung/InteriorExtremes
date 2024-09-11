@@ -1,6 +1,6 @@
 ### score matching inference for the skewed Brown-Resnick and Truncated extremal-t Process ###
 ################################################################################################
-fit.scoreMatching <- function (par2, obs, loc, vario.fun, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ST = FALSE, ...){
+fit.scoreMatching <- function (par2, obs, loc, vario.fun,idx.para=1:2, alpha.func=NULL, dof=2 weightFun = NULL, dWeightFun = NULL, nCores = 1L, ST = FALSE, ...){
     ellipsis <- list(...)
     if ("weigthFun" %in% names(ellipsis) && is.null(weightFun)) {
         weightFun <- ellipsis[["weigthFun"]]
@@ -29,69 +29,67 @@ fit.scoreMatching <- function (par2, obs, loc, vario.fun, weightFun = NULL, dWei
     if (!is.numeric(nCores) || nCores < 1) {
         stop("`nCores` must a positive number of cores.")
     }
-    n <- length(obs)
-    dim <- nrow(loc)
-    if (!ST) {
-        SigmaS = vario.fun(loc, par2)
-        computeScores = function(i) {
+    if(model=="logskew"){
+        n <- length(obs)
+        SigmaS = vario.fun(loc, par2[idx.para])
+        alpha = alpha.func(loc,par2[-idx.para])
+        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
+        a = log(2) + pnorm(delta,log.p=TRUE)
+        computeScores= function(i){
             obs.i = .subset2(obs, i)
             ind = !is.na(obs.i)
-            dim = sum(ind)
-            obs.i = obs.i[ind]
+            obs.i = obs.i[ind] 
+            log.obs.i = log(obs.i) + a
             sigmaInv <- MASS::ginv(SigmaS[ind, ind])
             sigma <- diag(SigmaS[ind, ind])
-            q <- rowSums(sigmaInv)
-            A <- sigmaInv - q %*% t(q)/sum(q)
-            zeroDiagA <- A
-            diag(zeroDiagA) <- 0
-            mtp <- 2 * q/(sum(q)) + 2 + sigmaInv %*% sigma - 
-                (q %*% t(q) %*% sigma)/(sum(q))
-            gradient <- -1/2 * ((A + t(A)) %*% log(obs.i)) * 
-                (1/obs.i) - 1/2 * (1/obs.i) * mtp
-            diagHessian <- -1/2 * diag(A + t(A)) * (1/obs.i^2) + 
-                1/2 * ((A + t(A)) %*% log(obs.i)) * (1/obs.i)^2 + 
-                1/2 * (1/obs.i)^2 * mtp
+            alpha.i = c(1 - delta[ind] %*% sigmaInv %*% delta[ind])^(-1/2) * c(sigmaInv %*% delta[ind])
+            q = rowSums(sigmaInv)
+            sum.q = sum(q);sum.alpha = sum(alpha.i)
+            q.mat = matrix(q,n,n,byrow=TRUE)
+
+            beta = (1+sum.alpha^2/sum.q)^(-0.5)
+            tau.tilde.beta = beta * (alpha.i - sum.alpha*q/sum.q)
+            tau.tilde =  sum( tau.tilde.beta * (log.obs.i + sigma/2) ) + beta*sum.alpha/sum.q
+            Phi.tau = pnorm(tau.tilde);phi.tau = dnorm(tau.tilde)
+            mtp <- 2 * q/(sum(q)) + 2 + A %*% sigma
+            gradient <- - A %*% log.obs.i * (1/obs.i) - 
+                    1/2 * (1/obs.i) * mtp +  phi.tau/Phi.tau*tau.tilde.beta*(1/obs.i) 
+
+            diagHessian <- -diag(A) * (1/obs.i^2) + 
+                A %*% log.obs.i * (1/obs.i)^2 + 
+                1/2 * (1/obs.i)^2 * mtp + (-phi.tau*tau.tilde*tau.tilde.beta^2+phi.tau*tau.tilde.beta-phi.tau^2*tau.tilde.beta^2/Phi.tau)/(obs.i^2*Phi.tau)
+
             weights <- do.call(what = "weightFun", args = c(ellipsis, 
                 x = list(obs.i)))
             dWeights <- do.call(what = "dWeightFun", args = c(ellipsis, 
                 x = list(obs.i)))
+
             sum(2 * (weights * dWeights) * gradient + weights^2 * 
                 diagHessian + 1/2 * weights^2 * gradient^2)
         }
     }
-    else {
-        computeScores = function(i) {
+    if(model=="truncT"){
+        n <- length(obs)
+        SigmaS = vario.fun(loc, par2[idx.para])
+        sigmaInv <- MASS::ginv(Sigma)
+        a = par2[-idx.para]
+        dim = nrow(SigmaS)
+        if(any(is.na(unlist(obs)))){ stop("Data must be complete.") }
+        computeScores <- function(i){
             obs.i = .subset2(obs, i)
-            ind = !is.na(obs.i)
-            dim = sum(ind)
-            obs.i = obs.i[ind]
-            SigmaS = vario.fun(loc[ind, ], par2, i)
-            sigmaInv <- tryCatch({
-                MASS::ginv(SigmaS)
-            }, warning = function(war) {
-                print(war)
-            }, error = function(err) {
-                print(err)
-                print(range(SigmaS, na.rm = TRUE))
-                print(par2)
-                browser()
-            })
-            sigma <- diag(SigmaS)
-            q <- rowSums(sigmaInv)
-            A <- sigmaInv - q %*% t(q)/sum(q)
-            zeroDiagA <- A
-            diag(zeroDiagA) <- 0
-            mtp <- 2 * q/(sum(q)) + 2 + sigmaInv %*% sigma - 
-                (q %*% t(q) %*% sigma)/(sum(q))
-            gradient <- -1/2 * ((A + t(A)) %*% log(obs.i)) * 
-                (1/obs.i) - 1/2 * (1/obs.i) * mtp
-            diagHessian <- -1/2 * diag(A + t(A)) * (1/obs.i^2) + 
-                1/2 * ((A + t(A)) %*% log(obs.i)) * (1/obs.i)^2 + 
-                1/2 * (1/obs.i)^2 * mtp
+            obs.i.a = (obs.i*a)^{1/dof}
+            obs.i.a.quad = sum(t(obs.i.a) %*% sigmaInv %*% obs.i.a)
+            gradient <- (1-dof)/dof/obs.i - (dof+dim)/dof/obs.i.a.quad*sigmaInv %*% obs.i.a * (obs.i.a^(dof-1))*a 
+
+            diagHessian <- (dof-1)/dof/obs.i^2 - 
+                a^2*(dof+dim)/dof/obs.i.a.quad*( (2-dof)/dof*diag(sigmaInv)*obs.i.a^(2-2*dof) + (1-dof)/dof*sigmaInv %*% obs.i.a * (obs.i.a^(1-2*dof))) + 
+                2*a^2*(dof+dim)/(dof^2)/obs.i.a.quad*(sigmaInv %*% obs.i.a * (obs.i.a^(dof-1)))
+            
             weights <- do.call(what = "weightFun", args = c(ellipsis, 
                 x = list(obs.i)))
             dWeights <- do.call(what = "dWeightFun", args = c(ellipsis, 
                 x = list(obs.i)))
+
             sum(2 * (weights * dWeights) * gradient + weights^2 * 
                 diagHessian + 1/2 * weights^2 * gradient^2)
         }
