@@ -287,8 +287,8 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
         z.temp = func(m.temp)*mev::rgp(m.temp,1,1,1)
         idx.finish.temp = apply(z.temp,1,riskr) > 1
         if(any(idx.finish.temp)){
-            idx.finish[!idx.finish] = idx.finish.temp
-            Z[!idx.finish[idx.finish.temp],] = z.temp[idx.finish.temp,]
+            Z[!idx.finish,][idx.finish.temp,] <- z.temp[idx.finish.temp,]
+            idx.finish[!idx.finish][idx.finish.temp] <- TRUE 
         }
     }
     return(Z)
@@ -333,8 +333,8 @@ simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
         z.temp = func(m.temp)*mev::rgp(m.temp,1,1,1)
         idx.finish.temp = apply(z.temp,1,riskr) > 1
         if(any(idx.finish.temp)){
+            Z[!idx.finish,][idx.finish.temp,] <- z.temp[idx.finish.temp,]
             idx.finish[!idx.finish] <- idx.finish.temp
-            Z[!idx.finish[idx.finish.temp],] <- z.temp[idx.finish.temp,]
         }
     }
     return(Z)
