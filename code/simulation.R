@@ -269,7 +269,7 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
             while(x[n+1] + delta[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
             x0 <- c(x[1:n] + sigma[,j])
             val <- exp(x0-a);val <- val/val[j]
-            return(val/sum(val))
+            return(val)
         }
         if(!is.null(ncores)){
             z = mclapply(1:m.i,func.i,mc.cores=ncores)    
@@ -278,17 +278,21 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
         }
         return(do.call(rbind,z))
     }
-    r = mev::rgp(m,1,1,1)
+    r = evd::rgpd(m,1,1,1)
     z = func(m)*r
     idx.finish <- apply(z,1,riskr) > 1
     Z[idx.finish,] = z[idx.finish,]
+    browser()
     while(any(!idx.finish)){
         m.temp = sum(!idx.finish)
-        z.temp = func(m.temp)*mev::rgp(m.temp,1,1,1)
+        z.temp = func(m.temp)*evd::rgpd(m.temp,1,1,1)
         idx.finish.temp = apply(z.temp,1,riskr) > 1
         if(any(idx.finish.temp)){
             Z[!idx.finish,][idx.finish.temp,] <- z.temp[idx.finish.temp,]
             idx.finish[!idx.finish][idx.finish.temp] <- TRUE 
+        }
+        if(sum(idx.finish) %% 100 == 0){
+            print(paste0(sum(idx.finish),"/",m))
         }
     }
     return(Z)
@@ -320,17 +324,17 @@ simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
             val = TruncatedNormal::rtmvt(n=m.i,mu=sigma[,j]/sigma[j,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
             if(!is.matrix(val)){ val = matrix(val,nrow=m.i)}
             val = t(t(val)^nu * a[j]/a)
-            return(val/sum(val))
+            return(val)
         }
         return(NULL)
     }
-    r = mev::rgp(m,1,1,1)
+    r = evd::rgpd(m,1,1,1)
     z = func(m)*r
     idx.finish <- apply(z,1,riskr) > 1
     Z[idx.finish,] = z[idx.finish,]
     while(any(!idx.finish)){
         m.temp = sum(!idx.finish)
-        z.temp = func(m.temp)*mev::rgp(m.temp,1,1,1)
+        z.temp = func(m.temp)*evd::rgpd(m.temp,1,1,1)
         idx.finish.temp = apply(z.temp,1,riskr) > 1
         if(any(idx.finish.temp)){
             Z[!idx.finish,][idx.finish.temp,] <- z.temp[idx.finish.temp,]
