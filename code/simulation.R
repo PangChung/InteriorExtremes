@@ -181,7 +181,7 @@ simu_logskew2 <- function(m,par,ncores=NULL){
         func.i <- function(i){
             x <- c(t(sigma.star.chol) %*% rnorm(n+1))
             while(x[n+1] + delta[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
-            x0 <- c(omega %*% x[1:n] + sigma[,j])
+            x0 <- c(x[1:n] + sigma[,j])
             val <- exp(x0-a);val <- val/val[j]
             return(val)
         }
@@ -267,7 +267,7 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
             j = sample(1:n,1)
             x <- c(t(sigma.star.chol) %*% rnorm(n+1))
             while(x[n+1] + delta[j] <= 0){ x <- c(t(sigma.star.chol) %*% rnorm(n+1))}
-            x0 <- c(omega %*% x[1:n] + sigma[,j])
+            x0 <- c(x[1:n] + sigma[,j])
             val <- exp(x0-a);val <- val/val[j]
             return(val/sum(val))
         }

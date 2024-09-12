@@ -133,3 +133,4 @@ fit.scoreMatching <- function(init,par2, obs, loc, model="logskew", vario.fun=NU
     return(result)
 }
 
+
