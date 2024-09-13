@@ -291,9 +291,6 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
             Z[idx.temp,] <- z.temp[idx.finish.temp,]
             idx.finish[idx.temp] <- TRUE 
         }
-        if(sum(idx.finish) %% 100 == 0){
-            print(paste0(sum(idx.finish),"/",m))
-        }
     }
     return(Z)
 }
