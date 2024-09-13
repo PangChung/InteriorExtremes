@@ -282,14 +282,14 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
     z = func(m)*r
     idx.finish <- apply(z,1,riskr) > 1
     Z[idx.finish,] = z[idx.finish,]
-    browser()
     while(any(!idx.finish)){
         m.temp = sum(!idx.finish)
         z.temp = func(m.temp)*evd::rgpd(m.temp,1,1,1)
         idx.finish.temp = apply(z.temp,1,riskr) > 1
         if(any(idx.finish.temp)){
-            Z[!idx.finish,][idx.finish.temp,] <- z.temp[idx.finish.temp,]
-            idx.finish[!idx.finish][idx.finish.temp] <- TRUE 
+            idx.temp = which(!idx.finish)[idx.finish.temp]
+            Z[idx.temp,] <- z.temp[idx.finish.temp,]
+            idx.finish[idx.temp] <- TRUE 
         }
         if(sum(idx.finish) %% 100 == 0){
             print(paste0(sum(idx.finish),"/",m))
@@ -337,8 +337,9 @@ simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
         z.temp = func(m.temp)*evd::rgpd(m.temp,1,1,1)
         idx.finish.temp = apply(z.temp,1,riskr) > 1
         if(any(idx.finish.temp)){
-            Z[!idx.finish,][idx.finish.temp,] <- z.temp[idx.finish.temp,]
-            idx.finish[!idx.finish] <- idx.finish.temp
+            idx.temp = which(!idx.finish)[idx.finish.temp]
+            Z[idx.temp,] <- z.temp[idx.finish.temp,]
+            idx.finish[idx.temp] <- TRUE 
         }
     }
     return(Z)
