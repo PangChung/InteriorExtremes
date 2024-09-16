@@ -134,9 +134,6 @@ simu_logskew <- function(m,par,ncores=NULL){
         x0 = x[1:n] + sigma[,1]
         z <- exp(x0-a);z <- z/z[1]
         z <- z * r.hat
-        z.list = list()
-        z.list[[1]] = z
-        count = 1
         for(j in 2:n){
             r <- rexp(1)
             r.hat <- 1/r
@@ -151,11 +148,9 @@ simu_logskew <- function(m,par,ncores=NULL){
                 }
                 r <- r + rexp(1)
                 r.hat <- 1/r
-                z.list[[count+1]] <- z_temp
-                count = count + 1
             }
         }
-        return(z.list)
+        return(z)
     }
     if(!is.null(ncores)){ 
         Z = mclapply(1:m,simu,mc.cores=ncores,mc.set.seed = TRUE)
