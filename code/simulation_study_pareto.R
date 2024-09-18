@@ -98,11 +98,10 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
-data = samples.skew.normal[[1]]
-z = data[,sample(1:ncol(data),1)]
-u = 2
-z = z
-hist(1-1/z,20)
+# data = samples.skew.normal[[1]]
+# z = data[,sample(1:ncol(data),1)]
+# z = z
+# hist(1-1/z,20)
 
 # if(model == "truncT"){
 #     lb=c(0.01,0.01,0.01,0)
