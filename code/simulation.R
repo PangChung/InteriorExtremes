@@ -274,12 +274,12 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
         return(do.call(rbind,z))
     }
     r = evd::rgpd(m,1,1,1)
-    z = func(m)*r
+    z = t(apply(func(m),1,function(x){x/sum(x)}))*r
     idx.finish <- apply(z,1,riskr) > 1
     Z[idx.finish,] = z[idx.finish,]
     while(any(!idx.finish)){
         m.temp = sum(!idx.finish)
-        z.temp = func(m.temp)*evd::rgpd(m.temp,1,1,1)
+        z.temp = t(apply(func(m.temp),1,function(x){x/sum(x)}))*evd::rgpd(m.temp,1,1,1)
         idx.finish.temp = apply(z.temp,1,riskr) > 1
         if(any(idx.finish.temp)){
             idx.temp = which(!idx.finish)[idx.finish.temp]
@@ -321,12 +321,12 @@ simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
         return(NULL)
     }
     r = evd::rgpd(m,1,1,1)
-    z = func(m)*r
+    z = t(apply(func(m),1,function(x){x/sum(x)}))*r
     idx.finish <- apply(z,1,riskr) > 1
     Z[idx.finish,] = z[idx.finish,]
     while(any(!idx.finish)){
         m.temp = sum(!idx.finish)
-        z.temp = func(m.temp)*evd::rgpd(m.temp,1,1,1)
+        z.temp = t(apply(func(m.temp),1,function(x){x/sum(x)}))*evd::rgpd(m.temp,1,1,1)
         idx.finish.temp = apply(z.temp,1,riskr) > 1
         if(any(idx.finish.temp)){
             idx.temp = which(!idx.finish)[idx.finish.temp]

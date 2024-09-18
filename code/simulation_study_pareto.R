@@ -63,7 +63,7 @@ basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 0.1; basis[(d^2-floor(d^2/2)+1)
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
 
-riskr <- function(x){mean(x)}
+riskr <- function(x){sum(x)}
 
 t0 <- proc.time()
 if(model == "logskew"){
@@ -88,7 +88,7 @@ if(model == "logskew"){
         if(!file.exists(file.samples)){
             samples.skew.normal[[i]] <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),riskr,ncores=ncores)
         }        
-        fit.result1 <- fit.scoreMatching(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
+        fit.result1 <- fit.scoreMatching(obs=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=30,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
         print(fit.result1$par)
         print(par.skew.normal[i,])
         fit.logskew.angular[[i]] <- fit.result1
@@ -98,6 +98,11 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
+data = samples.skew.normal[[1]]
+z = data[,sample(1:ncol(data),1)]
+u = 2
+z = z
+hist(1-1/z,20)
 
 # if(model == "truncT"){
 #     lb=c(0.01,0.01,0.01,0)

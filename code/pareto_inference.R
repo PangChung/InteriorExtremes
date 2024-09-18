@@ -103,7 +103,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1
     return(sum(unlist(scores))/n)
 }
 
-fit.scoreMatching <- function(init,par2, obs, loc, model="logskew", vario.fun=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = 1L, ...){
+fit.scoreMatching <- function(init, obs, loc, model="logskew", vario.fun=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = 1L, ...){
     if (is.matrix(obs)) {
         obs <- split(obs, row(obs))
     }
