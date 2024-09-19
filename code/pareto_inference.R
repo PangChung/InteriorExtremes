@@ -1,3 +1,21 @@
+rFun <- function(x,xi=est.shape.gpd){
+    val = sum((x)^xi)^{1/xi}
+    return(val)
+}
+
+## weight functions that used in the gradient scoring method
+weightFun <- function(x,xi=est.shape.gpd){
+    val = x*(1- exp(1-rFun(x,xi)))
+    return(val)
+}
+
+dWeightFun <- function(x,xi=est.shape.gpd){
+    r = rFun(x,xi)
+    val = (1 - exp(-(r - 1))) + x * exp(-(r - 1))*r^(1-xi)*(x)^(xi-1)
+    return(val)
+}
+
+
 ### score matching inference for the skewed Brown-Resnick and Truncated extremal-t Process ###
 ################################################################################################
 scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1:2, alpha.func=NULL,basis=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
@@ -111,10 +129,10 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     }
     if (is.null(weightFun) | is.null(dWeightFun)) {
         weightFun <- function(x){
-            x * (1 - exp(-(mean(x/thres) - 1)))
+            x * (1 - exp(-(mean(x) - 1)))
         }
         dWeightFun <- function(x) {
-            (1 - exp(-(mean(x/thres) - 1))) + (x/thres/length(x)) * exp(-(mean(x/thres) - 
+            (1 - exp(-(mean(x) - 1))) + (x/length(x)) * exp(-(mean(x) - 
                 1))
         }
     }
