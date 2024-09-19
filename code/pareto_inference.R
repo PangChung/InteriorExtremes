@@ -1,6 +1,6 @@
 ### score matching inference for the skewed Brown-Resnick and Truncated extremal-t Process ###
 ################################################################################################
-scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
+scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1:2, alpha.func=NULL,basis=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
     ellipsis <- list(...)
     if ("weigthFun" %in% names(ellipsis) && is.null(weightFun)) {
         weightFun <- ellipsis[["weigthFun"]]
@@ -32,25 +32,27 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1
     if(model=="logskew"){
         n <- length(obs)
         SigmaS = vario.fun(loc, par2[idx.para])
-        alpha = alpha.func(loc,par2[-idx.para])
-        delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
+        alpha = alpha.func(par2[-idx.para],b.mat=basis)
+        delta = c(SigmaS %*% alpha)/sqrt(c(1+alpha %*% SigmaS %*% alpha))
         a = log(2) + pnorm(delta,log.p=TRUE)
         computeScores= function(i){
             obs.i = .subset2(obs, i)
             ind = !is.na(obs.i)
-            obs.i = obs.i[ind] 
+            obs.i = obs.i[ind]
             log.obs.i = log(obs.i) + a
             sigmaInv <- MASS::ginv(SigmaS[ind, ind])
             sigma <- diag(SigmaS[ind, ind])
+            d = nrow(sigmaInv)
             alpha.i = c(1 - delta[ind] %*% sigmaInv %*% delta[ind])^(-1/2) * c(sigmaInv %*% delta[ind])
             q = rowSums(sigmaInv)
             sum.q = sum(q);sum.alpha = sum(alpha.i)
-            q.mat = matrix(q,n,n,byrow=TRUE)
+            q.mat = matrix(q,d,d,byrow=TRUE)
 
             beta = (1+sum.alpha^2/sum.q)^(-0.5)
             tau.tilde.beta = beta * (alpha.i - sum.alpha*q/sum.q)
             tau.tilde =  sum( tau.tilde.beta * (log.obs.i + sigma/2) ) + beta*sum.alpha/sum.q
             Phi.tau = pnorm(tau.tilde);phi.tau = dnorm(tau.tilde)
+            A = sigmaInv - q %*% t(q)/sum.q
             mtp <- 2 * q/(sum(q)) + 2 + A %*% sigma
             gradient <- - A %*% log.obs.i * (1/obs.i) - 
                     1/2 * (1/obs.i) * mtp +  phi.tau/Phi.tau*tau.tilde.beta*(1/obs.i) 
@@ -103,23 +105,23 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1
     return(sum(unlist(scores))/n)
 }
 
-fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.fun=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = 1L, ...){
+fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.fun=NULL,basis=NULL,thres=1, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = 1L, ...){
     if (is.matrix(obs)) {
         obs <- split(obs, row(obs))
     }
     if (is.null(weightFun) | is.null(dWeightFun)) {
-        weightFun <- function(x, u) {
-            x * (1 - exp(-(mean(x/u) - 1)))
+        weightFun <- function(x){
+            x * (1 - exp(-(mean(x/thres) - 1)))
         }
-        dWeightFun <- function(x, u) {
-            (1 - exp(-(mean(x/u) - 1))) + (x/u/length(x)) * exp(-(mean(x/u) - 
+        dWeightFun <- function(x) {
+            (1 - exp(-(mean(x/thres) - 1))) + (x/thres/length(x)) * exp(-(mean(x/thres) - 
                 1))
         }
     }
-    fun <- function(par) {
+    fun <- function(par){
         par2 = init
         par2[!fixed] = par
-        val = scoreMatching(par2, obs, loc, model, vario.fun, idx.para, alpha.func, dof, weightFun, dWeightFun, nCores, ...)
+        val = scoreMatching(par2, obs, loc, model, vario.fun, idx.para, alpha.func, basis, dof, weightFun, dWeightFun, nCores, ...)
         return(val)
     }
     init2 = init[!fixed]
