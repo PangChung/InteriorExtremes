@@ -1,8 +1,3 @@
-rFun <- function(x,xi=est.shape.gpd){
-    val = sum((x)^xi)^{1/xi}
-    return(val)
-}
-
 ## weight functions that used in the gradient scoring method
 weightFun <- function(x,xi=est.shape.gpd){
     val = x*(1- exp(1-rFun(x,xi)))
