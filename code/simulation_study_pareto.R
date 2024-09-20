@@ -99,7 +99,7 @@ if(model == "logskew"){
         
         fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = ncores)
 
-        fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,F,F,F), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = ncores)
+        fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = ncores)
 
         fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para,pareto=TRUE)
 
@@ -113,11 +113,6 @@ if(model == "logskew"){
     # save(fit.logskew.angular,par.skew.normal,m,d,basis,file=file2save)
     # if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
-
-# data = samples.skew.normal[[1]]
-# z = data[,sample(1:ncol(data),1)]
-# z = z
-# hist(1-1/z,20)
 
 # if(model == "truncT"){
 #     lb=c(0.01,0.01,0.01,0)
