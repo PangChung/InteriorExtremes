@@ -62,7 +62,6 @@ basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 0.1; basis[(d^2-floor(d^2/2)+1)
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
-
 riskr <- function(x){sum(x)}
 
 rFun <- function(x,xi=est.shape.gpd){
