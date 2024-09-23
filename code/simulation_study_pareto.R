@@ -111,27 +111,27 @@ if(model == "logskew"){
     if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
-# if(model == "truncT"){
-#     lb=c(0.01,0.01,0.01,0)
-#     ub=c(Inf,Inf,1.99,Inf)
-#     fixed = c(F,T,F,T)
-#     init = c(1,1,2,2)
-#     par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.shape,para.deg))
-#     samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
-#     for(i in 1:nrow(par.truncT)){
-#         fit.truncT <- list()
-#         par.truncT.list[[i]] <- list(sigma=cov.func(coord,par.truncT[i,idx.para]),nu=par.truncT[i,-idx.para])
-#         set.seed(init.seed)
-#         samples.truncT[[i]] <- simu_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
-#         init[!fixed] = par.truncT[i,!fixed]
-#         for(j in 1:length(thres)){
-#            fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=30,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
-#         }
-#         fit.truncT.angular[[i]] <- fit.truncT
-#         print(i)
-#     }
-#     save(fit.truncT.angular,par.truncT,file=file2save)
-# }
+if(model == "truncT"){
+    lb=c(0.01,0.01,0.01,0)
+    ub=c(Inf,Inf,1.99,Inf)
+    fixed = c(F,T,F,T)
+    init = c(1,1,2,2)
+    par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.shape,para.deg))
+    samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
+    for(i in 1:nrow(par.truncT)){
+        fit.truncT <- list()
+        par.truncT.list[[i]] <- list(sigma=cov.func(diff.mat,c(1,par.truncT[i,idx.para])),nu=par.truncT[i,-idx.para])
+        set.seed(init.seed)
+        samples.truncT[[i]] <- simu_Pareto_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
+        init[!fixed] = par.truncT[i,!fixed]
+        for(j in 1:length(thres)){
+           fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=30,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
+        }
+        fit.truncT.angular[[i]] <- fit.truncT
+        print(i)
+    }
+    save(fit.truncT.angular,par.truncT,file=file2save)
+}
 
 
 

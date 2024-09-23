@@ -85,7 +85,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1
     }
     if(model=="truncT"){
         n <- length(obs)
-        SigmaS = vario.fun(loc, par2[idx.para])
+        SigmaS = cov.func(loc, par2[idx.para])
         sigmaInv <- MASS::ginv(Sigma)
         a = par2[-idx.para]
         dim = nrow(SigmaS)

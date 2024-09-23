@@ -417,10 +417,42 @@ intensity_HR <- function(data,par,loc,i){
      cov.mat <- para.list[[1]]
      gamma.origin <- para.list[[2]]
      if(length(gamma.origin)==1){val1 = dnorm(data[-i]-data[i],mean=-gamma.origin,sd=sqrt(cov.mat),log=TRUE)
-     }else{val1 = dmvnorm(data[-i]-data[i],mean=-gamma.origin,sigma=cov.mat,log=TRUE)}
+     }else{val1 = mvtnorm::dmvnorm(x=data[-i]-data[i],mean=-gamma.origin,sigma=cov.mat,log=TRUE)}
      val = val1-data[i]
      return(exp(val))
 }
+
+V_HR <- function(data,par,loc,i){
+    set.seed(342424)
+    para.list = vario.func.i(loc,par,i)
+    cov.mat <- para.list[[1]]
+    gamma.origin <- para.list[[2]]
+    if(length(gamma.origin)==1){
+        func <- function(r){
+            1 - pnorm(log(data[-i])+log(r),mean=-gamma.origin,sd=sqrt(cov.mat))
+        }
+    }else{
+        func <- function(r){
+            func.i <- function(r.i){
+                1 - mvtnorm::pmvnorm(lower=-Inf,upper=log(data[-i])+log(r.i),mean=-gamma.origin,sigma=cov.mat)[[1]]
+            }
+            vapply(r,func.i,numeric(1))
+        }
+    }
+    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-6)$value + 1/data[i]
+    return(val)
+}
+
+d = 3
+set.seed(123)
+loc = matrix(rnorm(d*2),ncol=2)*10
+data = exp(rnorm(d))
+par = c(3,1)
+for(i in 1:d){
+    print(intensity_HR(data,par,loc,i))
+    print(V_HR(data,par,loc,i))
+}
+
 
 
 # calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
@@ -470,7 +502,6 @@ true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
     }
     return(val)
 }
-
 
 # cov.func <- function(loc,par){
 #     r = par[1];v = par[2]
