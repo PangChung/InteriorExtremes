@@ -62,21 +62,18 @@ basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 0.1; basis[(d^2-floor(d^2/2)+1)
 ########################################################################
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
-riskr <- function(x){sum(x)}
 
-rFun <- function(x,xi=est.shape.gpd){
+xi=3
+rFun <- function(x){
     val = sum((x)^xi)^{1/xi}
     return(val)
 }
 
-t0 <- proc.time()
+
 if(model == "logskew"){
-    # lb=c(0.01,0.01,0.01,rep(-Inf,ncol(para.alpha)))
-    # ub=c(Inf,Inf,1.99,rep(Inf,ncol(para.alpha)))
-    # init = c(1,para.nu,1,0,0)
     lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
     ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
-    init = c(1,1,0,0,0)
+    init = c(1,1,1,0,0)
     # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
     # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
     par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
@@ -84,34 +81,34 @@ if(model == "logskew"){
     par.skew.list <- list()
     ec.logskew <- list()
     tc.logskew <- list()
-    fit.logskew.angular <- list()
+    fit.logskew.angular <- fit.logskew.scoreMatching <- list()
     if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal} else samples.skew.normal <- list()
     for(i in 1:nrow(par.skew.normal)){
         par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
         par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
         if(!file.exists(file.samples)){
-            samples.skew.normal[[i]] <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),riskr,ncores=ncores)
+            samples.skew.normal[[i]] <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),rFun,ncores=ncores)
         }
         data = samples.skew.normal[[i]]
-        data.sum = apply(data,1,sum)
+        data.sum = apply(data,1,rFun)
         u = quantile(data.sum,0.95)
         data = data[data.sum>u,]/u
         
-        fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = ncores)
-
+        t0 <-  proc.time()
+        fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, nCores = ncores)
         fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = ncores)
-
-        fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para,pareto=TRUE)
-
+        t0 <- proc.time() - t0
+        fit.result1$time <- t0
+        fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para,pareto=TRUE)
         print(fit.result1$par)
         print(fit.result2$par)
         print(par.skew.normal[i,])
-        
-        # fit.logskew.angular[[i]] <- fit.result1
+        fit.logskew.angular[[i]] <- fit.result1
+        fit.logskew.scoreMatching[[i]] <- fit.result2
         print(i)
     }
-    # save(fit.logskew.angular,par.skew.normal,m,d,basis,file=file2save)
-    # if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
+    save(fit.logskew.angular,fit.logskew.scoreMatching,par.skew.normal,m,d,basis,file=file2save)
+    if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 }
 
 # if(model == "truncT"){

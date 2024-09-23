@@ -1,11 +1,11 @@
 ## weight functions that used in the gradient scoring method
-weightFun <- function(x,xi=est.shape.gpd){
-    val = x*(1- exp(1-rFun(x,xi)))
+weightFun <- function(x){
+    val = x*(1- exp(1-rFun(x)))
     return(val)
 }
 
-dWeightFun <- function(x,xi=est.shape.gpd){
-    r = rFun(x,xi)
+dWeightFun <- function(x){
+    r = rFun(x)
     val = (1 - exp(-(r - 1))) + x * exp(-(r - 1))*r^(1-xi)*(x)^(xi-1)
     return(val)
 }
@@ -144,7 +144,7 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     t2 = proc.time() - t1
     init[!fixed] = result$par
     result$par = init
-    result$time = t2 - t1
+    result$time = t2
     return(result)
 }
 

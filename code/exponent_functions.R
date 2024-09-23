@@ -383,6 +383,45 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,log=FALSE){
     }
 }
 
+# return a covariance matrix for the HR model conditional on the location i
+vario.func.i <- function(loc,par,i){ ##return a covariance matrix
+    lambda = par[1];alpha = par[2]
+    if(!is.matrix(loc)){stop("loc must be a matrix")}
+    loc.i =  t(apply(loc[-i,],1, function(x) x - loc[i,]))
+    if(!is.matrix(loc)){loc.i = matrix(loc.i,ncol=2,nrow=1)}
+    n = nrow(loc.i)
+    if(n==1){
+        val=(sqrt(sum(loc.i[1,]^2))/lambda)^alpha
+        return(list(2*val,val))
+    }
+    vario <- function(coord){
+        if(!is.matrix(coord)) {val <- (sqrt(sum(coord^2))/lambda)^alpha}
+        else {val <- (sqrt(sum((coord[1,]-coord[2,])^2))/lambda)^alpha}
+        return(val)
+    }
+    all.pairs = combn(1:n,2)
+    all.pairs.list = split(all.pairs,col(all.pairs))
+    gamma.vec = unlist(lapply(all.pairs.list,function(idx) vario(loc.i[idx,])))
+    gamma.origin = sapply(1:n,function(i) vario(loc.i[i,]))
+    cov.mat = diag(2*gamma.origin)
+    cov.mat[t(all.pairs)] <- sapply(1:length(gamma.vec),function(i){
+        idx = all.pairs[,i]
+        return(gamma.origin[idx[1]] + gamma.origin[idx[2]] - gamma.vec[i])})
+    cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
+    return(list(cov.mat,gamma.origin))
+}
+
+# intensity function for HR model with Gumbel margins
+intensity_HR <- function(data,par,loc,i){
+     para.list = vario.func.i(loc,par,i)
+     cov.mat <- para.list[[1]]
+     gamma.origin <- para.list[[2]]
+     if(length(gamma.origin)==1){val1 = dnorm(data[-i]-data[i],mean=-gamma.origin,sd=sqrt(cov.mat),log=TRUE)
+     }else{val1 = dmvnorm(data[-i]-data[i],mean=-gamma.origin,sigma=cov.mat,log=TRUE)}
+     val = val1-data[i]
+     return(exp(val))
+}
+
 
 # calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
 empirical_extcoef <- function(idx,data){
