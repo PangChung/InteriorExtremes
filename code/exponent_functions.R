@@ -439,7 +439,7 @@ V_HR <- function(data,par,loc,i){
             vapply(r,func.i,numeric(1))
         }
     }
-    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-6)$value + 1/data[i]
+    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-5,subdivisions=10000L)$value + 1/data[i]
     return(val)
 }
 
