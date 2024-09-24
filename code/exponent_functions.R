@@ -296,7 +296,7 @@ V_logskew <- function(x,par,alpha.para=TRUE){
     sigma.j = lapply(1:n,function(j) A.j[[j]] %*% sigma %*% t(A.j[[j]]))
     x.circ = log(x) + matrix(a,nrow=nrow(x),ncol=n,byrow=TRUE)
     mu.val.j = lapply(1:n,function(j) cbind(x.circ[,-j]- matrix(x.circ[,j]+mu.j[[j]],ncol=n-1,nrow=nrow(x),byrow=TRUE),delta[j]))
-    sigma.val.j = lapply(1:n,function(j) {b = A.j[[j]] %*% delta; unname(cbind(rbind(sigma.j[[j]],-b),c(-b,1)))})
+    sigma.val.j = lapply(1:n,function(j) {b = c(A.j[[j]] %*% delta); unname(cbind(rbind(sigma.j[[j]],-b),c(-b,1)))})
     val = unlist(lapply(1:nrow(x),function(i) sum(unlist(lapply(1:n,function(j) mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu.val.j[[j]][i,],sigma=sigma.val.j[[j]])[[1]]/exp(phi.delta[j])/x[i,j])))))
     assign(".Random.seed", oldSeed, envir=globalenv())
     return(val)
@@ -387,8 +387,12 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,log=FALSE){
 vario.func.i <- function(loc,par,i){ ##return a covariance matrix
     lambda = par[1];alpha = par[2]
     if(!is.matrix(loc)){stop("loc must be a matrix")}
-    loc.i =  t(apply(loc[-i,],1, function(x) x - loc[i,]))
-    if(!is.matrix(loc)){loc.i = matrix(loc.i,ncol=2,nrow=1)}
+    if(nrow(loc)==2){
+        loc.i = loc[-i,] - loc[i,]
+    }else{
+        loc.i =  t(apply(loc[-i,],1, function(x) x - loc[i,]))
+    }
+    if(!is.matrix(loc.i)){loc.i = matrix(loc.i,ncol=2,nrow=1)}
     n = nrow(loc.i)
     if(n==1){
         val=(sqrt(sum(loc.i[1,]^2))/lambda)^alpha
@@ -411,17 +415,18 @@ vario.func.i <- function(loc,par,i){ ##return a covariance matrix
     return(list(cov.mat,gamma.origin))
 }
 
-# intensity function for HR model with Gumbel margins
+# intensity function for HR model with Frechet margins
 intensity_HR <- function(data,par,loc,i){
      para.list = vario.func.i(loc,par,i)
      cov.mat <- para.list[[1]]
      gamma.origin <- para.list[[2]]
-     if(length(gamma.origin)==1){val1 = dnorm(data[-i]-data[i],mean=-gamma.origin,sd=sqrt(cov.mat),log=TRUE)
-     }else{val1 = mvtnorm::dmvnorm(x=data[-i]-data[i],mean=-gamma.origin,sigma=cov.mat,log=TRUE)}
-     val = val1-data[i]
+     if(length(gamma.origin)==1){val1 = dnorm(log(data[-i])-log(data[i]),mean=-gamma.origin,sd=sqrt(cov.mat),log=TRUE)
+     }else{val1 = mvtnorm::dmvnorm(x=log(data[-i])-log(data[i]),mean=-gamma.origin,sigma=cov.mat,log=TRUE)}
+     val = val1-sum(log(data))-log(data[i])
      return(exp(val))
 }
 
+# exponent function for HR model with Frechet margins
 V_HR <- function(data,par,loc,i){
     set.seed(342424)
     para.list = vario.func.i(loc,par,i)
@@ -434,26 +439,53 @@ V_HR <- function(data,par,loc,i){
     }else{
         func <- function(r){
             func.i <- function(r.i){
-                1 - mvtnorm::pmvnorm(lower=-Inf,upper=log(data[-i])+log(r.i),mean=-gamma.origin,sigma=cov.mat)[[1]]
+                1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(cov.mat)),upper=log(data[-i])+log(r.i),mean=-gamma.origin,sigma=cov.mat)[[1]]
             }
             vapply(r,func.i,numeric(1))
         }
     }
-    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-5,subdivisions=10000L)$value + 1/data[i]
+    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-4,subdivisions=1e4)$value + 1/data[i]
     return(val)
 }
 
-d = 3
-set.seed(123)
-loc = matrix(rnorm(d*2),ncol=2)*10
-data = exp(rnorm(d))
-par = c(3,1)
-for(i in 1:d){
-    print(intensity_HR(data,par,loc,i))
-    print(V_HR(data,par,loc,i))
+# intensity function for skewed HR model with Frechet margins
+intensity_skewedHR <- function(data,par,delta,loc,i){
+    cov.list = vario.func.i(loc, par, i)
+    cov.mat <- cov.list[[1]]
+    cov.mat.inv = chol2inv(chol(cov.mat))
+    gamma.origin <- cov.list[[2]]
+    delta = delta[-i]-delta[i]
+    a = log(2)+ gamma.origin + pnorm(delta,log.p=TRUE)
+    alpha = c(1 - delta %*% cov.mat.inv %*% delta)^(-1/2) * c(cov.mat.inv %*% delta)
+    if(length(gamma.origin)==1){
+        x = log(data[-i])-log(data[i])
+        val1 = log(2) + dnorm(x,mean=-a,sd=sqrt(cov.mat),log=TRUE) + pnorm(sum(alpha * (x + a)),log=TRUE) 
+    }else{
+        x = log(data[-i])-log(data[i])
+        val1 = log(2) + mvtnorm::dmvnorm(x,mean=-a,sigma=cov.mat,log=TRUE) + pnorm(sum(alpha * (x + a)),log=TRUE) 
+    }
+    val = val1-sum(log(data))-log(data[i])
+    return(exp(val))
 }
 
-
+V_skewedHR <-  function(data,par,delta,loc,i){
+    set.seed(342424)
+    cov.list = vario.func.i(loc, par, i)
+    cov.mat <- cov.list[[1]]
+    gamma.origin <- cov.list[[2]]
+    cov.mat.inv = chol2inv(chol(cov.mat))
+    delta = delta[-i]-delta[i]
+    a = log(2)+ gamma.origin + pnorm(delta,log.p=TRUE)
+    sigma  = unname(cbind(rbind(cov.mat,-delta),c(-delta,1)))
+    func <- function(r){
+        func.i <- function(r.i){
+            1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(sigma)),upper=c(log(data[-i])+log(r.i)+a,0),sigma=sigma)[[1]]*2
+        }
+        vapply(r,func.i,numeric(1))
+    }
+    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-4,subdivisions=1e5)$value + 1/data[i]
+    return(val)
+}
 
 # calculate empirical extremal coefficients: returns the MLE estimator (see page 374 of the lecture notes).
 empirical_extcoef <- function(idx,data){
