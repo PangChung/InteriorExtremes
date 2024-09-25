@@ -53,7 +53,7 @@ rFun <- function(x){
 lb=c(0.01,0.01,0)
 ub=c(Inf,1.99,Inf)
 fixed = c(F,F,T)
-init = c(3,1,2)
+init = c(1,1,2)
 par.truncT <- as.matrix(expand.grid(para.range,para.shape,para.deg))
 samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
 for(i in 1:nrow(par.truncT)){
