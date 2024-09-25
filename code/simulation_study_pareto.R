@@ -136,11 +136,13 @@ if(model == "truncT"){
 
 d = 2
 loc = matrix(rnorm(d*2),ncol=2)*10
-alpha = rnorm(d)
 
+alpha = rnorm(d)
 data = exp(rnorm(d))
 
-cov.mat=vario.func(loc,c(3,1))
+cov.mat = matrix(runif(d^2),ncol=d);cov.mat = (cov.mat + t(cov.mat))/2
+cov.mat = cov.mat + diag(d)*d
+
 delta=alpha2delta(list(cov.mat,alpha))[[2]]
 par = list(cov.mat,delta)
 intensity_logskew(data,list(cov.mat=cov.mat,delta=rep(0,d)),alpha.para=FALSE,log=FALSE)
@@ -162,6 +164,7 @@ V_logskew(rep(1,d),par,alpha.para=FALSE)
 for(i in 1:d){
     print(V_skewedHR(rep(1,d),par,i))
 }
+
 
 
 
