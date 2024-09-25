@@ -6,7 +6,7 @@ d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 2000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
-#model = "truncT"; # "logskew" or "truncT"
+xi=3
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -18,15 +18,11 @@ coord = as.matrix(expand.grid(1:d,1:d))
 diff.vector <- cbind(as.vector(outer(coord[,1],coord[,1],'-')),as.vector(outer(coord[,2],coord[,2],'-'))) 
 diff.mat <- matrix(apply(diff.vector, 1, function(x) sqrt(sum(x^2))), ncol=nrow(coord))
 para.range = c(5,10) # range for the covariance function ##      
-para.nu = 10 # ## variance parameter for the covariance function ##
 para.shape = c(1,1.5) #c(1,1.5) ## smoothness parameter for the covariance function ##
 idx.para = 1:2 # variogram parameters; otherwise 1:3 for cov.func
 para.alpha = rbind(c(1,0,0),c(1,-1,-2),c(1,-1,1)) ## slant parameter for skewed norm model ##
-para.deg = c(2,3) ## degree of the freedom for the truncated t model ##
 all.pairs = combn(1:nrow(coord),2)
 all.pairs.list = split(all.pairs,col(all.pairs))
-thres = c(50,100)
-if(model=="truncT"){thres=c(10,50,100);para.range = c(3,5)}
 # loading library and setting path
 library(parallel)
 library(mvtnorm)
@@ -63,107 +59,85 @@ basis[,1] = rep(0,d^2);basis[1:floor(d^2/2),1] = 0.1; basis[(d^2-floor(d^2/2)+1)
 ### simulation study for the log-skew normal based max-stable process ##
 ########################################################################
 
-xi=3
+
 rFun <- function(x){
     val = sum((x)^xi)^{1/xi}
     return(val)
 }
 
 
-if(model == "logskew"){
-    lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
-    ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
-    init = c(1,1,1,0,0)
-    # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
-    # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
-    par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
-    par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
-    par.skew.list <- list()
-    ec.logskew <- list()
-    tc.logskew <- list()
-    fit.logskew.angular <- fit.logskew.scoreMatching <- list()
-    if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal} else samples.skew.normal <- list()
-    for(i in 1:nrow(par.skew.normal)){
-        par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
-        par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
-        if(!file.exists(file.samples)){
-            samples.skew.normal[[i]] <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),rFun,ncores=ncores)
-        }
-        data = samples.skew.normal[[i]]
-        data.sum = apply(data,1,rFun)
-        u = quantile(data.sum,0.95)
-        data = data[data.sum>u,]/u
-        
-        t0 <-  proc.time()
-        fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, nCores = ncores)
-        fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = ncores)
-        t0 <- proc.time() - t0
-        fit.result1$time <- t0
-        fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para,pareto=TRUE)
-        print(fit.result1$par)
-        print(fit.result2$par)
-        print(par.skew.normal[i,])
-        fit.logskew.angular[[i]] <- fit.result1
-        fit.logskew.scoreMatching[[i]] <- fit.result2
-        print(i)
+
+lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
+ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
+init = c(1,1,1,0,0)
+# par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
+# par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
+par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
+par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
+par.skew.list <- list()
+ec.logskew <- list()
+tc.logskew <- list()
+fit.logskew.angular <- fit.logskew.scoreMatching <- list()
+if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal} else samples.skew.normal <- list()
+for(i in 1:nrow(par.skew.normal)){
+    par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
+    par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
+    if(!file.exists(file.samples)){
+        samples.skew.normal[[i]] <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),rFun,ncores=ncores)
     }
-    save(fit.logskew.angular,fit.logskew.scoreMatching,par.skew.normal,m,d,basis,file=file2save)
-    if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
+    data = samples.skew.normal[[i]]
+    data.sum = apply(data,1,rFun)
+    u = quantile(data.sum,0.95)
+    data = data[data.sum>u,]/u
+    
+    t0 <-  proc.time()
+    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, nCores = ncores)
+    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = ncores)
+    t0 <- proc.time() - t0
+    fit.result1$time <- t0
+
+    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para,pareto=TRUE)
+
+    print(fit.result1$par)
+    print(fit.result2$par)
+    print(par.skew.normal[i,])
+    fit.logskew.angular[[i]] <- fit.result1
+    fit.logskew.scoreMatching[[i]] <- fit.result2
+    print(i)
 }
+save(fit.logskew.angular,fit.logskew.scoreMatching,par.skew.normal,m,d,basis,file=file2save)
+if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
 
-if(model == "truncT"){
-    lb=c(0.01,0.01,0.01,0)
-    ub=c(Inf,Inf,1.99,Inf)
-    fixed = c(F,T,F,T)
-    init = c(1,1,2,2)
-    par.truncT <- as.matrix(expand.grid(para.range,para.nu,para.shape,para.deg))
-    samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
-    for(i in 1:nrow(par.truncT)){
-        fit.truncT <- list()
-        par.truncT.list[[i]] <- list(sigma=cov.func(diff.mat,c(1,par.truncT[i,idx.para])),nu=par.truncT[i,-idx.para])
-        set.seed(init.seed)
-        samples.truncT[[i]] <- simu_Pareto_truncT(m=m,par=par.truncT.list[[i]],ncores=ncores)
-        init[!fixed] = par.truncT[i,!fixed]
-        for(j in 1:length(thres)){
-           fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=30,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
-        }
-        fit.truncT.angular[[i]] <- fit.truncT
-        print(i)
-    }
-    save(fit.truncT.angular,par.truncT,file=file2save)
-}
+# d = 2
+# loc = matrix(rnorm(d*2),ncol=2)*10
 
+# alpha = rnorm(d)
+# data = exp(rnorm(d))
 
-d = 2
-loc = matrix(rnorm(d*2),ncol=2)*10
+# cov.mat = matrix(runif(d^2),ncol=d);cov.mat = (cov.mat + t(cov.mat))/2
+# cov.mat = cov.mat + diag(d)*d
 
-alpha = rnorm(d)
-data = exp(rnorm(d))
+# delta=alpha2delta(list(cov.mat,alpha))[[2]]
+# par = list(cov.mat,delta)
+# intensity_logskew(data,list(cov.mat=cov.mat,delta=rep(0,d)),alpha.para=FALSE,log=FALSE)
+# for(i in 1:d){
+#     print(intensity_HR(data,par,i))
+# }
 
-cov.mat = matrix(runif(d^2),ncol=d);cov.mat = (cov.mat + t(cov.mat))/2
-cov.mat = cov.mat + diag(d)*d
+# intensity_logskew(data,par,alpha.para=FALSE,log=FALSE)
+# for(i in 1:d){
+#     print(intensity_skewedHR(data,par,i))
+# }
 
-delta=alpha2delta(list(cov.mat,alpha))[[2]]
-par = list(cov.mat,delta)
-intensity_logskew(data,list(cov.mat=cov.mat,delta=rep(0,d)),alpha.para=FALSE,log=FALSE)
-for(i in 1:d){
-    print(intensity_HR(data,par,i))
-}
+# V_logskew(rep(1,d),list(cov.mat,alpha=rep(0,d)),alpha.para=TRUE)
+# for(i in 1:d){
+#     print(V_HR(rep(1,d),par,i))
+# }
 
-intensity_logskew(data,par,alpha.para=FALSE,log=FALSE)
-for(i in 1:d){
-    print(intensity_skewedHR(data,par,i))
-}
-
-V_logskew(rep(1,d),list(cov.mat,alpha=rep(0,d)),alpha.para=TRUE)
-for(i in 1:d){
-    print(V_HR(rep(1,d),par,i))
-}
-
-V_logskew(rep(1,d),par,alpha.para=FALSE)
-for(i in 1:d){
-    print(V_skewedHR(rep(1,d),par,i))
-}
+# V_logskew(rep(1,d),par,alpha.para=FALSE)
+# for(i in 1:d){
+#     print(V_skewedHR(rep(1,d),par,i))
+# }
 
 
 

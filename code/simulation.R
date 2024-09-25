@@ -22,7 +22,6 @@ simu_truncT <- function(m,par,ncores=NULL){
     if(!is.null(ncores)) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])
-    sigma.chol = lapply(sigma.list,chol)
     a = T_j_val/phi*2^((nu-2)/2)*gamma_1*(pi^(-1/2))
     
     # Simulate the max-stable process
@@ -34,8 +33,8 @@ simu_truncT <- function(m,par,ncores=NULL){
     func <- function(idx.j,j){
         m.idx.j = length(idx.j)
         if(m.idx.j > 0 & j<=n){
-            val = TruncatedNormal::rtmvt(n=m.idx.j,mu=sigma[,j]/sigma[j,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
-            if(!is.matrix(val)){ val = matrix(val,nrow=m.idx.j)}
+            val = matrix(1,nrow=m.idx.j,ncol=n)
+            val[,-j] = TruncatedNormal::rtmvt(n=m.idx.j,mu=sigma[-j,j]/sigma[j,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n-1),ub=rep(Inf,n-1))
             val = t(t(val)^nu * a[j]/a)
             return(val)
         }
@@ -298,23 +297,20 @@ simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
     gamma_1 = gamma((nu+1)/2)
     a_fun <- function(j,upper){
         sigma.1.j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j]) 
-        sigma.j = (sigma - sigma[,j,drop=F] %*% sigma[j,,drop=F]/sigma[j,j])/(nu+1)/sigma[j,j] 
         val = mvtnorm::pmvt(lower=rep(0,n-1)-sigma[-j,j]/sigma[j,j],upper=upper-sigma[-j,j]/sigma[j,j],sigma=sigma.1.j/(nu+1),df=nu+1)[[1]]
-        return(list(val,sigma.j))
+        return(list(val,sigma.1.j))
     }
     if(!is.null(ncores)) T_j <- mclapply(1:n,FUN=a_fun,upper=rep(Inf,n-1),mc.cores=ncores) else T_j <- lapply(1:n,FUN=a_fun,upper=rep(Inf,n-1))
     T_j_val = sapply(T_j,function(x) x[[1]])
     sigma.list = lapply(T_j,function(x) x[[2]])
-    sigma.chol = lapply(sigma.list,chol)
     a = T_j_val/phi*2^((nu-2)/2)*gamma_1*(pi^(-1/2))
     Z = matrix(NA,ncol=n,nrow=m)
     # Simulate the r-Pareto process
-    
     func <- function(m.i){
         j = sample(1:n,1)
         if(m.i > 0 & j<=n){
-            val = TruncatedNormal::rtmvt(n=m.i,mu=sigma[,j]/sigma[j,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n),ub=rep(Inf,n))
-            if(!is.matrix(val)){ val = matrix(val,nrow=m.i)}
+            val = matrix(1,nrow=m.i,ncol=n)
+            val[,-j] = TruncatedNormal::rtmvt(n=m.i,mu=sigma[-j,j]/sigma[j,j],sigma=sigma.list[[j]],df=nu+1,lb=rep(0,n-1),ub=rep(Inf,n-1))
             val = t(t(val)^nu * a[j]/a)
             return(val)
         }

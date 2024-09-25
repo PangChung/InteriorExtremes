@@ -551,8 +551,9 @@ true_extcoef <- function(idx,par,model="logskew1",T_j=NULL){
 #     return(cov.mat)
 # }
 
-cov.func <- function(distmat,par){
-    r = par[1];v = par[2];shape=par[3]
+cov.func <- function(distmat,par,v=1){
+    r = par[1];shape=par[2]
+    if(length(par)==3){v=par[3]}
     n=nrow(distmat)
     cov.mat <- v*exp(-(distmat/r)^shape)
     return(cov.mat + .Machine$double.eps * diag(n))
