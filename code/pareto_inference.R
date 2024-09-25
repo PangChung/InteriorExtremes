@@ -103,6 +103,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
             obs.i = .subset2(obs, i)
             obs.i.a = (obs.i*a)^(1/dof)
             obs.i.a.quad = sum(t(obs.i.a) %*% sigmaInv %*% obs.i.a)
+            
             gradient <- (1-dof)/dof/obs.i - (dof+dim)/dof/obs.i.a.quad*sigmaInv %*% obs.i.a * (obs.i.a^(dof-1))*a 
 
             diagHessian <- (dof-1)/dof/obs.i^2 - 
