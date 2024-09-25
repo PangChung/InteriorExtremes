@@ -69,7 +69,7 @@ for(i in 1:nrow(par.truncT)){
     
     fit.result1 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,ncores=ncores,maxit=300,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
     
-    fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F),thres=0,model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="L-BFGS-B", maxit=1000, nCores = ncores,lb=lb[-3],ub=ub[-3])
+    fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F),thres=0,model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=1000, nCores = ncores,lb=lb[-3],ub=ub[-3])
 
     print(i)
 }
