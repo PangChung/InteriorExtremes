@@ -104,11 +104,11 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
             obs.i.a = (obs.i*a)^(1/dof)
             obs.i.a.quad = sum(t(obs.i.a) %*% sigmaInv %*% obs.i.a)
             
-            gradient <- (1-dof)/dof/obs.i - (dof+dim)/dof/obs.i.a.quad*sigmaInv %*% obs.i.a * (obs.i.a^(dof-1))*a 
+            gradient <- (1-dof)/dof/obs.i - (dof+dim)/dof/obs.i.a.quad*sigmaInv %*% obs.i.a * (obs.i.a^(1-dof))*a 
 
             diagHessian <- (dof-1)/dof/obs.i^2 - 
-                a^2*(dof+dim)/dof/obs.i.a.quad*( (2-dof)/dof*diag(sigmaInv)*obs.i.a^(2-2*dof) + (1-dof)/dof*sigmaInv %*% obs.i.a * (obs.i.a^(1-2*dof))) + 
-                2*a^2*(dof+dim)/(dof^2)/obs.i.a.quad*(sigmaInv %*% obs.i.a * (obs.i.a^(dof-1)))
+                a^2*(dof+dim)/dof/obs.i.a.quad*( 1/dof*diag(sigmaInv)*obs.i.a^(2-2*dof) + (1-dof)/dof*sigmaInv %*% obs.i.a * (obs.i.a^(1-2*dof)) ) + 
+                2*a^2*(dof+dim)/(dof^2)/(obs.i.a.quad^2)*(sigmaInv %*% obs.i.a * (obs.i.a^(1-dof)))
             
             weights <- do.call(what = "weightFun", args = c(ellipsis, 
                 x = list(obs.i)))
