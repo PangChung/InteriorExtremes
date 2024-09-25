@@ -412,14 +412,13 @@ vario.func.i <- function(loc,par,i){ ##return a covariance matrix
         idx = all.pairs[,i]
         return(gamma.origin[idx[1]] + gamma.origin[idx[2]] - gamma.vec[i])})
     cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
-    return(list(cov.mat,gamma.origin))
+    return(cov.mat)
 }
 
 # intensity function for HR model with Frechet margins
-intensity_HR <- function(data,par,loc,i){
-     para.list = vario.func.i(loc,par,i)
-     cov.mat <- para.list[[1]]
-     gamma.origin <- para.list[[2]]
+intensity_HR <- function(data,par,i){
+     cov.mat <- cov.transform.i(par[[1]],i)
+     gamma.origin <- diag(cov.mat)/2
      if(length(gamma.origin)==1){val1 = dnorm(log(data[-i])-log(data[i]),mean=-gamma.origin,sd=sqrt(cov.mat),log=TRUE)
      }else{val1 = mvtnorm::dmvnorm(x=log(data[-i])-log(data[i]),mean=-gamma.origin,sigma=cov.mat,log=TRUE)}
      val = val1-sum(log(data))-log(data[i])
@@ -427,11 +426,10 @@ intensity_HR <- function(data,par,loc,i){
 }
 
 # exponent function for HR model with Frechet margins
-V_HR <- function(data,par,loc,i){
+V_HR <- function(data,par,i){
     set.seed(342424)
-    para.list = vario.func.i(loc,par,i)
-    cov.mat <- para.list[[1]]
-    gamma.origin <- para.list[[2]]
+    cov.mat <- cov.transform.i(par[[1]],i)
+    gamma.origin <- diag(cov.mat)/2
     if(length(gamma.origin)==1){
         func <- function(r){
             1 - pnorm(log(data[-i])+log(r),mean=-gamma.origin,sd=sqrt(cov.mat))
@@ -448,12 +446,20 @@ V_HR <- function(data,par,loc,i){
     return(val)
 }
 
+cov.transform.i <- function(cov.mat,i){
+    d = nrow(cov.mat)
+    A = matrix(0,ncol=d,nrow=d-1)
+    A[,-i] = diag(d-1)
+    A[,i] = -1
+    cov.mat.i = A %*% cov.mat %*% t(A)
+}
+
 # intensity function for skewed HR model with Frechet margins
-intensity_skewedHR <- function(data,par,delta,loc,i){
-    cov.list = vario.func.i(loc, par, i)
-    cov.mat <- cov.list[[1]]
+intensity_skewedHR <- function(data,par,i){
+    cov.mat <- cov.transform.i(par[[1]],i)
+    delta = par[[2]]
+    gamma.origin <- diag(cov.mat)/2
     cov.mat.inv = chol2inv(chol(cov.mat))
-    gamma.origin <- cov.list[[2]]
     delta = delta[-i]-delta[i]
     a = log(2)+ gamma.origin + pnorm(delta,log.p=TRUE)
     alpha = c(1 - delta %*% cov.mat.inv %*% delta)^(-1/2) * c(cov.mat.inv %*% delta)
@@ -468,11 +474,11 @@ intensity_skewedHR <- function(data,par,delta,loc,i){
     return(exp(val))
 }
 
-V_skewedHR <-  function(data,par,delta,loc,i){
+V_skewedHR <-  function(data,par,i){
     set.seed(342424)
-    cov.list = vario.func.i(loc, par, i)
-    cov.mat <- cov.list[[1]]
-    gamma.origin <- cov.list[[2]]
+    cov.mat <- cov.transform.i(par[[1]],i)
+    delta = par[[2]]
+    gamma.origin <- diag(cov.mat)/2
     cov.mat.inv = chol2inv(chol(cov.mat))
     delta = delta[-i]-delta[i]
     a = log(2)+ gamma.origin + pnorm(delta,log.p=TRUE)
