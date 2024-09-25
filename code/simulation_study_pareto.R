@@ -91,8 +91,8 @@ for(i in 1:nrow(par.skew.normal)){
     data = data[data.sum>u,]/u
     
     t0 <-  proc.time()
-    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, nCores = ncores)
-    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.fun=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = ncores)
+    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, nCores = ncores)
+    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, nCores = ncores)
     t0 <- proc.time() - t0
     fit.result1$time <- t0
 

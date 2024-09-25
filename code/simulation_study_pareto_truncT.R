@@ -5,7 +5,7 @@ id = 1
 d <- 10 ## 10 * 10 grid on [0,1]^2
 m <- 2000 ## number of samples
 model = "truncT"; # "logskew" or "truncT"
-xi=3
+xi=1
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -50,11 +50,10 @@ rFun <- function(x){
     return(val)
 }
 
-
-lb=c(0.01,0.01,0.01,0)
-ub=c(Inf,Inf,1.99,Inf)
-fixed = c(F,T,F,T)
-init = c(1,1,2,2)
+lb=c(0.01,0.01,0)
+ub=c(Inf,1.99,Inf)
+fixed = c(F,F,T)
+init = c(1,1,2)
 par.truncT <- as.matrix(expand.grid(para.range,para.shape,para.deg))
 samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
 for(i in 1:nrow(par.truncT)){
@@ -62,11 +61,16 @@ for(i in 1:nrow(par.truncT)){
     par.truncT.list[[i]] <- list(sigma=cov.func(diff.mat,c(par.truncT[i,idx.para])),nu=par.truncT[i,-idx.para])
     set.seed(init.seed)
     samples.truncT[[i]] <- simu_Pareto_truncT(m=m,par=par.truncT.list[[i]],rFun,ncores=ncores)
-    init[!fixed] = par.truncT[i,!fixed]
-    for(j in 1:length(thres)){
-        fit.result1 <- fit.model(data=samples.skew.normal[[i]],loc=diff.mat,init=init,fixed=c(F,T,F,T),thres=30,model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para)
-    }
-    fit.truncT.angular[[i]] <- fit.truncT
+    init[fixed] = par.truncT[i,fixed]
+    data = samples.truncT[[i]]
+    data.sum = apply(data,1,rFun)
+    u = quantile(data.sum,0.95)
+    data = data[data.sum>u,]/u
+    
+    fit.result1 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,ncores=ncores,maxit=300,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
+    
+    fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F),thres=0,model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="L-BFGS-B", maxit=1000, nCores = ncores,lb=lb[-3],ub=ub[-3])
+
     print(i)
 }
 save(fit.truncT.angular,par.truncT,file=file2save)

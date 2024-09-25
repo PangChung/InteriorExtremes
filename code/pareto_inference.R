@@ -13,7 +13,7 @@ dWeightFun <- function(x){
 
 ### score matching inference for the skewed Brown-Resnick and Truncated extremal-t Process ###
 ################################################################################################
-scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1:2, alpha.func=NULL,basis=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
+scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.func=NULL, alpha.func=NULL,basis=NULL,idx.para=1:2, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
     ellipsis <- list(...)
     if ("weigthFun" %in% names(ellipsis) && is.null(weightFun)) {
         weightFun <- ellipsis[["weigthFun"]]
@@ -86,13 +86,21 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1
     if(model=="truncT"){
         n <- length(obs)
         SigmaS = cov.func(loc, par2[idx.para])
-        sigmaInv <- MASS::ginv(Sigma)
-        a = par2[-idx.para]
+        sigmaInv <- MASS::ginv(SigmaS)
+        a_fun <- function(j,upper=rep(Inf,n-1)){
+            sigma_j = (SigmaS[-j,-j] - SigmaS[-j,j,drop=F] %*% SigmaS[j,-j,drop=F]/SigmaS[j,j])/(dof + 1)/SigmaS[j,j]
+            val = mvtnorm::pmvt(lower=-SigmaS[-j,j]/SigmaS[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=dof+1)[[1]]
+            return(log(val))
+        }
+        logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=SigmaS)[[1]])
+        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun))
+        a = T_j - logphi+ (dof-2)/2 * log(2) + log(gamma((dof+1)/2)) - 1/2*log(pi)
+        # a = par2[-idx.para]
         dim = nrow(SigmaS)
         if(any(is.na(unlist(obs)))){ stop("Data must be complete.") }
         computeScores <- function(i){
             obs.i = .subset2(obs, i)
-            obs.i.a = (obs.i*a)^{1/dof}
+            obs.i.a = (obs.i*a)^(1/dof)
             obs.i.a.quad = sum(t(obs.i.a) %*% sigmaInv %*% obs.i.a)
             gradient <- (1-dof)/dof/obs.i - (dof+dim)/dof/obs.i.a.quad*sigmaInv %*% obs.i.a * (obs.i.a^(dof-1))*a 
 
@@ -118,7 +126,8 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.fun,idx.para=1
     return(sum(unlist(scores))/n)
 }
 
-fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.fun=NULL,basis=NULL,thres=1, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = 1L, ...){
+fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL,thres=1, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = 1L,lb,ub, ...){
+    t1 = proc.time()
     if (is.matrix(obs)) {
         obs <- split(obs, row(obs))
     }
@@ -134,18 +143,36 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     fun <- function(par){
         par2 = init
         par2[!fixed] = par
-        val = scoreMatching(par2, obs, loc, model, vario.fun, idx.para, alpha.func, basis, dof, weightFun, dWeightFun, nCores, ...)
+        if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
+        val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis,idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun, nCores, ...)
         return(val)
     }
     init2 = init[!fixed]
-    t1 = proc.time()
-    result <- optim(init2, fun, control = list(trace = TRUE, 
-        maxit = maxit), method = method, hessian = FALSE)
+    result = optim(init2, fun, control = list(trace = TRUE, maxit = maxit), method = method, hessian = FALSE)
+    # val.old = fun(init2)
+    # n = sum(!fixed);m=length(init)  
+    # fixed.old = fixed
+    # fixed.idx = which(!fixed.old) 
+    # ub[!is.finite(ub)] <- 1e+5
+    # for(i in 1:maxit){
+    #     for(j in 1:n){
+    #         fixed <- rep(T,m);fixed[fixed.idx[j]] = F 
+    #         result <- optim(init[fixed.idx[j]], fun, control = list(trace = TRUE, maxit = 5), method = "Brent", hessian = FALSE,lower=lb[fixed.idx][j],upper=ub[fixed.idx][j])
+    #         init[fixed.idx[j]] <- result$par
+    #         print(paste0(i,": ",result$value,": ",result$par))
+    #     }
+    #     if(abs(result$value - val.old)<0.001){
+    #         break
+    #     }else{
+    #         val.old = result$value
+    #     }
+    # }    
     t2 = proc.time() - t1
     init[!fixed] = result$par
     result$par = init
     result$time = t2
     return(result)
 }
+
 
 
