@@ -16,7 +16,7 @@ a_fun <- function(par,ncores=NULL){
     } else {
     val = mcmapply(function(j){
                 sigma_j = (sigma[-j,-j] - sigma[-j,j,drop=F] %*% sigma[j,-j,drop=F]/sigma[j,j])/(nu + 1)/sigma[j,j]
-                mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]},j=1:n,mc.cores=ncores)
+                mvtnorm::pmvt(lower=-sigma[-j,j]/sigma[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=nu+1)[[1]]},j=1:n,mc.cores=ncores,mc.set.seed = FALSE)
     }
     assign(".Random.seed", oldSeed, envir=globalenv())
     return(list(log(val),logphi))
@@ -46,7 +46,7 @@ intensity_truncT <- function(x,par,T_j=NULL,ncores=NULL,log=TRUE){
 
     if(is.null(T_j)){
         logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
-        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun))
+        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
     }else{
         T_j = T_j[[1]];logphi = T_j[[2]]
     }
@@ -153,7 +153,7 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
     }
     if(is.null(T_j)){
         logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
-        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun))
+        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
         
     }else{
         logphi = T_j[[2]]

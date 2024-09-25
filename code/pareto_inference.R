@@ -10,7 +10,6 @@ dWeightFun <- function(x){
     return(val)
 }
 
-
 ### score matching inference for the skewed Brown-Resnick and Truncated extremal-t Process ###
 ################################################################################################
 scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.func=NULL, alpha.func=NULL,basis=NULL,idx.para=1:2, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
@@ -95,7 +94,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
             return(log(val))
         }
         logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=SigmaS)[[1]])
-        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores)) else T_j = unlist(lapply(1:n,a_fun))
+        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
         a = T_j - logphi+ (dof-2)/2 * log(2) + log(gamma((dof+1)/2)) - 1/2*log(pi)
         # a = par2[-idx.para]
         dim = nrow(SigmaS)
@@ -147,7 +146,7 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         par2 = init
         par2[!fixed] = par
         if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
-        val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis,idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun, nCores, ...)
+        val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  nCores, ...)
         return(val)
     }
     init2 = init[!fixed]
