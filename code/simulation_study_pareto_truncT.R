@@ -71,7 +71,6 @@ for(i in 1:nrow(par.truncT)){
     
     fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F),thres=0,model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=30, nCores = ncores,lb=lb[-3],ub=ub[-3])
 
-    print(i)
 }
 save(fit.truncT.angular,par.truncT,file=file2save)
 
