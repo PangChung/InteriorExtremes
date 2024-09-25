@@ -15,6 +15,8 @@ dWeightFun <- function(x){
 ################################################################################################
 scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.func=NULL, alpha.func=NULL,basis=NULL,idx.para=1:2, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
     ellipsis <- list(...)
+    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+    set.seed(747380)
     if ("weigthFun" %in% names(ellipsis) && is.null(weightFun)) {
         weightFun <- ellipsis[["weigthFun"]]
         ellipsis[["weigthFun"]] <- NULL
@@ -123,6 +125,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     else {
         scores <- lapply(1:n, computeScores)
     }
+    assign(".Random.seed", oldSeed, envir=globalenv())
     return(sum(unlist(scores))/n)
 }
 
