@@ -704,3 +704,5 @@ vario.func <- function(loc,par){ ##return a covariance matrix
     cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
     return(cov.mat + .Machine$double.eps * diag(n))
 }
+
+
