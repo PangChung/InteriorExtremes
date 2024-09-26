@@ -65,8 +65,6 @@ rFun <- function(x){
     return(val)
 }
 
-
-
 lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
 ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
 init = c(1,1,1,0,0)
@@ -74,39 +72,35 @@ init = c(1,1,1,0,0)
 # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
 par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
 par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
-par.skew.list <- list()
-ec.logskew <- list()
-tc.logskew <- list()
-fit.logskew.angular <- fit.logskew.scoreMatching <- list()
-if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal} else samples.skew.normal <- list()
-for(i in 1:nrow(par.skew.normal)){
-    par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
-    par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
-    if(!file.exists(file.samples)){
-        samples.skew.normal[[i]] <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),rFun,ncores=ncores)
-    }
+
+simu <- function(i){
+    par.skew.list <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
+    par.skew.list$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
+    samples.skew.normal[[i]] <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list),rFun,ncores=NULL)
+}
+
+model.fit <- function(i){
     data = samples.skew.normal[[i]]
     data.sum = apply(data,1,rFun)
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
-    
     t0 <-  proc.time()
-    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, nCores = ncores)
-    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis,thres=u, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, nCores = ncores)
+    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, ncores = NULL)
+    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, ncores = NULL)
     t0 <- proc.time() - t0
     fit.result1$time <- t0
 
-    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para,pareto=TRUE)
+    fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=u/ncol(data),model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para,pareto=TRUE)
 
-    print(fit.result1$par)
-    print(fit.result2$par)
-    print(par.skew.normal[i,])
-    fit.logskew.angular[[i]] <- fit.result1
-    fit.logskew.scoreMatching[[i]] <- fit.result2
-    print(i)
+    return(list(fit.result1,fit.result2))
 }
-save(fit.logskew.angular,fit.logskew.scoreMatching,par.skew.normal,m,d,basis,file=file2save)
-if(!file.exists(file.samples)) save(samples.skew.normal,basis,coord,par.skew.normal,cov.func,alpha.func,file=file.samples)
+
+if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal}else{ 
+    samples.skew.normal <- mclapply(1:nrow(par.skew.normal),simu,mc.cores=ncores,mc.set.seed = TRUE)
+    save(samples.skew.normal,basis,par.skew.normal,xi,file=file.samples)
+}
+fit.logskew <- mclapply(1:nrow(par.skew.normal),model.fit,mc.cores=ncores,mc.set.seed = TRUE)
+save(fit.logskew,par.skew.normal,basis,xi,file=file2save)
 
 # d = 2
 # loc = matrix(rnorm(d*2),ncol=2)*10

@@ -37,7 +37,7 @@ source("code/likelihood_inference.R")
 source("code/pareto_inference.R")
 ncores=detectCores()
 file2save = paste0(DataPath,"data/simulation_pareto_",model,"_",id,"_",m,".RData")
-file.samples = paste0(DataPath,"data/samples/simulation_","pareto","_",id,"_",m,".RData")
+file.samples = paste0(DataPath,"data/samples/simulation_","pareto_",model,"_",id,"_",m,".RData")
 if(file.exists(file2save)){stop("job already finished")}
 init.seed = as.integer((as.integer(Sys.time())/id + sample.int(10^5,1))%%10^5)
 set.seed(init.seed)
@@ -55,27 +55,34 @@ ub=c(Inf,1.99,Inf)
 fixed = c(F,F,T)
 init = c(1,0.5,2)
 par.truncT <- as.matrix(expand.grid(para.range,para.shape,para.deg))
-samples.truncT <- par.truncT.list <- fit.truncT <-  list()
-for(i in 1:nrow(par.truncT)){
-    fit.truncT <- list()
-    par.truncT.list[[i]] <- list(sigma=cov.func(diff.mat,c(par.truncT[i,idx.para])),nu=par.truncT[i,-idx.para])
-    set.seed(init.seed)
-    samples.truncT[[i]] <- simu_Pareto_truncT(m=m,par=par.truncT.list[[i]],rFun,ncores=ncores)
+set.seed(init.seed)
+
+simu <- function(i){
+    par.truncT.list <- list(sigma=cov.func(diff.mat,c(par.truncT[i,idx.para])),nu=par.truncT[i,-idx.para])    
+    samples.truncT <- simu_Pareto_truncT(m=m,par=par.truncT.list,rFun,ncores=NULL)
+    return(samples.truncT)
+}
+
+model.fit <- function(i){
     init[fixed] = par.truncT[i,fixed]
     data = samples.truncT[[i]]
     data.sum = apply(data,1,rFun)
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
-    
-    fit.result1 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,ncores=ncores,maxit=300,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
-    
-    fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F),thres=0,model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=300, nCores = ncores,lb=lb[-3],ub=ub[-3])
-    
-    # dim = ncol(data)
-    # fit.result2 <- fit.scoreMatching(init=c(init[-3],rep(1,dim)),obs=data,loc=diff.mat,fixed=c(F,F,rep(F,dim)),thres=0,model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="L-BFGS-B", maxit=300, nCores = ncores,lb=c(lb[-3],rep(0.001,dim)),ub=c(ub[-3],rep(Inf,dim)))
-    fit.truncT[[i]] <- list(fit.result1,fit.result2)
+    fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F), model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=1000,lb=lb[-3],ub=ub[-3])
+    fit.result1 <- fit.model(data=samples.truncT[[i]],loc=diff.mat,init=init,fixed=c(F,F,T),thres=u/ncol(data),model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
+    return(list(fit.result1,fit.result2))
 }
-save(fit.truncT,par.truncT,file=file2save)
+
+if(file.exists(file.samples)){
+    load(file.samples)
+}else{
+    samples.truncT <- mclapply(1:nrow(par.truncT),simu,mc.cores=ncores,mc.set.seed = TRUE)
+    save(par.truncT,xi,samples.truncT,file=file.samples)
+}
+
+fit.truncT <- mclapply(1:nrow(par.truncT),model.fit,mc.cores=ncores,mc.set.seed = TRUE)
+save(fit.truncT,xi,par.truncT,file=file2save)
 
 
 

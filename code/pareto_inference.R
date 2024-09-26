@@ -12,7 +12,7 @@ dWeightFun <- function(x){
 
 ### score matching inference for the skewed Brown-Resnick and Truncated extremal-t Process ###
 ################################################################################################
-scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.func=NULL, alpha.func=NULL,basis=NULL,idx.para=1:2, dof=2, weightFun = NULL, dWeightFun = NULL, nCores = 1L, ...){
+scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.func=NULL, alpha.func=NULL,basis=NULL,idx.para=1:2, dof=2, weightFun = NULL, dWeightFun = NULL, ncores = NULL, ...){
     ellipsis <- list(...)
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     set.seed(747380)
@@ -120,8 +120,8 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
                 diagHessian + 1/2 * weights^2 * gradient^2)
         }
     }
-    if (nCores > 1) {
-        scores <- parallel::mclapply(1:n, computeScores, mc.cores = nCores)
+    if (!is.null(ncores)) {
+        scores <- parallel::mclapply(1:n, computeScores, mc.cores = ncores)
     }
     else {
         scores <- lapply(1:n, computeScores)
@@ -130,7 +130,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     return(sum(unlist(scores))/n)
 }
 
-fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL,thres=1, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, nCores = 1L,lb,ub, ...){
+fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, ncores = NULL,lb,ub, ...){
     t1 = proc.time()
     if (is.matrix(obs)) {
         obs <- split(obs, row(obs))
@@ -148,11 +148,11 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         par2 = init
         par2[!fixed] = par
         if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
-        val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  nCores, ...)
+        val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  ncores, ...)
         return(val)
     }
     init2 = init[!fixed]
-    result = optim(init2, fun, control = list(trace = TRUE, maxit = maxit), method = method, hessian = FALSE)
+    result = optim(init2, fun, control = list(trace = FALSE, maxit = maxit), method = method, hessian = FALSE)
     # val.old = fun(init2)
     # n = sum(!fixed);m=length(init)  
     # fixed.old = fixed
