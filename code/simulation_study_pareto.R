@@ -6,7 +6,7 @@ d <- 15 ## 10 * 10 grid on [0,1]^2
 m <- 2000 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
-xi=3
+xi=1
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -81,13 +81,14 @@ simu <- function(i){
 }
 
 model.fit <- function(i){
+    set.seed(init.seed)
     data = samples.skew.normal[[i]]
     data.sum = apply(data,1,rFun)
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
     t0 <-  proc.time()
-    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T), model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, ncores = NULL)
-    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F), model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, ncores = NULL)
+    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, ncores = NULL)
+    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="Nelder-Mead", maxit=1000, ncores = NULL)
     t0 <- proc.time() - t0
     fit.result1$time <- t0
 
