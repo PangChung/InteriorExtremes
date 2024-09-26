@@ -93,6 +93,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
             val = mvtnorm::pmvt(lower=-SigmaS[-j,j]/SigmaS[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=dof+1)[[1]]
             return(log(val))
         }
+        
         logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=SigmaS)[[1]])
         if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
         a = T_j - logphi+ (dof-2)/2 * log(2) + log(gamma((dof+1)/2)) - 1/2*log(pi)
@@ -159,9 +160,10 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     # ub[!is.finite(ub)] <- 1e+5
     # for(i in 1:maxit){
     #     for(j in 1:n){
-    #         fixed <- rep(T,m);fixed[fixed.idx[j]] = F 
-    #         result <- optim(init[fixed.idx[j]], fun, control = list(trace = TRUE, maxit = 5), method = "Brent", hessian = FALSE,lower=lb[fixed.idx][j],upper=ub[fixed.idx][j])
-    #         init[fixed.idx[j]] <- result$par
+    #         ind =  (j:j+2) %% n + 1
+    #         fixed <- rep(T,m);fixed[fixed.idx[ind]] = F 
+    #         result <- optim(init[fixed.idx[ind]], fun, control = list(trace = TRUE, maxit = 100), method = "L-BFGS-B", hessian = FALSE,lower=lb[fixed.idx][ind],upper=ub[fixed.idx][ind])
+    #         init[fixed.idx[ind]] <- result$par
     #         print(paste0(i,": ",result$value,": ",result$par))
     #     }
     #     if(abs(result$value - val.old)<0.001){

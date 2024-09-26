@@ -55,7 +55,7 @@ ub=c(Inf,1.99,Inf)
 fixed = c(F,F,T)
 init = c(1,0.5,2)
 par.truncT <- as.matrix(expand.grid(para.range,para.shape,para.deg))
-samples.truncT <- par.truncT.list <- ec.truncT  <- tc.truncT <- fit.truncT.angular <-  list()
+samples.truncT <- par.truncT.list <- fit.truncT <-  list()
 for(i in 1:nrow(par.truncT)){
     fit.truncT <- list()
     par.truncT.list[[i]] <- list(sigma=cov.func(diff.mat,c(par.truncT[i,idx.para])),nu=par.truncT[i,-idx.para])
@@ -70,9 +70,12 @@ for(i in 1:nrow(par.truncT)){
     fit.result1 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,ncores=ncores,maxit=300,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
     
     fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F),thres=0,model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=300, nCores = ncores,lb=lb[-3],ub=ub[-3])
-
+    
+    # dim = ncol(data)
+    # fit.result2 <- fit.scoreMatching(init=c(init[-3],rep(1,dim)),obs=data,loc=diff.mat,fixed=c(F,F,rep(F,dim)),thres=0,model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="L-BFGS-B", maxit=300, nCores = ncores,lb=c(lb[-3],rep(0.001,dim)),ub=c(ub[-3],rep(Inf,dim)))
+    fit.truncT[[i]] <- list(fit.result1,fit.result2)
 }
-save(fit.truncT.angular,par.truncT,file=file2save)
+save(fit.truncT,par.truncT,file=file2save)
 
 
 
