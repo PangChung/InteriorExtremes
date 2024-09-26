@@ -40,9 +40,6 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     if (!inherits(dWeightFun, "function")) {
         stop("`dWeightFun` must be a function.")
     }
-    if (!is.numeric(nCores) || nCores < 1) {
-        stop("`nCores` must a positive number of cores.")
-    }
     if(model=="logskew"){
         n <- length(obs)
         SigmaS = vario.fun(loc, par2[idx.para])

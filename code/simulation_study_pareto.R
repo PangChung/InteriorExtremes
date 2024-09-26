@@ -76,7 +76,8 @@ par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,
 simu <- function(i){
     par.skew.list <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
     par.skew.list$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
-    samples.skew.normal[[i]] <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list),rFun,ncores=NULL)
+    samples.skew.normal <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list),rFun,ncores=NULL)
+    return(samples.skew.normal)
 }
 
 model.fit <- function(i){

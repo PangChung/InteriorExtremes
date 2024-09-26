@@ -64,6 +64,7 @@ simu <- function(i){
 }
 
 model.fit <- function(i){
+    set.seed(init.seed)
     init[fixed] = par.truncT[i,fixed]
     data = samples.truncT[[i]]
     data.sum = apply(data,1,rFun)
