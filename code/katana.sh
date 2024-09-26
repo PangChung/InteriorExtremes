@@ -18,5 +18,7 @@ module load r/4.3.1
 # Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=15;basis.idx=2" 
 # Rscript code/simulation_studies.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\";model=\"truncT\";d=10;m=2000" 
 
-Rscript code/simulation_studies_pareto.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=15;basis.idx=1;xi=1" 
-Rscript code/simulation_studies_pareto_truncT.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=10;basis.idx=1;xi=1" 
+Rscript code/simulation_studies_pareto.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=15;xi=1"
+Rscript code/simulation_studies_pareto.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=15;xi=3" 
+Rscript code/simulation_studies_pareto_truncT.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=10;xi=1" 
+Rscript code/simulation_studies_pareto_truncT.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=10;xi=3" 
