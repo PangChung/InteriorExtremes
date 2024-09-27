@@ -3,9 +3,9 @@ args <- commandArgs(TRUE)
 computer = "local"
 id = 1
 d <- 10 ## 10 * 10 grid on [0,1]^2
-m <- 2000 ## number of samples
+m <- 200 ## number of samples
 model = "truncT"; # "logskew" or "truncT"
-xi=1
+xi=3
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},

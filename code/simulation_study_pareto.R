@@ -2,11 +2,11 @@ rm(list=ls())
 args <- commandArgs(TRUE)
 computer = "local"
 id = 1
-d <- 15 ## 10 * 10 grid on [0,1]^2
-m <- 2000 ## number of samples
+d <- 10 ## 10 * 10 grid on [0,1]^2
+m <- 200 ## number of samples
 basis.idx = 1 # 1 for Gaussian Kernel and 2 for binary basis
 model = "logskew"; # "logskew" or "truncT"
-xi=1
+xi=3
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -92,7 +92,11 @@ model.fit <- function(i){
     t0 <- proc.time() - t0
     fit.result1$time <- t0
 
-    fit.result2 <- fit.model(data=samples.skew.normal[[i]],loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=u/ncol(data),model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=TRUE,idx.para=idx.para,pareto=TRUE)
+    data = samples.skew.normal[[i]]
+    data.sum = apply(data,1,sum)
+    u = quantile(data.sum,0.95)
+    data = data[data.sum>u,]/u
+    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=u/ncol(data),model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para,pareto=TRUE)
 
     return(list(fit.result1,fit.result2))
 }
