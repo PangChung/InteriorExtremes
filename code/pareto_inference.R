@@ -62,15 +62,16 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
             beta = (1+sum.alpha^2/sum.q)^(-0.5)
             tau.tilde.beta = beta * (alpha.i - sum.alpha*q/sum.q)
             tau.tilde =  sum( tau.tilde.beta * (log.obs.i + sigma/2) ) + beta*sum.alpha/sum.q
-            Phi.tau = pnorm(tau.tilde);phi.tau = dnorm(tau.tilde)
+            Phi.tau = pnorm(tau.tilde,log=TRUE);phi.tau = dnorm(tau.tilde,log=TRUE)
+            phi.diff = exp(phi.tau-Phi.tau)
             A = sigmaInv - q %*% t(q)/sum.q
             mtp <- 2 * q/(sum(q)) + 2 + A %*% sigma
             gradient <- - A %*% log.obs.i * (1/obs.i) - 
-                    1/2 * (1/obs.i) * mtp +  phi.tau/Phi.tau*tau.tilde.beta*(1/obs.i) 
+                    1/2 * (1/obs.i) * mtp +  phi.diff*tau.tilde.beta*(1/obs.i) 
 
             diagHessian <- -diag(A) * (1/obs.i^2) + 
                 A %*% log.obs.i * (1/obs.i)^2 + 
-                1/2 * (1/obs.i)^2 * mtp + (-phi.tau*tau.tilde*tau.tilde.beta^2+phi.tau*tau.tilde.beta-phi.tau^2*tau.tilde.beta^2/Phi.tau)/(obs.i^2*Phi.tau)
+                1/2 * (1/obs.i)^2 * mtp + (-phi.diff*tau.tilde*tau.tilde.beta^2+phi.diff*tau.tilde.beta-phi.diff^2*tau.tilde.beta^2)/(obs.i^2)
 
             weights <- do.call(what = "weightFun", args = c(ellipsis, 
                 x = list(obs.i)))
