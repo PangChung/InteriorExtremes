@@ -3,9 +3,9 @@ args <- commandArgs(TRUE)
 computer = "local"
 id = 1
 d <- 10 ## 10 * 10 grid on [0,1]^2
-m <- 2000 ## number of samples
+m <- 200 ## number of samples
 model = "truncT"; # "logskew" or "truncT"
-xi=1
+xi=3
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -70,8 +70,14 @@ model.fit <- function(i){
     data.sum = apply(data,1,rFun)
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
+    
     fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F), model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=1000,lb=lb[-3],ub=ub[-3])
-    fit.result1 <- fit.model(data=samples.truncT[[i]],loc=diff.mat,init=init,fixed=c(F,F,T),thres=u/ncol(data),model="truncT",FUN=cov.func,ncores=ncores,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
+    
+    data = samples.truncT[[i]]
+    data.sum = apply(data,1,sum)
+    u = quantile(data.sum,0.95)
+    data = data[data.sum>u,]
+    fit.result1 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
     return(list(fit.result1,fit.result2))
 }
 
