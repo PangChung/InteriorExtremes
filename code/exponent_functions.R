@@ -626,7 +626,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
         }else{
             opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian,ncore=ncores)
         }
-        if(model=="logskew" & any(!fixed[-idx.para]) & step2){
+        if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
             n.alpha = sum(!fixed[-idx.para])
             if(n.alpha==2){
                 a = seq(0,2*pi,length.out=ncores)
