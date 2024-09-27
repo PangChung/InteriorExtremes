@@ -76,8 +76,8 @@ model.fit <- function(i){
     data = samples.truncT[[i]]
     data.sum = apply(data,1,sum)
     u = quantile(data.sum,0.95)
-    data = data[data.sum>u,]/u
-    fit.result1 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=u/ncol(data),model="truncT",FUN=cov.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
+    data = data[data.sum>u,]
+    fit.result1 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=TRUE,idx.para=idx.para,pareto=TRUE)
     return(list(fit.result1,fit.result2))
 }
 

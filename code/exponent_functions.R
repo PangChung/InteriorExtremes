@@ -575,7 +575,7 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     if(!pareto){
         data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
     }else{
-        data = data[idx.thres,]/(thres*n)
+        data = data[idx.thres,]
     }
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
     if(is.null(lb)){lb=rep(-Inf,length(init))}

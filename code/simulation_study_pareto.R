@@ -96,7 +96,7 @@ model.fit <- function(i){
     data.sum = apply(data,1,sum)
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
-    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=u/ncol(data),model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para,pareto=TRUE)
+    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para,pareto=TRUE)
 
     return(list(fit.result1,fit.result2))
 }
@@ -105,6 +105,7 @@ if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.norma
     samples.skew.normal <- mclapply(1:nrow(par.skew.normal),simu,mc.cores=ncores,mc.set.seed = TRUE)
     save(samples.skew.normal,basis,par.skew.normal,xi,file=file.samples)
 }
+
 fit.logskew <- mclapply(1:nrow(par.skew.normal),model.fit,mc.cores=ncores,mc.set.seed = TRUE)
 save(fit.logskew,par.skew.normal,basis,xi,file=file2save)
 
