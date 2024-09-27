@@ -70,6 +70,7 @@ model.fit <- function(i){
     data.sum = apply(data,1,rFun)
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
+    
     fit.result2 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F), model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=1000,lb=lb[-3],ub=ub[-3])
     
     data = samples.truncT[[i]]
