@@ -109,36 +109,36 @@ if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.norma
 fit.logskew <- mclapply(1:nrow(par.skew.normal),model.fit,mc.cores=ncores,mc.set.seed = TRUE)
 save(fit.logskew,par.skew.normal,basis,xi,file=file2save)
 
-d = 3
-loc = matrix(rnorm(d*2),ncol=2)*10
+# d = 3
+# loc = matrix(rnorm(d*2),ncol=2)*10
 
-alpha = rnorm(d)
-data = exp(rnorm(d))
+# alpha = rnorm(d)
+# data = exp(rnorm(d))
 
-cov.mat = matrix(runif(d^2),ncol=d);cov.mat = (cov.mat + t(cov.mat))/2
-cov.mat = cov.mat + diag(d)*d
+# cov.mat = matrix(runif(d^2),ncol=d);cov.mat = (cov.mat + t(cov.mat))/2
+# cov.mat = cov.mat + diag(d)*d
 
-delta=alpha2delta(list(cov.mat,alpha))[[2]]
-par = list(cov.mat,delta)
-intensity_logskew(data,list(cov.mat=cov.mat,delta=rep(0,d)),alpha.para=FALSE,log=FALSE)
-for(i in 1:d){
-    print(intensity_HR(data,par,i))
-}
+# delta=alpha2delta(list(cov.mat,alpha))[[2]]
+# par = list(cov.mat,delta)
+# intensity_logskew(data,list(cov.mat=cov.mat,delta=rep(0,d)),alpha.para=FALSE,log=FALSE)
+# for(i in 1:d){
+#     print(intensity_HR(data,par,i))
+# }
 
-intensity_logskew(data,par,alpha.para=FALSE,log=FALSE)
-for(i in 1:d){
-    print(intensity_skewedHR(data,par,i))
-}
+# intensity_logskew(data,par,alpha.para=FALSE,log=FALSE)
+# for(i in 1:d){
+#     print(intensity_skewedHR(data,par,i))
+# }
 
-V_logskew(rep(1,d),list(cov.mat,alpha=rep(0,d)),alpha.para=TRUE)
-for(i in 1:d){
-    print(V_HR(rep(1,d),par,i))
-}
+# V_logskew(rep(1,d),list(cov.mat,alpha=rep(0,d)),alpha.para=TRUE)
+# for(i in 1:d){
+#     print(V_HR(rep(1,d),par,i))
+# }
 
-V_logskew(rep(1,d),par,alpha.para=FALSE)
-for(i in 1:d){
-    print(V_skewedHR(rep(1,d),par,i))
-}
+# V_logskew(rep(1,d),par,alpha.para=FALSE)
+# for(i in 1:d){
+#     print(V_skewedHR(rep(1,d),par,i))
+# }
 
 
 
