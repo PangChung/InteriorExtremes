@@ -446,7 +446,7 @@ V_HR <- function(data,par,i){
             vapply(r,func.i,numeric(1))
         }
     }
-    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-4,subdivisions=1e4)$value + 1/data[i]
+    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-5,subdivisions=1e4)$value + 1/data[i]
     return(val)
 }
 
@@ -504,7 +504,7 @@ V_skewedHR <-  function(data,par,i){
         }
         sapply(r,func.i,simplify = TRUE)
     }
-    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-4,subdivisions=1e5)$value + 1/data[i]
+    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-5,subdivisions=1e5)$value + 1/data[i]
     return(val)
 }
 
