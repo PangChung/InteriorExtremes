@@ -110,7 +110,7 @@ if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.norma
 fit.logskew <- mclapply(1:nrow(par.skew.normal),model.fit,mc.cores=ncores,mc.set.seed = TRUE)
 save(fit.logskew,par.skew.normal,basis,xi,file=file2save)
 
-d = 3
+d = 2
 loc = matrix(rnorm(d*2),ncol=2)*10
 
 alpha = rnorm(d)
