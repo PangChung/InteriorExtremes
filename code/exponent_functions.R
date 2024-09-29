@@ -456,19 +456,24 @@ cov.transform.i <- function(cov.mat,i){
 
 # intensity function for skewed HR model with Frechet margins
 intensity_skewedHR <- function(data,par,i){
-    cov.mat <- cov.transform.i(par[[1]],i)
+    gamma.origin <- diag(par[[1]])/2
     delta = par[[2]]
-    gamma.origin <- diag(cov.mat)/2
-    cov.mat.inv = chol2inv(chol(cov.mat))
+    a = log(2) + gamma.origin + pnorm(par[[2]],log.p=TRUE) - par[[1]][i,]
+    a = a[-i] - a[i]
+    cov.mat.i <- cov.transform.i(par[[1]],i)
+    cov.mat.inv = chol2inv(chol(cov.mat.i))
+    
+    tau = delta[i]
     delta = delta[-i]-delta[i]
-    a = log(2)+ gamma.origin + pnorm(delta,log.p=TRUE)
-    alpha = c(1 - delta %*% cov.mat.inv %*% delta)^(-1/2) * c(cov.mat.inv %*% delta)
-    if(length(gamma.origin)==1){
+    alpha = c(1 - t(delta) %*% cov.mat.inv %*% delta)^(-1/2) * c(cov.mat.inv %*% delta)
+    alpha0 = tau * (1  + t(alpha) %*% cov.mat.i %*% alpha)^0.5
+
+    if(length(alpha)==1){
         x = log(data[-i])-log(data[i])
-        val1 = log(2) + dnorm(x,mean=-a,sd=sqrt(cov.mat),log=TRUE) + pnorm(sum(alpha * (x + a)),log=TRUE) 
+        val1 = dnorm(x,mean=-a,sd=sqrt(cov.mat.i),log=TRUE) + pnorm(sum(alpha * (x + a))+alpha0,log=TRUE) - pnorm(tau,log=TRUE) 
     }else{
         x = log(data[-i])-log(data[i])
-        val1 = log(2) + mvtnorm::dmvnorm(x,mean=-a,sigma=cov.mat,log=TRUE) + pnorm(sum(alpha * (x + a)),log=TRUE) 
+        val1 = mvtnorm::dmvnorm(x,mean=-a,sigma=cov.mat,log=TRUE) + pnorm(sum(alpha * (x + a)) + alpha0,log=TRUE) - pnorm(tau,log=TRUE)
     }
     val = val1-sum(log(data))-log(data[i])
     return(exp(val))
@@ -476,20 +481,23 @@ intensity_skewedHR <- function(data,par,i){
 
 V_skewedHR <-  function(data,par,i){
     set.seed(342424)
-    cov.mat <- cov.transform.i(par[[1]],i)
+    gamma.origin <- diag(par[[1]])/2
     delta = par[[2]]
-    gamma.origin <- diag(cov.mat)/2
-    cov.mat.inv = chol2inv(chol(cov.mat))
+    a = log(2) + gamma.origin + pnorm(par[[2]],log.p=TRUE) - par[[1]][i,]
+    a = a[-i] - a[i]
+    cov.mat.i <- cov.transform.i(par[[1]],i)
+    tau = delta[i]
     delta = delta[-i]-delta[i]
-    a = log(2)+ gamma.origin + pnorm(delta,log.p=TRUE)
-    sigma  = unname(cbind(rbind(cov.mat,-delta),c(-delta,1)))
+    sigma  = unname(cbind(rbind(cov.mat.i,-delta),c(-delta,1)))
+    p.tau = pnorm(tau)
+    x = log(data[-i]) + a
     func <- function(r){
         func.i <- function(r.i){
-            1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(sigma)),upper=c(log(data[-i])+log(r.i)+a,0),sigma=sigma)[[1]]*2
+            val = 1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(sigma)),upper=c(x+log(r.i),0),sigma=sigma)[[1]]/p.tau
         }
         vapply(r,func.i,numeric(1))
     }
-    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-4,subdivisions=1e5)$value + 1/data[i]
+    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-3,subdivisions=1e5)$value + 1/data[i]
     return(val)
 }
 
