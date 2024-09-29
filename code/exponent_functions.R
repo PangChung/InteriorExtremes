@@ -480,7 +480,6 @@ intensity_skewedHR <- function(data,par,i){
 }
 
 V_skewedHR <-  function(data,par,i){
-    set.seed(342424)
     gamma.origin <- diag(par[[1]])/2
     delta = par[[2]]
     a = log(2) + gamma.origin + pnorm(par[[2]],log.p=TRUE) - par[[1]][i,]
@@ -492,6 +491,7 @@ V_skewedHR <-  function(data,par,i){
     p.tau = pnorm(tau)
     x = log(data[-i]) + a
     func <- function(r){
+        set.seed(342424)
         func.i <- function(r.i){
             val = 1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(sigma)),upper=c(x+log(r.i),0),sigma=sigma)[[1]]/p.tau
         }
