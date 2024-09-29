@@ -470,7 +470,7 @@ intensity_skewedHR <- function(data,par,i){
     tau = delta[i]
     delta = delta[-i]-delta[i]
     alpha = c(1 - t(delta) %*% cov.mat.inv %*% delta)^(-1/2) * c(cov.mat.inv %*% delta)
-    alpha0 = tau * (1  + t(alpha) %*% cov.mat.i %*% alpha)^0.5
+    alpha0 = tau * c(1  + t(alpha) %*% cov.mat.i %*% alpha)^0.5
 
     if(length(alpha)==1){
         x = log(data[-i])-log(data[i])
