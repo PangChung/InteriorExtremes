@@ -477,7 +477,7 @@ intensity_skewedHR <- function(data,par,i){
         val1 = dnorm(x,mean=-a,sd=sqrt(cov.mat.i),log=TRUE) + pnorm(sum(alpha * (x + a))+alpha0,log=TRUE) - pnorm(tau,log=TRUE) 
     }else{
         x = log(data[-i])-log(data[i])
-        val1 = mvtnorm::dmvnorm(x,mean=-a,sigma=cov.mat,log=TRUE) + pnorm(sum(alpha * (x + a)) + alpha0,log=TRUE) - pnorm(tau,log=TRUE)
+        val1 = mvtnorm::dmvnorm(x,mean=-a,sigma=cov.mat.i,log=TRUE) + pnorm(sum(alpha * (x + a)) + alpha0,log=TRUE) - pnorm(tau,log=TRUE)
     }
     val = val1-sum(log(data))-log(data[i])
     return(exp(val))
