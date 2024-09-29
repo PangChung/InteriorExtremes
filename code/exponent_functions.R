@@ -437,7 +437,11 @@ V_HR <- function(data,par,i){
     }else{
         func <- function(r){
             func.i <- function(r.i){
-                1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(cov.mat)),upper=log(data[-i])+log(r.i),mean=-gamma.origin,sigma=cov.mat)[[1]]
+                oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+                set.seed(19873436)
+                val = 1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(cov.mat)),upper=log(data[-i])+log(r.i),mean=-gamma.origin,sigma=cov.mat)[[1]]
+                assign(".Random.seed", oldSeed, envir=globalenv())
+                return(val)
             }
             vapply(r,func.i,numeric(1))
         }
@@ -491,13 +495,16 @@ V_skewedHR <-  function(data,par,i){
     p.tau = pnorm(tau)
     x = log(data[-i]) + a
     func <- function(r){
-        set.seed(342424)
         func.i <- function(r.i){
-            val = 1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(sigma)),upper=c(x+log(r.i),0),sigma=sigma)[[1]]/p.tau
+            oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
+            set.seed(19873436)
+            val = 1 - mvtnorm::pmvnorm(lower=rep(-Inf,nrow(sigma)),upper=c(x+log(r.i),tau),sigma=sigma)[[1]]/p.tau
+            assign(".Random.seed", oldSeed, envir=globalenv())
+            return(val)
         }
-        vapply(r,func.i,numeric(1))
+        sapply(r,func.i,simplify = TRUE)
     }
-    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-5,subdivisions=1e5)$value + 1/data[i]
+    val = integrate(func,lower=1/data[i],upper=Inf,rel.tol=1e-4,subdivisions=1e5)$value + 1/data[i]
     return(val)
 }
 
