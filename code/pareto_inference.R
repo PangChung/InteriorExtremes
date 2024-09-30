@@ -50,7 +50,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
             ind = !is.na(obs.i)
             obs.i = obs.i[ind]
             log.obs.i = log(obs.i) + a
-            sigmaInv <- MASS::ginv(SigmaS[ind, ind])
+            sigmaInv <- chol2inv(chol(SigmaS[ind, ind]))
             sigma <- diag(SigmaS[ind, ind])
             d = nrow(sigmaInv)
             alpha.i = c(1 - delta[ind] %*% sigmaInv %*% delta[ind])^(-1/2) * c(sigmaInv %*% delta[ind])
@@ -84,7 +84,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     if(model=="truncT"){
         n <- length(obs)
         SigmaS = cov.func(loc, par2[idx.para])
-        sigmaInv <- MASS::ginv(SigmaS)
+        sigmaInv <- chol2inv(chol(SigmaS))
         a_fun <- function(j,upper=rep(Inf,n-1)){
             set.seed(747380)
             sigma_j = (SigmaS[-j,-j] - SigmaS[-j,j,drop=F] %*% SigmaS[j,-j,drop=F]/SigmaS[j,j])/(dof + 1)/SigmaS[j,j]
@@ -129,7 +129,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     return(sum(unlist(scores))/n)
 }
 
-fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, ncores = NULL,lb,ub, ...){
+fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, ncores = NULL,lb,ub,trace=FALSE, ...){
     t1 = proc.time()
     if (is.matrix(obs)) {
         obs <- split(obs, row(obs))
@@ -151,7 +151,7 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         return(val)
     }
     init2 = init[!fixed]
-    result = optim(init2, fun, control = list(trace = FALSE, maxit = maxit), method = method, hessian = FALSE)
+    result = optim(init2, fun, control = list(trace = trace, maxit = maxit), method = method, hessian = FALSE)
     # val.old = fun(init2)
     # n = sum(!fixed);m=length(init)  
     # fixed.old = fixed
