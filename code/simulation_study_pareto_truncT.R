@@ -80,6 +80,7 @@ model.fit <- function(i){
     data = data[data.sum>u,]
 
     fit.result2 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,ncores=3)
+    
     return(list(fit.result1,fit.result2))
 }
 
