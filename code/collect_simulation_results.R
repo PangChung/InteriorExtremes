@@ -207,17 +207,17 @@ data = fit.pareto.logskew.3
 data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
 data_long$facet = factor(paste0(data_long$Variable),level=levels)
 p <- ggplot(data_long, aes(x = factor(case), y = Value, fill=factor(method,labels=c("Score","Spectral")))) +
-  geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-  geom_point(data=data_true,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-  facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
+    geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+    geom_point(data=data_true,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+    facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
     labs(x = "Cases",
             y = "Value",fill="Method") + 
   theme(axis.text = element_text(size = 14),
-        axis.title.x = element_text(size = 16),
-        strip.text = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        plot.title = element_text(hjust = 0.5, size = 16),
-        legend.title = element_text(size = 16))
+            axis.title.x = element_text(size = 16),
+            strip.text = element_text(size = 16),
+            axis.title.y = element_text(size = 16),
+            plot.title = element_text(hjust = 0.5, size = 16),
+            legend.title = element_text(size = 16))
 p
 
 levels = c("hat(lambda)","hat(vartheta)")
@@ -230,15 +230,15 @@ data_true$method = rep(1:2,each=nrow(data_true)/2)
 data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
 data_long$facet = factor(paste0(data_long$Variable),level=levels)
 p <- ggplot(data_long, aes(x = factor(case), y = Value, fill=factor(method,labels=c("Score","Spectral")))) +
-  geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-  geom_point(data=data_true,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-  facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
+    geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+    geom_point(data=data_true,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+    facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
     labs(x = "Cases",
             y = "Value",fill="Method") + 
-  theme(axis.text = element_text(size = 14),
-        axis.title.x = element_text(size = 16),
-        strip.text = element_text(size = 16),
-        axis.title.y = element_text(size = 16),
-        plot.title = element_text(hjust = 0.5, size = 16),
-        legend.title = element_text(size = 16))
+    theme(axis.text = element_text(size = 14),
+            axis.title.x = element_text(size = 16),
+            strip.text = element_text(size = 16),
+            axis.title.y = element_text(size = 16),
+            plot.title = element_text(hjust = 0.5, size = 16),
+            legend.title = element_text(size = 16))
 p
