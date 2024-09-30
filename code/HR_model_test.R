@@ -1,4 +1,4 @@
-d = 2
+d = 3
 loc = matrix(rnorm(d*2),ncol=2)*10
 
 alpha = rnorm(d)
