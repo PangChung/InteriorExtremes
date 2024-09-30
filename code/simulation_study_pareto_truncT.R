@@ -72,14 +72,14 @@ model.fit <- function(i){
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
     
-    fit.result1 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F), model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=1000,lb=lb[-3],ub=ub[-3],ncores=3,trace=TRUE)
+    fit.result1 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F), model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=1000,lb=lb[-3],ub=ub[-3],ncores=3,trace=FALSE)
     
     data = samples.truncT[[i]]
     data.sum = apply(data,1,sum)
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]
 
-    fit.result2 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,ncores=NULL,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,ncores=3)
+    fit.result2 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,ncores=3)
     return(list(fit.result1,fit.result2))
 }
 
