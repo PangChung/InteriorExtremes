@@ -167,10 +167,34 @@ files.pareto.logskew.3 <- list.files(path="data/simulation_pareto/",pattern="sim
 files.pareto.truncT.1 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_truncT_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
 files.pareto.truncT.3 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_truncT_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
 
-load(files.pareto.truncT.1[[3]],e<-new.env())
-load(files.pareto.truncT.3[[3]],e<-new.env())
-e$fit.truncT
+collect_results <- function(files){
+    load(files,e<-new.env())
+    if(is.null(e$fit.logskew)){fit.results <- e$fit.truncT}else{fit.results <- e$fit.logskew}
+    est.1 <- do.call(rbind,lapply(fit.results,function(x){x[[1]]$par}))
+    val.1 <- unlist(lapply(fit.results,function(x){x[[1]]$val}))
+    time.1 <- unlist(lapply(fit.results,function(x){x[[1]]$time[[3]]}))
+    est.2 <- do.call(rbind,lapply(fit.results,function(x){x[[2]]$par}))
+    val.2 <- unlist(lapply(fit.results,function(x){x[[2]]$val}))
+    time.2 <- unlist(lapply(fit.results,function(x){x[[2]]$time[[3]]}))
+    n = length(val.1)
+    if(ncol(est.1)!=ncol(est.2)){if(ncol(est.1)<ncol(est.2)) est.1 <- cbind(est.1,est.2[,ncol(est.1)+1]) else est.2 <- cbind(est.2,est.1[,ncol(est.2)+1])}
+    result <- data.frame(case=rep(1:n,2),method=rep(1:2,each=n),time=c(time.1,time.2),val=c(val.1,val.2))
+    result <- cbind(result,rbind(est.1,est.2))
+    return(result)
+}
 
-load(files.pareto.logskew.1[[3]],e<-new.env())
-load(files.pareto.logskew.3[[3]],e<-new.env())
-e$fit.logskew
+fit.pareto.logskew.1 <- do.call(rbind,lapply(files.pareto.logskew.1,collect_results))
+fit.pareto.logskew.3 <- do.call(rbind,lapply(files.pareto.logskew.3,collect_results))
+fit.pareto.truncT.1 <- do.call(rbind,lapply(files.pareto.truncT.1,collect_results))
+fit.pareto.truncT.3 <- do.call(rbind,lapply(files.pareto.truncT.3,collect_results))
+
+load(files.pareto.logskew.1[1],e<-new.env());par.logskew <- e$par.skew.normal
+load(files.pareto.truncT.1[1],e<-new.env());par.truncT <- e$par.truncT
+names(fit.pareto.logskew.1) <- names(fit.pareto.logskew.3) <- c("case","method","time","val","lambda","nu","alpha0","alpha1","alpha2")
+names(fit.pareto.truncT.1) <- names(fit.pareto.truncT.3) <- c("case","method","time","val","lambda","nu","deg")
+variable.names.logskew <- c(expression(lambda), expression(nu), expression(alpha[1]), expression(alpha[2]))
+variable.names.truncT <- c(expression(lambda), expression(nu))
+
+p.list <- list()
+
+
