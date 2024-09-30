@@ -155,3 +155,22 @@ dev.off()
 
 save(p.list,est.mat.list,par.truncT,variable.names,file=paste0("data/simulation_study_truncT_results_",idx.file,"_2000.RData"))
 
+
+## for Pareto process ## 
+source("code/exponent_functions.R")
+library(ggplot2)
+library(gridExtra)
+library(tidyr)
+
+files.pareto.logskew.1 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_logskew_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
+files.pareto.logskew.3 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_logskew_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
+files.pareto.truncT.1 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_truncT_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
+files.pareto.truncT.3 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_truncT_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
+
+load(files.pareto.truncT.1[[3]],e<-new.env())
+load(files.pareto.truncT.3[[3]],e<-new.env())
+e$fit.truncT
+
+load(files.pareto.logskew.1[[3]],e<-new.env())
+load(files.pareto.logskew.3[[3]],e<-new.env())
+e$fit.logskew

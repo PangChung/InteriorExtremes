@@ -15,7 +15,6 @@ dWeightFun <- function(x){
 scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.func=NULL, alpha.func=NULL,basis=NULL,idx.para=1:2, dof=2, weightFun = NULL, dWeightFun = NULL, ncores = NULL, ...){
     ellipsis <- list(...)
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
-    set.seed(747380)
     if ("weigthFun" %in% names(ellipsis) && is.null(weightFun)) {
         weightFun <- ellipsis[["weigthFun"]]
         ellipsis[["weigthFun"]] <- NULL
@@ -87,11 +86,13 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         SigmaS = cov.func(loc, par2[idx.para])
         sigmaInv <- MASS::ginv(SigmaS)
         a_fun <- function(j,upper=rep(Inf,n-1)){
+            set.seed(747380)
             sigma_j = (SigmaS[-j,-j] - SigmaS[-j,j,drop=F] %*% SigmaS[j,-j,drop=F]/SigmaS[j,j])/(dof + 1)/SigmaS[j,j]
             val = mvtnorm::pmvt(lower=-SigmaS[-j,j]/SigmaS[j,j],upper=rep(Inf,n-1),sigma=sigma_j,df=dof+1)[[1]]
+            assign(".Random.seed", oldSeed, envir=globalenv())
             return(log(val))
         }
-        
+        set.seed(747380)
         logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=SigmaS)[[1]])
         if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
         a = T_j - logphi+ (dof-2)/2 * log(2) + log(gamma((dof+1)/2)) - 1/2*log(pi)
@@ -119,7 +120,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         }
     }
     if (!is.null(ncores)) {
-        scores <- parallel::mclapply(1:n, computeScores, mc.cores = ncores)
+        scores <- parallel::mclapply(1:n, computeScores, mc.cores = ncores,mc.set.seed = TRUE)
     }
     else {
         scores <- lapply(1:n, computeScores)
