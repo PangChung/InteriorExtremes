@@ -66,7 +66,7 @@ simu <- function(i){
 model.fit <- function(i){
     set.seed(init.seed)
     init[fixed] = par.truncT[i,fixed]
-    
+
     data = samples.truncT[[i]]
     data.sum = apply(data,1,rFun)
     u = quantile(data.sum,0.95)
@@ -91,6 +91,7 @@ if(file.exists(file.samples)){
 }
 
 fit.truncT <- mclapply(1:nrow(par.truncT),model.fit,mc.cores=ncores,mc.set.seed = TRUE)
+
 save(fit.truncT,xi,par.truncT,file=file2save)
 
 
