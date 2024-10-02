@@ -161,11 +161,11 @@ source("code/exponent_functions.R")
 library(ggplot2)
 library(gridExtra)
 library(tidyr)
-
-files.pareto.logskew.1 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_logskew_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
-files.pareto.logskew.3 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_logskew_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
-files.pareto.truncT.1 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_truncT_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
-files.pareto.truncT.3 <- list.files(path="data/simulation_pareto/",pattern="simulation_pareto_truncT_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
+path = "data/simulation_pareto_2/"
+files.pareto.logskew.1 <- list.files(path=path,pattern="simulation_pareto_logskew_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
+files.pareto.logskew.3 <- list.files(path=path,pattern="simulation_pareto_logskew_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
+files.pareto.truncT.1 <- list.files(path=path,pattern="simulation_pareto_truncT_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
+files.pareto.truncT.3 <- list.files(path=path,pattern="simulation_pareto_truncT_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
 
 collect_results <- function(files){
     load(files,e<-new.env())
@@ -195,13 +195,13 @@ names(fit.pareto.truncT.1) <- names(fit.pareto.truncT.3) <- c("case","method","t
 par.logskew <- as.data.frame(par.logskew);par.truncT <- as.data.frame(par.truncT)
 names(par.logskew) = names(fit.pareto.logskew.1)[5:9];names(par.truncT) = names(fit.pareto.truncT.1)[5:7]
 par.logskew$case = 1:nrow(par.logskew);par.truncT$case = 1:nrow(par.truncT)
+
 levels = c("hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 data_true = par.logskew
 data_true <- pivot_longer(data_true, cols=levels, names_to = "Variable", values_to = "Value")
 data_true$facet = factor(paste0(data_true$Variable),levels=levels)
 data_true <- rbind(data_true,data_true)
 data_true$method = rep(1:2,each=nrow(data_true)/2)
-
 
 data = fit.pareto.logskew.3
 data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
@@ -212,7 +212,7 @@ p <- ggplot(data_long, aes(x = factor(case), y = Value, fill=factor(method,label
     facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
     labs(x = "Cases",
             y = "Value",fill="Method") + 
-  theme(axis.text = element_text(size = 14),
+    theme(axis.text = element_text(size = 14),
             axis.title.x = element_text(size = 16),
             strip.text = element_text(size = 16),
             axis.title.y = element_text(size = 16),
@@ -227,6 +227,7 @@ data_true$facet = factor(paste0(data_true$Variable),levels=levels)
 data_true <- rbind(data_true,data_true)
 data_true$method = rep(1:2,each=nrow(data_true)/2)
 
+data = fit.pareto.truncT.3
 data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
 data_long$facet = factor(paste0(data_long$Variable),level=levels)
 p <- ggplot(data_long, aes(x = factor(case), y = Value, fill=factor(method,labels=c("Score","Spectral")))) +
