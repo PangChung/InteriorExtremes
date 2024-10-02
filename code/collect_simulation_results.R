@@ -217,7 +217,7 @@ p <- ggplot(data_long, aes(x = factor(case), y = Value, fill=factor(method,label
             strip.text = element_text(size = 16),
             axis.title.y = element_text(size = 16),
             plot.title = element_text(hjust = 0.5, size = 16),
-            legend.title = element_text(size = 16))
+            legend.title = element_text(size = 16)) 
 p
 
 levels = c("hat(lambda)","hat(vartheta)")
