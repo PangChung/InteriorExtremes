@@ -205,7 +205,7 @@ data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 p.list.logskew <- list()
 for(i in 1:2){
-        data = subset(fit.pareto.logskew.1,method==i)
+        data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < 5 & abs(`hat(b)[2]`) < 5)
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
         p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
@@ -224,7 +224,7 @@ for(i in 1:2){
 }
 
 for(i in 1:2){
-        data = subset(fit.pareto.logskew.3,method==i)
+        data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < 5 & abs(`hat(b)[2]`) < 5)
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
         p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
@@ -251,7 +251,7 @@ data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 p.list.truncT <- list()
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.1,method==i)
+    data = subset(fit.pareto.truncT.1, method==i & `hat(lambda)` < 10)
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
     p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
@@ -270,7 +270,7 @@ for(i in 1:2){
 }
 
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.3,method==i)
+    data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < 10)
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
     p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
