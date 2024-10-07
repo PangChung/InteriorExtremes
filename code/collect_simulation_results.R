@@ -169,16 +169,17 @@ files.pareto.truncT.3 <- list.files(path=path,pattern="simulation_pareto_truncT_
 
 collect_results <- function(files){
     load(files,e<-new.env())
-    if(is.null(e$fit.logskew)){fit.results <- e$fit.truncT}else{fit.results <- e$fit.logskew}
-    est.1 <- do.call(rbind,lapply(fit.results,function(x){x[[1]]$par}))
-    val.1 <- unlist(lapply(fit.results,function(x){x[[1]]$val}))
-    time.1 <- unlist(lapply(fit.results,function(x){x[[1]]$time[[3]]}))
-    est.2 <- do.call(rbind,lapply(fit.results,function(x){x[[2]]$par}))
-    val.2 <- unlist(lapply(fit.results,function(x){x[[2]]$val}))
-    time.2 <- unlist(lapply(fit.results,function(x){x[[2]]$time[[3]]}))
-    n = length(val.1)
+    if(is.null(e$fit.logskew)){fit.results <- e$fit.truncT;n<-ncol(e$par.truncT)}else{fit.results <- e$fit.logskew;n<-ncol(e$par.skew.normal)}
+    
+    est.1 <- do.call(rbind,lapply(fit.results,function(x){if(!is.null(x[[1]]$par)) x[[1]]$par else rep(NA,n-1)}))
+    val.1 <- unlist(lapply(fit.results,function(x){if(!is.null(x[[1]]$val)) x[[1]]$val else NA}))
+    time.1 <- unlist(lapply(fit.results,function(x){if(!is.null(x[[1]]$time[[3]])) x[[1]]$time[[3]] else NA}))
+    est.2 <- do.call(rbind,lapply(fit.results,function(x){if(!is.null(x[[2]]$par)) x[[2]]$par else rep(NA,n)}))
+    val.2 <- unlist(lapply(fit.results,function(x){if(!is.null(x[[2]]$val)) x[[2]]$val else NA}))
+    time.2 <- unlist(lapply(fit.results,function(x){if(!is.null(x[[2]]$time[[3]])) x[[2]]$time[[3]] else NA}))
+    m = length(val.1)
     if(ncol(est.1)!=ncol(est.2)){if(ncol(est.1)<ncol(est.2)) est.1 <- cbind(est.1,est.2[,ncol(est.1)+1]) else est.2 <- cbind(est.2,est.1[,ncol(est.2)+1])}
-    result <- data.frame(case=rep(1:n,2),method=rep(1:2,each=n),time=c(time.1,time.2),val=c(val.1,val.2))
+    result <- data.frame(case=rep(1:m,2),method=rep(1:2,each=m),time=c(time.1,time.2),val=c(val.1,val.2))
     result <- cbind(result,rbind(est.1,est.2))
     return(result)
 }
