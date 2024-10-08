@@ -637,9 +637,9 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     }
     if(opt){
         if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-3),hessian=hessian,ncore=ncores)
+            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),hessian=hessian,ncore=ncores)
         }else{
-            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-3),hessian=hessian,ncore=ncores)
+            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),hessian=hessian,ncore=ncores)
         }
         if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
             n.alpha = sum(!fixed[-idx.para])
@@ -665,9 +665,9 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             init[!fixed2] = opt.result$par
             fixed2 = fixed;fixed2[-idx.para]=TRUE
             if(method=="L-BFGS-B"){
-                opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-3),hessian=hessian)
+                opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),hessian=hessian)
             }else{
-                opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-3),hessian=hessian)
+                opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),hessian=hessian)
             }
             opt.result$others = opt.result2
         }

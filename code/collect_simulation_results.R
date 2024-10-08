@@ -161,7 +161,7 @@ source("code/exponent_functions.R")
 library(ggplot2)
 library(gridExtra)
 library(tidyr)
-path = "data/simulation_pareto_3/"
+path = "data/simulation_pareto_4/"
 files.pareto.logskew.1 <- list.files(path=path,pattern="simulation_pareto_logskew_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
 files.pareto.logskew.3 <- list.files(path=path,pattern="simulation_pareto_logskew_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
 files.pareto.truncT.1 <- list.files(path=path,pattern="simulation_pareto_truncT_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
@@ -205,7 +205,7 @@ data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 p.list.logskew <- list()
 for(i in 1:2){
-        data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < 5 & abs(`hat(b)[2]`) < 5)
+        data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < Inf & abs(`hat(b)[2]`) < Inf)
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
         p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
@@ -224,7 +224,7 @@ for(i in 1:2){
 }
 
 for(i in 1:2){
-        data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < 5 & abs(`hat(b)[2]`) < 5)
+        data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < Inf & abs(`hat(b)[2]`) < Inf)
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
         p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
@@ -251,7 +251,7 @@ data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 p.list.truncT <- list()
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.1, method==i & `hat(lambda)` < 10)
+    data = subset(fit.pareto.truncT.1, method==i & `hat(lambda)` < Inf)
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
     p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
@@ -270,7 +270,7 @@ for(i in 1:2){
 }
 
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < 10)
+    data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < Inf)
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
     p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
