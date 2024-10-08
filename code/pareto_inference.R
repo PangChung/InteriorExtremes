@@ -40,7 +40,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         stop("`dWeightFun` must be a function.")
     }
     if(model=="logskew"){
-        n <- length(obs)
+        n <- nrow(loc)
         SigmaS = vario.func(loc, par2[idx.para])
         alpha = alpha.func(par2[-idx.para],b.mat=basis)
         delta = c(SigmaS %*% alpha)/sqrt(c(1+alpha %*% SigmaS %*% alpha))
@@ -82,7 +82,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         }
     }
     if(model=="truncT"){
-        n <- length(obs)
+        n <- nrow(loc)
         SigmaS = cov.func(loc, par2[idx.para])
         sigmaInv <- chol2inv(chol(SigmaS))
         a_fun <- function(j,upper=rep(Inf,n-1)){
@@ -150,11 +150,12 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  ncores, ...)
         return(val)
     }
+    browser()
     init2 = init[!fixed]
     if(method=="Nelder-Mead"){ 
         result = optim(init2, fun, control = list(trace = trace, maxit = maxit,reltol=1e-4), method = method)
     }else{ 
-        result = optim(init2, fun, control = list(trace = trace, maxit = maxit,reltol=1e-4), method = method, hessian = FALSE, lower=lb[!fixed], upper=ub[!fixed])
+        result = optim(init2, fun, control = list(trace = trace, maxit = maxit,pgtol=1e-4), method = method, hessian = FALSE, lower=lb[!fixed], upper=ub[!fixed])
     }
     # val.old = fun(init2)
     # n = sum(!fixed);m=length(init)  
