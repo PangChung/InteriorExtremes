@@ -150,7 +150,6 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  ncores, ...)
         return(val)
     }
-    browser()
     init2 = init[!fixed]
     if(method=="Nelder-Mead"){ 
         result = optim(init2, fun, control = list(trace = trace, maxit = maxit,reltol=1e-4), method = method)
