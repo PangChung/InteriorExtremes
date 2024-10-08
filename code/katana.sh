@@ -20,5 +20,5 @@ module load r/4.3.1
 
 Rscript code/simulation_study_pareto.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=15;xi=1"
 Rscript code/simulation_study_pareto.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"logskew\";d=15;xi=3" 
-Rscript code/simulation_study_pareto_truncT.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"truncT\";d=10;xi=1" 
-Rscript code/simulation_study_pareto_truncT.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"truncT\";d=10;xi=3" 
+Rscript code/simulation_study_pareto_truncT.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"truncT\";d=8;xi=1" 
+Rscript code/simulation_study_pareto_truncT.R "id=${PBS_ARRAY_INDEX};m=2000;computer=\"hpc\";model=\"truncT\";d=8;xi=3" 
