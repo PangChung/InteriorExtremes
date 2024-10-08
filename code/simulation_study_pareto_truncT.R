@@ -53,7 +53,7 @@ rFun <- function(x){
 lb=c(0.01,0.01,0)
 ub=c(Inf,1.99,Inf)
 fixed = c(F,F,T)
-init = c(1,0.5,2)
+init = c(d/2,1,2)
 par.truncT <- as.matrix(expand.grid(para.range,para.shape,para.deg))
 set.seed(init.seed)
 
