@@ -154,7 +154,7 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     if(method=="Nelder-Mead"){ 
         result = optim(init2, fun, control = list(trace = trace, maxit = maxit,reltol=1e-4), method = method)
     }else{ 
-        result = optim(init2, fun, control = list(trace = trace, maxit = maxit,factr=1e-4), method = method, hessian = FALSE, lower=lb[!fixed], upper=ub[!fixed])
+        result = optim(init2, fun, control = list(trace = trace, maxit = maxit,factr=1e4), method = method, hessian = FALSE, lower=lb[!fixed], upper=ub[!fixed])
     }
     # val.old = fun(init2)
     # n = sum(!fixed);m=length(init)  
