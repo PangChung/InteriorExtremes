@@ -39,6 +39,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     if (!inherits(dWeightFun, "function")) {
         stop("`dWeightFun` must be a function.")
     }
+    browser()
     if(model=="logskew"){
         n <- nrow(loc)
         SigmaS = vario.func(loc, par2[idx.para])
@@ -120,13 +121,13 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         }
     }
     if (!is.null(ncores)) {
-        scores <- parallel::mclapply(1:n, computeScores, mc.cores = ncores,mc.set.seed = TRUE)
+        scores <- parallel::mclapply(1:length(obs), computeScores, mc.cores = ncores,mc.set.seed = TRUE)
     }
     else {
-        scores <- lapply(1:n, computeScores)
+        scores <- lapply(1:length(obs), computeScores)
     }
     assign(".Random.seed", oldSeed, envir=globalenv())
-    return(sum(unlist(scores))/n)
+    return(sum(unlist(scores))/length(obs))
 }
 
 fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, ncores = NULL,lb,ub,trace=FALSE, ...){
