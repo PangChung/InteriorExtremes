@@ -51,7 +51,7 @@ rFun <- function(x){
 }
 
 lb=c(0.01,0.01,0)
-ub=c(Inf,1.99,Inf)
+ub=c(d*3,1.99,Inf)
 fixed = c(F,F,T)
 init = c(d/2,1,2)
 par.truncT <- as.matrix(expand.grid(para.range,para.shape,para.deg))
@@ -72,14 +72,14 @@ model.fit <- function(i){
     u = quantile(data.sum,0.98)
     data = data[data.sum>u,]/u
     
-    fit.result1 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F), model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="L-BFGS-B", maxit=1000,lb=lb[-3],ub=ub[-3],ncores=3,trace=FALSE)
+    fit.result1 <- fit.scoreMatching(init=init[-3],obs=data,loc=diff.mat,fixed=c(F,F), model="truncT",cov.func=cov.func,idx.para=idx.para,dof=par.truncT[i,3],weightFun = weightFun , dWeightFun = dWeightFun , method="Nelder-Mead", maxit=1000,lb=lb[-3],ub=ub[-3],ncores=3,trace=FALSE)
     
     data = samples.truncT[[i]]
     data.sum = apply(data,1,sum)
     u = quantile(data.sum,0.98)
     data = data[data.sum>u,]
 
-    fit.result2 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,ncores=3)
+    fit.result2 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,maxit=1000,method="Nelder-Mead",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,ncores=3)
     
     fit.result2$par = fit.result2$par[-3]
     return(list(fit.result1,fit.result2))
