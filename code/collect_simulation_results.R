@@ -161,7 +161,7 @@ source("code/exponent_functions.R")
 library(ggplot2)
 library(gridExtra)
 library(tidyr)
-idx.file = "_3"
+idx.file = "_4"
 path = paste0("data/simulation_pareto",idx.file,"/")
 files.pareto.logskew.1 <- list.files(path=path,pattern="simulation_pareto_logskew_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
 files.pareto.logskew.3 <- list.files(path=path,pattern="simulation_pareto_logskew_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
@@ -170,7 +170,8 @@ files.pareto.truncT.3 <- list.files(path=path,pattern="simulation_pareto_truncT_
 
 collect_results <- function(files){
     load(files,e<-new.env())
-    if(is.null(e$fit.logskew)){fit.results <- e$fit.truncT;n<-ncol(e$par.truncT);n<-c(n-1,n)}else{fit.results <- e$fit.logskew;n<-ncol(e$par.skew.normal);n<-c(n,n)}
+    #if(is.null(e$fit.logskew)){fit.results <- e$fit.truncT;n<-ncol(e$par.truncT);n<-c(n-1,n)}else{fit.results <- e$fit.logskew;n<-ncol(e$par.skew.normal);n<-c(n,n)}
+    if(is.null(e$fit.logskew)){fit.results <- e$fit.truncT;n<-ncol(e$par.truncT);n<-c(n,n)}else{fit.results <- e$fit.logskew;n<-ncol(e$par.skew.normal);n<-c(n,n)}
     est.1 <- do.call(rbind,lapply(fit.results,function(x){if(is.numeric(x[[1]][[1]])) x[[1]]$par else rep(NA,n[1])}))
     val.1 <- unlist(lapply(fit.results,function(x){if(is.numeric(x[[1]][[1]])) x[[1]]$val else NA}))
     time.1 <- unlist(lapply(fit.results,function(x){if(is.numeric(x[[1]][[1]])) x[[1]]$time[[3]] else NA}))
@@ -192,7 +193,7 @@ fit.pareto.truncT.3 <- do.call(rbind,lapply(files.pareto.truncT.3,collect_result
 load(files.pareto.logskew.1[1],e<-new.env());par.logskew <- e$par.skew.normal
 load(files.pareto.truncT.1[1],e<-new.env());par.truncT <- e$par.truncT
 names(fit.pareto.logskew.1) <- names(fit.pareto.logskew.3) <- c("case","method","time","val","hat(lambda)","hat(vartheta)","hat(b)[0]","hat(b)[1]","hat(b)[2]")
-names(fit.pareto.truncT.1) <- names(fit.pareto.truncT.3) <- c("case","method","time","val","hat(lambda)","hat(vartheta)","deg")
+names(fit.pareto.truncT.1) <- names(fit.pareto.truncT.3) <- c("case","method","time","val","hat(lambda)","hat(vartheta)")#,"deg")
 par.logskew <- as.data.frame(par.logskew);par.truncT <- as.data.frame(par.truncT)
 names(par.logskew) = names(fit.pareto.logskew.1)[5:9];names(par.truncT) = names(fit.pareto.truncT.1)[5:7]
 par.logskew$case = 1:nrow(par.logskew);par.truncT$case = 1:nrow(par.truncT)
