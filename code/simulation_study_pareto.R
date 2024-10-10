@@ -65,8 +65,8 @@ rFun <- function(x){
     return(val)
 }
 
-lb=c(0.01,0.01,rep(-10,ncol(para.alpha)))
-ub=c(Inf,1.99,rep(10,ncol(para.alpha)))
+lb=c(0.01,0.01,rep(-Inf,ncol(para.alpha)))
+ub=c(Inf,1.99,rep(Inf,ncol(para.alpha)))
 init = c(d/2,1,1,0,0)
 # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
 # par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
