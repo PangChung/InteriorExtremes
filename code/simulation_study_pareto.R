@@ -96,7 +96,7 @@ model.fit <- function(i){
 
     data = samples.skew.normal[[i]]
     data.sum = apply(data,1,sum)
-    u = quantile(data.sum,0.95)
+    u = max(quantile(data.sum,0.95),nrow(coord)^(1-1/xi))
     data = data[data.sum>u,]/u
 
     t0 <-  proc.time()
