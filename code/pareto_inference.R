@@ -152,9 +152,9 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     }
     fixed2 = fixed
     if(method=="L-BFGS-B"){
-        opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncore=ncores)
+        opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncore=ncores)
     }else{
-        opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
+        opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
     }
     if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
         n.alpha = sum(!fixed[-idx.para])
@@ -166,7 +166,7 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
             a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
             a[,1] = pmax(a[,1],1)
         }
-        init[!fixed2] = opt.result$par
+        init[!fixed] = opt.result$par
         fixed2[-idx.para] = fixed[-idx.para]
         fixed2[idx.para] = TRUE;
         init.list = split(a,row(a)) 
@@ -186,9 +186,14 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         }
         opt.result$others = opt.result2
     }
+    if(model == "truncT" & !is.null(ncores) & step2){
+        fixed2 = fixed; fixed2[2] = TRUE
+        init[!fixed] <- opt.result$par
+        opt.result = optim(log(init[1]),object.func,lower=lb[!fixed2],upper=ub[!fixed2],method="Brent",control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
+    }
     t2 = proc.time() - t1
-    init[!fixed] = opt.result$par
-    result$par = init
+    init[!fixed2] = opt.result$par
+    opt.result$par = init
     result$time = t2
     return(result)
 }
