@@ -156,6 +156,7 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     }else{
         opt.result = optim(init[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4))
     }
+    browser()
     if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
         n.alpha = sum(!fixed[-idx.para])
         if(n.alpha==2){
@@ -187,9 +188,14 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         #opt.result$others = opt.result2
     }
     if(model == "truncT" & !is.null(ncores) & step2){
-        fixed2 = fixed; fixed2[2] = TRUE
         init[!fixed] <- opt.result$par
-        opt.result = optim(log(init[1]),fun,lower=lb[!fixed2],upper=ub[!fixed2],method="Brent",control=list(maxit=maxit,trace=trace,reltol=1e-4))
+        fixed2 = fixed
+        init.list = cbind(seq(0.5,log(init[1]),length.out=ncores),init[2])
+        init.list = split(init.list,row(init.list))
+        opt.result2 = mapply(optim,par=init.list,MoreArgs = list(fn=fun,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-4)),SIMPLIFY=FALSE)
+        opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$par[1],error=function(e){return(Inf)})}))
+        opt.result = opt.result2[[which.min(opt.values)]]
+        init[!fixed2] = opt.result$par
     }
     t2 = proc.time() - t1
     init[!fixed2] = opt.result$par
