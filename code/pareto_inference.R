@@ -143,14 +143,15 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
                 1))
         }
     }
+    browser()
+    fixed2 = fixed
     fun <- function(par){
         par2 = init
-        par2[!fixed] = par
-        if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
+        par2[!fixed2] = par
+        if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
         val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  ncores, ...)
         return(val)
     }
-    fixed2 = fixed
     if(method=="L-BFGS-B"){
         opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,factr=1e4))
     }else{
@@ -171,9 +172,9 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         fixed2[idx.para] = TRUE;
         init.list = split(a,row(a)) 
         if(method=="L-BFGS-B"){
-            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=fun,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE,factr=1e4),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+            opt.result2 = mapply(optim,par=init.list,MoreArgs = list(fn=fun,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE,factr=1e4),hessian=FALSE),SIMPLIFY=FALSE)
         }else{
-            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=fun,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-4)),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+            opt.result2 = mapply(optim,par=init.list,MoreArgs = list(fn=fun,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-4)),SIMPLIFY=FALSE)
         }
         opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$value,error=function(e){return(Inf)})}))
         opt.result = opt.result2[[which.min(opt.values)]]
