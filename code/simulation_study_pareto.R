@@ -90,6 +90,8 @@ model.fit <- function(i){
     fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000, ncores = NULL)
     
     fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000, ncores = NULL)
+
+    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000, ncores = NULL)
     
     t0 <- proc.time() - t0
     fit.result1$time <- t0
