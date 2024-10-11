@@ -87,7 +87,7 @@ model.fit <- function(i){
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
     
-    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,F,F),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000, ncores = NULL,step2=TRUE,ncores=3)
+    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,F,F),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000,step2=TRUE,ncores=3)
     
     data = samples.skew.normal[[i]]
     data.sum = apply(data,1,sum)
