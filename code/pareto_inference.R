@@ -152,9 +152,9 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     }
     fixed2 = fixed
     if(method=="L-BFGS-B"){
-        opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncore=ncores)
+        opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncore=ncores)
     }else{
-        opt.result = optim(init[!fixed],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
+        opt.result = optim(init[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
     }
     if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
         n.alpha = sum(!fixed[-idx.para])
@@ -171,25 +171,25 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         fixed2[idx.para] = TRUE;
         init.list = split(a,row(a)) 
         if(method=="L-BFGS-B"){
-            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE,factr=1e4),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=fun,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE,factr=1e4),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
         }else{
-            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-4)),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=fun,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-4)),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
         }
         opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$value,error=function(e){return(Inf)})}))
         opt.result = opt.result2[[which.min(opt.values)]]
         init[!fixed2] = opt.result$par
         fixed2 = fixed
         if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncores=ncores)
+            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],fun,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncores=ncores)
         }else{
-            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncores=ncores)
+            opt.result = optim(init[!fixed2],fun,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncores=ncores)
         }
         #opt.result$others = opt.result2
     }
     if(model == "truncT" & !is.null(ncores) & step2){
         fixed2 = fixed; fixed2[2] = TRUE
         init[!fixed] <- opt.result$par
-        opt.result = optim(log(init[1]),object.func,lower=lb[!fixed2],upper=ub[!fixed2],method="Brent",control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
+        opt.result = optim(log(init[1]),fun,lower=lb[!fixed2],upper=ub[!fixed2],method="Brent",control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
     }
     t2 = proc.time() - t1
     init[!fixed2] = opt.result$par
