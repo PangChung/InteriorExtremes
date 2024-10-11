@@ -184,7 +184,7 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         }else{
             opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),hessian=hessian)
         }
-        opt.result$others = opt.result2
+        #opt.result$others = opt.result2
     }
     if(model == "truncT" & !is.null(ncores) & step2){
         fixed2 = fixed; fixed2[2] = TRUE
@@ -194,8 +194,8 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     t2 = proc.time() - t1
     init[!fixed2] = opt.result$par
     opt.result$par = init
-    result$time = t2
-    return(result)
+    opt.result$time = t2
+    return(opt.result)
 }
 
 
