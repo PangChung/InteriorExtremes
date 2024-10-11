@@ -95,9 +95,6 @@ model.fit <- function(i){
     data = data[data.sum>u,]/u
 
     fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para,pareto=TRUE,step2=TRUE,ncores=3)
-
-    t0 <- proc.time() - t0
-    fit.result2$time <- t0
     
     return(list(fit.result1,fit.result2))
 }
