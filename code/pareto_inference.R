@@ -129,7 +129,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     return(sum(unlist(scores))/length(obs))
 }
 
-fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, ncores = NULL,lb,ub,trace=FALSE, ...){
+fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, ncores = NULL,lb,ub,trace=FALSE,step2=TRUE, ...){
     t1 = proc.time()
     if (is.matrix(obs)) {
         obs <- split(obs, row(obs))
@@ -150,33 +150,44 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  ncores, ...)
         return(val)
     }
-    init2 = init[!fixed]
-    if(method=="Nelder-Mead"){ 
-        result = optim(init2, fun, control = list(trace = trace, maxit = maxit,reltol=1e-4), method = method)
-    }else{ 
-        result = optim(init2, fun, control = list(trace = trace, maxit = maxit,factr=1e4), method = method, hessian = FALSE, lower=lb[!fixed], upper=ub[!fixed])
+    fixed2 = fixed
+    if(method=="L-BFGS-B"){
+        opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncore=ncores)
+    }else{
+        opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
     }
-    # val.old = fun(init2)
-    # n = sum(!fixed);m=length(init)  
-    # fixed.old = fixed
-    # fixed.idx = which(!fixed.old) 
-    # ub[!is.finite(ub)] <- 1e+5
-    # for(i in 1:maxit){
-    #     for(j in 1:n){
-    #         ind =  (j:j+2) %% n + 1
-    #         fixed <- rep(T,m);fixed[fixed.idx[ind]] = F 
-    #         result <- optim(init[fixed.idx[ind]], fun, control = list(trace = TRUE, maxit = 100), method = "L-BFGS-B", hessian = FALSE,lower=lb[fixed.idx][ind],upper=ub[fixed.idx][ind])
-    #         init[fixed.idx[ind]] <- result$par
-    #         print(paste0(i,": ",result$value,": ",result$par))
-    #     }
-    #     if(abs(result$value - val.old)<0.001){
-    #         break
-    #     }else{
-    #         val.old = result$value
-    #     }
-    # }    
+    if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
+        n.alpha = sum(!fixed[-idx.para])
+        if(n.alpha==2){
+            a = seq(0,2*pi,length.out=ncores)
+            a = cbind(cos(a),sin(a))
+        } else {
+            a = matrix(rnorm(ncores*n.alpha),ncol=n.alpha)
+            a = sweep(a,1,sqrt(rowSums(a^2)),FUN="/")
+            a[,1] = pmax(a[,1],1)
+        }
+        init[!fixed2] = opt.result$par
+        fixed2[-idx.para] = fixed[-idx.para]
+        fixed2[idx.para] = TRUE;
+        init.list = split(a,row(a)) 
+        if(method=="L-BFGS-B"){
+            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE,factr=1e4),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+        }else{
+            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-4),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+        }
+        opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$value,error=function(e){return(Inf)})}))
+        opt.result = opt.result2[[which.min(opt.values)]]
+        init[!fixed2] = opt.result$par
+        fixed2 = fixed;fixed2[-idx.para]=TRUE
+        if(method=="L-BFGS-B"){
+            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),hessian=hessian)
+        }else{
+            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),hessian=hessian)
+        }
+        opt.result$others = opt.result2
+    }
     t2 = proc.time() - t1
-    init[!fixed] = result$par
+    init[!fixed] = opt.result$par
     result$par = init
     result$time = t2
     return(result)
