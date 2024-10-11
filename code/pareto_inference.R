@@ -156,7 +156,6 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     }else{
         opt.result = optim(init[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4))
     }
-    browser()
     if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
         n.alpha = sum(!fixed[-idx.para])
         if(n.alpha==2){
