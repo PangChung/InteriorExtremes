@@ -152,9 +152,9 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
     }
     fixed2 = fixed
     if(method=="L-BFGS-B"){
-        opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncore=ncores)
+        opt.result = optim(init[!fixed],lower=lb[!fixed],upper=ub[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,factr=1e4))
     }else{
-        opt.result = optim(init[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
+        opt.result = optim(init[!fixed],fun,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4))
     }
     if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
         n.alpha = sum(!fixed[-idx.para])
@@ -180,16 +180,16 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         init[!fixed2] = opt.result$par
         fixed2 = fixed
         if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],fun,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncores=ncores)
+            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],fun,method=method,control=list(maxit=maxit,trace=trace,factr=1e4))
         }else{
-            opt.result = optim(init[!fixed2],fun,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncores=ncores)
+            opt.result = optim(init[!fixed2],fun,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4))
         }
         #opt.result$others = opt.result2
     }
     if(model == "truncT" & !is.null(ncores) & step2){
         fixed2 = fixed; fixed2[2] = TRUE
         init[!fixed] <- opt.result$par
-        opt.result = optim(log(init[1]),fun,lower=lb[!fixed2],upper=ub[!fixed2],method="Brent",control=list(maxit=maxit,trace=trace,reltol=1e-4),ncore=ncores)
+        opt.result = optim(log(init[1]),fun,lower=lb[!fixed2],upper=ub[!fixed2],method="Brent",control=list(maxit=maxit,trace=trace,reltol=1e-4))
     }
     t2 = proc.time() - t1
     init[!fixed2] = opt.result$par
