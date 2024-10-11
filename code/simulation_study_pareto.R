@@ -94,7 +94,7 @@ model.fit <- function(i){
     u = max(quantile(data.sum,0.95),nrow(coord)^(1-1/xi))
     data = data[data.sum>u,]/u
 
-    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para,pareto=TRUE,step2=TRUE,ncores=3)
+    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,step2=FALSE,ncores=3)
     
     return(list(fit.result1,fit.result2))
 }

@@ -143,7 +143,6 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
                 1))
         }
     }
-    browser()
     fixed2 = fixed
     fun <- function(par){
         par2 = init
