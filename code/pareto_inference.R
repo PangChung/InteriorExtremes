@@ -173,16 +173,16 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         if(method=="L-BFGS-B"){
             opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE,factr=1e4),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
         }else{
-            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-4),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+            opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-4)),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
         }
         opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$value,error=function(e){return(Inf)})}))
         opt.result = opt.result2[[which.min(opt.values)]]
         init[!fixed2] = opt.result$par
-        fixed2 = fixed;fixed2[-idx.para]=TRUE
+        fixed2 = fixed
         if(method=="L-BFGS-B"){
-            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),hessian=hessian)
+            opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e4),ncores=ncores)
         }else{
-            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),hessian=hessian)
+            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-4),ncores=ncores)
         }
         #opt.result$others = opt.result2
     }

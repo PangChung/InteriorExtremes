@@ -86,25 +86,15 @@ model.fit <- function(i){
     data.sum = apply(data,1,rFun)
     u = quantile(data.sum,0.95)
     data = data[data.sum>u,]/u
-    t0 <-  proc.time()
-    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,T,T),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000, ncores = NULL)
     
-    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000, ncores = NULL)
-
-    fit.result1 <- fit.scoreMatching(init=fit.result1$par, obs=data, loc=coord, fixed=c(F,F,T,F,F),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000, ncores = NULL)
+    fit.result1 <- fit.scoreMatching(init=init, obs=data, loc=coord, fixed=c(F,F,T,F,F),lb=lb,ub=ub, model="logskew", vario.func=vario.func, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method="L-BFGS-B", maxit=1000, ncores = NULL,step2=TRUE,ncores=3)
     
-    t0 <- proc.time() - t0
-    fit.result1$time <- t0
-
     data = samples.skew.normal[[i]]
     data.sum = apply(data,1,sum)
     u = max(quantile(data.sum,0.95),nrow(coord)^(1-1/xi))
     data = data[data.sum>u,]/u
 
-    t0 <-  proc.time()
-    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,T,T),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para,pareto=TRUE)
-    
-    fit.result2 <- fit.model(data=data,loc=coord,init=fit.result2$par,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para,pareto=TRUE)
+    fit.result2 <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,ncores=NULL,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,step2=FALSE,idx.para=idx.para,pareto=TRUE,step2=TRUE,ncores=3)
 
     t0 <- proc.time() - t0
     fit.result2$time <- t0
