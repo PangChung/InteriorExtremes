@@ -161,7 +161,7 @@ source("code/exponent_functions.R")
 library(ggplot2)
 library(gridExtra)
 library(tidyr)
-idx.file = "_4"
+idx.file = "_5"
 path = paste0("data/simulation_pareto",idx.file,"/")
 files.pareto.logskew.1 <- list.files(path=path,pattern="simulation_pareto_logskew_\\d+_1.RData",full.names=TRUE,recursive=FALSE)
 files.pareto.logskew.3 <- list.files(path=path,pattern="simulation_pareto_logskew_\\d+_3.RData",full.names=TRUE,recursive=FALSE)
@@ -259,7 +259,7 @@ data_true <- rbind(data_true,data_true)
 data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 p.list.truncT <- list()
-thres.lambda = 20
+thres.lambda = 10
 for(i in 1:2){
     data = subset(fit.pareto.truncT.1, method==i & `hat(lambda)` < thres.lambda)
     print(dim(data));print(dim(subset(fit.pareto.truncT.1,method==i & !is.na(`hat(lambda)`))))
