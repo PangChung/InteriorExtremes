@@ -17,18 +17,23 @@ library(evd)
 library(partitions)
 library(Rfast)
 library(matrixStats)
+library(sf)
+library(ggplot2)
 set.seed(12342)
 ## load the data##
-load("data/data_application.RData")
-D = ncol(maxima.frechet)
-ncores = floor(detectCores()/2)
-idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
 
-basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distmat)*2);y=y-mean(y);y/sqrt(sum(y^2))})
+data.basin <- read.csv2("data/Florida/BasinRain15min.csv", header = TRUE, sep = ",")
+grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
+intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
 
-init = c(100,1,rep(0,ncol(basis)))
-n.alpha = ncol(basis)
-idx.para = 1:2
+fill_factor <- as.factor(rep(1:8,length.out=172))
 
-thres = 10
+ggplot() + geom_sf(data=grid.sf,fill="red",color="black") + coord_sf()
+
+data <- read.csv2("data/Florida/PixelRain15min_1995.csv", header = TRUE, sep = ",")
+IDs <- as.numeric(stringi::stri_extract_first(names(data), regex = "[0-9]+"))
+
+fill_grid = grid.sf$PIXEL %in% IDs
+
+ggplot() + geom_sf(data=intb.sf, aes(fill=fill_factor)) + scale_fill_brewer(palette = "RdBu",name="Basins")  + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid)),alpha=0.1) + scale_color_brewer(palette = "RdBu",name="Grid")
 
