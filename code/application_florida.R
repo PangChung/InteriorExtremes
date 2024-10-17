@@ -17,42 +17,67 @@ library(evd)
 library(partitions)
 library(Rfast)
 library(matrixStats)
+library(Matrix)
 library(sf)
 library(ggplot2)
-library(data.table)
 set.seed(12342)
 ## load the data##
 
-data.basin <- read.csv2("data/Florida/BasinRain15min.csv", header = TRUE, sep = ",")
 grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
 intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
 
 fill_basin <- as.factor(rep(1:8,length.out=172))
+all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))
+all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
+fill_grid = grid.sf$PIXEL %in% all_IDs_num
 
-data <- read.csv2("data/Florida/PixelRain15min_1995.csv", header = TRUE, sep = ",")
-IDs <- as.numeric(stringi::stri_extract_first(names(data), regex = "[0-9]+"))
-
-fill_grid = grid.sf$PIXEL %in% IDs
-
-ggplot() + geom_sf(data=intb.sf, aes(fill=fill_basin)) + scale_fill_brewer(palette = "RdBu",name="Basins")  + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid)),alpha=0.1) + scale_color_brewer(palette = "Set1",name="Grid") + xlim(c(317734,433386)) + ylim(3047561,3191794)
+p <- ggplot() + geom_sf(data=intb.sf, aes(fill=fill_basin)) + scale_fill_brewer(palette = "RdBu",name="Basins")  + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid)),alpha=0.1) + scale_color_brewer(palette = "Set1",name="Grid") + xlim(c(317734,433386)) + ylim(3047561,3191794)
 
 ## extract the data for the year 1995--2019 ##
 format_string <- "%d-%b-%Y %H:%M:%S"
-all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))
 column_classes <- rep("NULL", length(all_IDs));column_classes[1] <- "character"
 for(y in 1995:2019){
-    for(i in 2:length(all_IDs)){
-        column_classes[i] <- "numeric"
-        pipe_command <- paste0("cut -f1 -d, ","data/Florida/PixelRain15min_",y,".csv")
-        pipe_command2 <- paste0("cut -f",i," -d, ","data/Florida/PixelRain15min_",y,".csv")
-        date <- scan(pipe(pipe_command),what="character")[-1]
-        date <- paste(date[1:length(date) %% 2 == 1], date[1:length(date) %% 2 == 0], sep=" ")
-        date <- as.POSIXct(strptime(date, format_string),tz="UTC")
-        ind.date <- date >= as.POSIXct(paste0(y,"-06-20 00:00:00"),tz="UTC") & date <= as.POSIXct(paste0(y,"-09-22 23:45:00"),tz="UTC")
-        data <- scan(pipe(pipe_command2),what="numeric")[-1][ind.date]
-        column_classes[i] <- "NULL"
+    column_classes[i] <- "numeric"
+    pipe_command <- paste0("cut -f1 -d, ","data/Florida/PixelRain15min_",y,".csv")
+    date.i <- scan(pipe(pipe_command),what="character")[-1]
+    date.i <- paste(date.i[1:length(date.i) %% 2 == 1], date.i[1:length(date.i) %% 2 == 0], sep=" ")
+    date.i <- as.POSIXct(strptime(date.i, format_string),tz="UTC")
+    ind.date <- date.i >= as.POSIXct(paste0(y,"-06-20 00:00:00"),tz="UTC") & date.i <= as.POSIXct(paste0(y,"-09-22 23:45:00"),tz="UTC")
+    rm(date.i,data)
+    data = read.csv(paste0("data/Florida/PixelRain15min_",y,".csv"), header = TRUE,sep=",")[ind.date,]
+    if(y==1995){
+        write.table(data, file="data/Florida/PixelRain15min_1995_2019.csv",sep=",",row.names=FALSE,col.names=TRUE)
+    }else{
+        write.table(data, file="data/Florida/PixelRain15min_1995_2019.csv",sep=",",row.names=FALSE,col.names=FALSE,append=TRUE)
     }
+    print(y)
 }
 
+# date <- scan(pipe("cut -f1 -d, data/Florida/PixelRain15min_1995_2019.csv"),what="character")[-1]
+# data <- scan(pipe("cut -f2 -d, data/Florida/PixelRain15min_1995_2019.csv"),what="numeric")[-1]
+# data <- as.numeric(data)
 
+tmp <- read.csv("data/Florida/PixelRain15min_1995_2019.csv", header = TRUE,sep=",")
+save(tmp,file="data/application_florida.RData")
+
+load("data/application_florida.RData")
+tmp.mat <- Matrix(as.matrix(tmp[,-1]),sparse=TRUE)
+rm(tmp);gc()
+
+num.nonzeros=rep(NA,length(fill_grid))
+#num.nonzeros[fill_grid] <- apply(tmp.mat,2,function(x) max(x))
+num.nonzeros_row <- apply(tmp.mat,1,function(x) sum(x))
+num.nonzeros[fill_grid] <- tmp.mat[which.max(num.nonzeros_row),]
+
+p <- ggplot() + geom_sf(data=intb.sf,color="black") + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid),fill=num.nonzeros),alpha=0.8) + scale_color_brewer(palette = "Set1",name="Grid") +
+scale_fill_distiller(type="seq",name="Intensity",na.value="grey50") + xlim(c(317734,433386)) + ylim(3047561,3191794) 
+p
+
+func <- function(i){
+    x = unname(tmp.mat[i,])
+    ind.x = which(x>0)
+    return(list(ind.x,x[ind.x]))
+}
+
+system.time({data = lapply(1:10,func)})
 
