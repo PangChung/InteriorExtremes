@@ -61,23 +61,20 @@ tmp <- read.csv("data/Florida/PixelRain15min_1995_2019.csv", header = TRUE,sep="
 save(tmp,file="data/application_florida.RData")
 
 load("data/application_florida.RData")
-tmp.mat <- Matrix(as.matrix(tmp[,-1]),sparse=TRUE)
-rm(tmp);gc()
-
 num.nonzeros=rep(NA,length(fill_grid))
-#num.nonzeros[fill_grid] <- apply(tmp.mat,2,function(x) max(x))
-num.nonzeros_row <- apply(tmp.mat,1,function(x) sum(x))
-num.nonzeros[fill_grid] <- tmp.mat[which.max(num.nonzeros_row),]
+num.nonzeros[fill_grid] <- apply(tmp[,-1],2,function(x) sum(x>0))
 
 p <- ggplot() + geom_sf(data=intb.sf,color="black") + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid),fill=num.nonzeros),alpha=0.8) + scale_color_brewer(palette = "Set1",name="Grid") +
 scale_fill_distiller(type="seq",name="Intensity",na.value="grey50") + xlim(c(317734,433386)) + ylim(3047561,3191794) 
 p
 
 func <- function(i){
-    x = unname(tmp.mat[i,])
+    x = as.numeric(unname(tmp[i,-1]))
     ind.x = which(x>0)
     return(list(ind.x,x[ind.x]))
 }
 
-system.time({data = lapply(1:10,func)})
+num.nonzeros_row <- apply(tmp[,-1],1,function(x) any(x>0))
+system.time({data <- mclapply(which(num.nonzeros_row),func,mc.cores=4)})
+save(data,num.nonzeros_row,file="data/application_florida_list.RData")
 
