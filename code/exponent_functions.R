@@ -722,4 +722,29 @@ vario.func <- function(loc,par){ ##return a covariance matrix
     return(cov.mat + .Machine$double.eps * diag(n))
 }
 
-
+vario.func2 <- function(loc,par){
+    lambda = par[1];alpha = par[2];theta = par[3];a = par[4]
+    if(!is.matrix(loc)){loc = matrix(loc,nrow=1)}
+    Omega = matrix(c(cos(theta),a*sin(theta),-sin(theta),a*cos(theta)),nrow=2,ncol=2)
+    loc = loc %*% Omega
+    if(n==1){
+        loc.new <- loc %*%   
+        val=(sqrt(sum(loc[1,]^2))/lambda)^alpha
+        return(val)
+    }
+    vario <- function(coord){
+        if(!is.matrix(coord)) {val <- (sqrt(sum(coord^2))/lambda)^alpha}
+        else {val <- (sqrt(sum((coord[1,]-coord[2,])^2))/lambda)^alpha}
+        return(val)
+    }
+    all.pairs = combn(1:n,2)
+    all.pairs.list = split(all.pairs,col(all.pairs))
+    gamma.vec = unlist(lapply(all.pairs.list,function(idx) vario(loc[idx,])))
+    gamma.origin = sapply(1:n,function(i) vario(loc[i,]))
+    cov.mat = diag(2*gamma.origin)
+    cov.mat[t(all.pairs)] <- sapply(1:length(gamma.vec),function(i){
+        idx = all.pairs[,i]
+        return(gamma.origin[idx[1]] + gamma.origin[idx[2]] - gamma.vec[i])})
+    cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
+    return(cov.mat + .Machine$double.eps * diag(n))
+}

@@ -46,10 +46,16 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         delta = c(SigmaS %*% alpha)/sqrt(c(1+alpha %*% SigmaS %*% alpha))
         a = log(2) + pnorm(delta,log.p=TRUE)
         computeScores= function(i){
-            obs.i = .subset2(obs, i)
-            ind = !is.na(obs.i)
-            obs.i = obs.i[ind]
-            log.obs.i = log(obs.i) + a
+            if(index.mode){
+                obs.i = .subset2(obs,i)
+                ind = obs.i[[1]]
+                obs.i = obs.i[[2]]
+            }else {
+                obs.i = .subset2(obs, i)
+                ind = !is.na(obs.i)
+                obs.i = obs.i[ind]
+            }
+            log.obs.i = log(obs.i) + a[ind]
             sigmaInv <- chol2inv(chol(SigmaS[ind, ind]))
             sigma <- diag(SigmaS[ind, ind])
             d = nrow(sigmaInv)
