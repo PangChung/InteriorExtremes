@@ -577,7 +577,7 @@ alpha.func <- function(par,b.mat=basis){
 }
 
 ## inference for simulated data ##  
-fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
+fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
                     ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2,pareto=FALSE){
     t0 <- proc.time()
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
@@ -593,32 +593,44 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
             par.1 = par2[idx.para];par.2 = par2[-idx.para]
             sigma = FUN(loc,par.1)
             alpha = alpha.func(par=par.2,b.mat= basis)
-            n = ncol(x)
-            if(n==1) return(1/(x^2))
-            omega2 = diag(sigma)
-            chol.sigma = chol(sigma)
-            inv.sigma = chol2inv(chol.sigma)
-            logdet.sigma = sum(log(diag(chol.sigma)))*2
-            if(alpha.para){
-                alpha = par[[2]]
-                delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
+            if(!partial){
+                val = intensity_logskew_constraint(data,par=list(sigma,alpha),log=TRUE) 
             }else{
-                delta = par[[2]]
-                alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
+                delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
+                omega2 = diag(sigma)
+                a = log(2) + pnorm(delta,log.p=TRUE)
+                computeScores <- function(i){
+                    ind = data[[i]][[2]]
+                    x = data[[i]][[1]]
+                    n = length(x)
+                    if(n==1) return(1/(x^2))
+                    sigma.i = sigma[ind,ind]
+                    chol.sigma = chol(sigma.i)
+                    inv.sigma = chol2inv(chol.sigma)
+                    logdet.sigma = sum(log(diag(chol.sigma)))*2
+                    delta.i = delta[ind]
+                    omega2.i = omega2[ind]
+                    alpha.i = c(1 - delta.i %*% inv.sigma %*% delta.i)^(-1/2) * c(inv.sigma %*% delta.i)
+                    a.i = a[ind]
+                    q = rowSums(inv.sigma)
+                    sum.q = sum(q);sum.alpha = sum(alpha)
+                    q.mat = matrix(q,n,n,byrow=TRUE)
+                    x.log = log(x)
+                    x.circ = x.log + a.i
+                    beta = (1+sum.alpha^2/sum.q)^(-0.5)
+                    tau.tilde =  beta * sum((alpha.i - sum.alpha*q/sum.q) * (x.circ + omega2.i/2))+ beta*sum.alpha/sum.q
+                    A = inv.sigma - q %*% t(q)/sum.q
+                    val = -(n-3)/2 * log(2) - (n-1)/2*log(pi)-1/2*logdet.sigma - 1/2*log(sum.q) - 1/2 * (sum(q*omega2.i)-1)/sum.q - 1/8*c(omega2.i %*% A %*% omega2.i) 
+                    val = val - x.log - 1/2 * (c(x.circ %*% A %*% x.circ) + sum(x.circ * (2*q/sum.q + c(A %*% omega2.i)))) + pnorm(tau.tilde,log.p=TRUE) 
+                    return(val)
+                }
+                if(!is.null(ncores)){
+                    val = unlist(parallel::mclapply(1:length(data),computeScores,mc.cores = ncores))
+                }
+                else{
+                    val = unlist(lapply(1:length(data),computeScores))
+                }
             }
-            a = log(2) + pnorm(delta,log.p=TRUE)
-            q = rowSums(inv.sigma)
-            sum.q = sum(q);sum.alpha = sum(alpha)
-            q.mat = matrix(q,n,n,byrow=TRUE)
-            x.log = log(x)
-            x.circ = x.log + matrix(a,nrow=nrow(x),ncol=n,byrow=TRUE)
-            beta = (1+sum.alpha^2/sum.q)^(-0.5)
-            tau.tilde = apply(x.circ,1,function(x.i)  beta * sum((alpha - sum.alpha*q/sum.q) * (x.i + omega2/2))+ beta*sum.alpha/sum.q)
-            A = inv.sigma - q %*% t(q)/sum.q
-            val = -(n-3)/2 * log(2) - (n-1)/2*log(pi)-1/2*logdet.sigma - 1/2*log(sum.q) - 1/2 * (sum(q*omega2)-1)/sum.q - 1/8*c(omega2 %*% A %*% omega2) 
-            val = val - rowSums(x.log) - 1/2 * apply(x.circ,1,function(x.i) c(x.i %*% A %*% x.i) + sum(x.i * (2*q/sum.q + c(A %*% omega2)))) + pnorm(tau.tilde,log.p=TRUE)
-
-            val = intensity_logskew_constraint(data,par=para.temp,log=TRUE) 
             return(-mean(val)) 
         }
     }

@@ -61,7 +61,8 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
             d = nrow(sigmaInv)
             alpha.i = c(1 - delta[ind] %*% sigmaInv %*% delta[ind])^(-1/2) * c(sigmaInv %*% delta[ind])
             q = rowSums(sigmaInv)
-            sum.q = sum(q);sum.alpha = sum(alpha.i)
+            sum.q = sum(q)
+            sum.alpha = sum(alpha.i)
             q.mat = matrix(q,d,d,byrow=TRUE)
 
             beta = (1+sum.alpha^2/sum.q)^(-0.5)
