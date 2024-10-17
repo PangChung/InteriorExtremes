@@ -194,8 +194,6 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
 # this function computes the intensity function 
 # for the log skew-normal based max-stable processes
 intensity_logskew <- function(x,par,alpha.para=TRUE,log=TRUE){
-    oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
-    set.seed(747380)
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
@@ -222,7 +220,6 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,log=TRUE){
     A = inv.sigma - q %*% t(q)/sum.q
     val = -(n-3)/2 * log(2) - (n-1)/2*log(pi)-1/2*logdet.sigma - 1/2*log(sum.q) - 1/2 * (sum(q*omega2)-1)/sum.q - 1/8*c(omega2 %*% A %*% omega2) 
     val = val - rowSums(x.log) - 1/2 * apply(x.circ,1,function(x.i) c(x.i %*% A %*% x.i) + sum(x.i * (2*q/sum.q + c(A %*% omega2)))) + pnorm(tau.tilde,log.p=TRUE)
-    assign(".Random.seed", oldSeed, envir=globalenv())
     if(log)
         return(val)
     else
@@ -583,15 +580,6 @@ alpha.func <- function(par,b.mat=basis){
 fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
                     ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2,pareto=FALSE){
     t0 <- proc.time()
-    n = ncol(data)
-    data.sum = apply(data,1,sum)
-    idx.thres = data.sum > thres*n #& data.sum < 1000*n 
-    print(paste("#sampels: ",sum(idx.thres)))
-    if(!pareto){
-        data = sweep(data[idx.thres,],1,data.sum[idx.thres],FUN="/")
-    }else{
-        data = data[idx.thres,]
-    }
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
     if(is.null(lb)){lb=rep(-Inf,length(init))}
     if(is.null(ub)){ub=rep(Inf,length(init))}
@@ -600,13 +588,36 @@ fit.model <- function(data,loc,init,fixed=NULL,thres = 50,model="truncT",maxit=1
     ## 5 parameters: 2 for the covariance function; 3 for the slant parameter
         # fixed2[-idx.para] = TRUE
         object.func <- function(par,opt=TRUE,ncore=NULL){
-            #if(trace) print(par)
+            if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             par2 = init; par2[!fixed2] = par
             par.1 = par2[idx.para];par.2 = par2[-idx.para]
-            cov.mat = FUN(loc,par.1)
+            sigma = FUN(loc,par.1)
             alpha = alpha.func(par=par.2,b.mat= basis)
-            if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
-            para.temp = list(sigma=cov.mat,alpha=alpha)
+            n = ncol(x)
+            if(n==1) return(1/(x^2))
+            omega2 = diag(sigma)
+            chol.sigma = chol(sigma)
+            inv.sigma = chol2inv(chol.sigma)
+            logdet.sigma = sum(log(diag(chol.sigma)))*2
+            if(alpha.para){
+                alpha = par[[2]]
+                delta = c(sigma %*% alpha)/sqrt(c(1+alpha %*% sigma %*% alpha))
+            }else{
+                delta = par[[2]]
+                alpha = c(1 - delta %*% inv.sigma %*% delta)^(-1/2) * c(inv.sigma %*% delta)
+            }
+            a = log(2) + pnorm(delta,log.p=TRUE)
+            q = rowSums(inv.sigma)
+            sum.q = sum(q);sum.alpha = sum(alpha)
+            q.mat = matrix(q,n,n,byrow=TRUE)
+            x.log = log(x)
+            x.circ = x.log + matrix(a,nrow=nrow(x),ncol=n,byrow=TRUE)
+            beta = (1+sum.alpha^2/sum.q)^(-0.5)
+            tau.tilde = apply(x.circ,1,function(x.i)  beta * sum((alpha - sum.alpha*q/sum.q) * (x.i + omega2/2))+ beta*sum.alpha/sum.q)
+            A = inv.sigma - q %*% t(q)/sum.q
+            val = -(n-3)/2 * log(2) - (n-1)/2*log(pi)-1/2*logdet.sigma - 1/2*log(sum.q) - 1/2 * (sum(q*omega2)-1)/sum.q - 1/8*c(omega2 %*% A %*% omega2) 
+            val = val - rowSums(x.log) - 1/2 * apply(x.circ,1,function(x.i) c(x.i %*% A %*% x.i) + sum(x.i * (2*q/sum.q + c(A %*% omega2)))) + pnorm(tau.tilde,log.p=TRUE)
+
             val = intensity_logskew_constraint(data,par=para.temp,log=TRUE) 
             return(-mean(val)) 
         }
