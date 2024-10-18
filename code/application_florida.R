@@ -95,13 +95,14 @@ save(data, num.nonzeros_row, nonzeros_row, file="data/application_florida_list.R
 
 data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
 
-data.sum <- unlist(mclapply(data.pareto,function(x){sum(x[[2]])},mc.cores=4))
+data.sum <- unlist(mclapply(data.pareto,function(x){mean(x[[2]])},mc.cores=4))
 
 data.max <- unlist(mclapply(data.pareto,function(x){max(x[[2]])},mc.cores=4))
 
-thres <- quantile(data.sum, seq(0.8,0.9999,length.out=30))
+thres <- quantile(data.sum, seq(0.999,0.9999,length.out=30))
 tstab.gpd(data.sum,thresh=thres,plot=TRUE)
 
-thres <- quantile(data.max, seq(0.8,0.9999,length.out=30))
+thres <- quantile(data.max, seq(0.999,0.9999,length.out=30))
 tstab.gpd(data.max,thresh=thres,plot=TRUE)
 
+data.fit <- data.pareto[[]]
