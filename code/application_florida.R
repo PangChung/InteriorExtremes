@@ -64,8 +64,8 @@ load("data/application_florida.RData")
 num.nonzeros=rep(NA,length(fill_grid))
 num.nonzeros[fill_grid] <- apply(tmp[,-1],2,function(x) sum(x>0))
 
-p <- ggplot() + geom_sf(data=intb.sf,color="black") + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid),fill=num.nonzeros),alpha=0.8) + scale_color_brewer(palette = "Set1",name="Grid") +
-scale_fill_distiller(type="seq",name="Intensity",na.value="grey50") + xlim(c(317734,433386)) + ylim(3047561,3191794) 
+p <- ggplot() + geom_sf(data=intb.sf,color="black") + geom_sf(data=grid.sf, color="grey50",aes(fill=num.nonzeros),alpha=0.75) +
+scale_fill_distiller(type="seq",name="Intensity",na.value="grey50",trans="reverse") + xlim(c(317734,433386)) + ylim(3047561,3191794) 
 p
 
 func <- function(i){
@@ -74,7 +74,9 @@ func <- function(i){
     return(list(ind.x,x[ind.x]))
 }
 
-num.nonzeros_row <- apply(tmp[,-1],1,function(x) any(x>0))
+num.nonzeros_row <- apply( tmp[,-1],1,function(x) any(x>0) )
+
 system.time({data <- mclapply(which(num.nonzeros_row),func,mc.cores=4)})
+
 save(data,num.nonzeros_row,file="data/application_florida_list.RData")
 
