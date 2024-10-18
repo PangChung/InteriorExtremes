@@ -99,9 +99,9 @@ data.sum <- unlist(mclapply(data.pareto,function(x){sum(x[[2]])},mc.cores=4))
 
 data.max <- unlist(mclapply(data.pareto,function(x){max(x[[2]])},mc.cores=4))
 
-thres <- quantile(data.sum, seq(0.8,0.99,length.out=30))
+thres <- quantile(data.sum, seq(0.8,0.9999,length.out=30))
 tstab.gpd(data.sum,thresh=thres,plot=TRUE)
 
-thres <- quantile(data.max, seq(0.8,0.99,length.out=30))
+thres <- quantile(data.max, seq(0.8,0.9999,length.out=30))
 tstab.gpd(data.max,thresh=thres,plot=TRUE)
 
