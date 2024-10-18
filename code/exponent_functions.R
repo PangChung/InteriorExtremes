@@ -578,7 +578,7 @@ alpha.func <- function(par,b.mat=basis){
 
 ## inference for simulated data ##  
 fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL,basis=NULL,alpha.func=NULL,
-                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2,pareto=FALSE){
+                    ncores=NULL,method="L-BFGS-B",lb=NULL,ub=NULL,hessian=FALSE,opt=FALSE,trace=FALSE,step2=TRUE,idx.para=1:2,pareto=FALSE,partial=FALSE){
     t0 <- proc.time()
     if(is.null(fixed)){fixed = rep(FALSE,length(init))}
     if(is.null(lb)){lb=rep(-Inf,length(init))}

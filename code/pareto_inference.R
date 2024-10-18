@@ -12,7 +12,7 @@ dWeightFun <- function(x){
 
 ### score matching inference for the skewed Brown-Resnick and Truncated extremal-t Process ###
 ################################################################################################
-scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.func=NULL, alpha.func=NULL,basis=NULL,idx.para=1:2, dof=2, weightFun = NULL, dWeightFun = NULL, ncores = NULL, ...){
+scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.func=NULL, alpha.func=NULL,basis=NULL,idx.para=1:2, dof=2, weightFun = NULL, dWeightFun = NULL, ncores = NULL,partial=FALSE, ...){
     ellipsis <- list(...)
     oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv())
     if ("weigthFun" %in% names(ellipsis) && is.null(weightFun)) {
@@ -45,18 +45,18 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         alpha = alpha.func(par2[-idx.para],b.mat=basis)
         delta = c(SigmaS %*% alpha)/sqrt(c(1+alpha %*% SigmaS %*% alpha))
         a = log(2) + pnorm(delta,log.p=TRUE)
+        if(!partial){sigmaInv <- chol2inv(chol(SigmaS))}
         computeScores= function(i){
-            if(index.mode){
+            if(partial){
                 obs.i = .subset2(obs,i)
                 ind = obs.i[[1]]
                 obs.i = obs.i[[2]]
+                sigmaInv <- chol2inv(chol(SigmaS[ind, ind]))
             }else {
                 obs.i = .subset2(obs, i)
-                ind = !is.na(obs.i)
-                obs.i = obs.i[ind]
+                ind = 1:length(obs.i)
             }
             log.obs.i = log(obs.i) + a[ind]
-            sigmaInv <- chol2inv(chol(SigmaS[ind, ind]))
             sigma <- diag(SigmaS[ind, ind])
             d = nrow(sigmaInv)
             alpha.i = c(1 - delta[ind] %*% sigmaInv %*% delta[ind])^(-1/2) * c(sigmaInv %*% delta[ind])
@@ -136,7 +136,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     return(sum(unlist(scores))/length(obs))
 }
 
-fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, ncores = NULL,lb,ub,trace=FALSE,step2=TRUE, ...){
+fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew", vario.func=NULL,cov.func=NULL,basis=NULL, idx.para=1:2, alpha.func=NULL, dof=2, weightFun = NULL, dWeightFun = NULL, method="Nelder-Mead", maxit=1000, ncores = NULL,lb,ub,trace=FALSE,step2=TRUE, partial=FALSE, ...){
     t1 = proc.time()
     if (is.matrix(obs)) {
         obs <- split(obs, row(obs))
@@ -155,7 +155,7 @@ fit.scoreMatching <- function(init, obs, loc,fixed=c(F,F,F,F,F), model="logskew"
         par2 = init
         par2[!fixed2] = par
         if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
-        val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  ncores, ...)
+        val = scoreMatching(par2, obs, loc, model, vario.func, cov.func, alpha.func, basis, idx.para, dof, weightFun=weightFun, dWeightFun=dWeightFun,  ncores, partial=partial,...)
         return(val)
     }
     if(method=="L-BFGS-B"){
