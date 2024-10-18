@@ -20,7 +20,8 @@ library(matrixStats)
 library(Matrix)
 library(sf)
 library(ggplot2)
-set.seed(12342)
+library(evd)
+eset.seed(12342)
 ## load the data##
 
 grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
@@ -69,14 +70,38 @@ scale_fill_distiller(type="seq",name="Intensity",na.value="grey50",trans="revers
 p
 
 func <- function(i){
-    x = as.numeric(unname(tmp[i,-1]))
+    x = tmp[,i]
+    ind.x = x>0
+    x[ind.x] = rank(x[ind.x])/(sum(ind.x)+1)
+    return(x)
+}
+
+data.uniform <- matrix(unlist(mclapply(2:ncol(tmp),func,mc.cores=4)),nrow=nrow(tmp),byrow=FALSE)
+rm(tmp);gc()
+
+func <- function(i){
+    x = data.uniform[i,]
     ind.x = which(x>0)
     return(list(ind.x,x[ind.x]))
 }
 
-num.nonzeros_row <- apply( tmp[,-1],1,function(x) any(x>0) )
+nonzeros_row <- apply(data.uniform,1,function(x) any(x>0))
 
-system.time({data <- mclapply(which(num.nonzeros_row),func,mc.cores=4)})
+num.nonzeros_row <- apply(data.uniform,1,function(x){sum(x>0)})
 
-save(data,num.nonzeros_row,file="data/application_florida_list.RData")
+system.time({data <- mclapply(which(nonzeros_row),func,mc.cores=4)})
+
+save(data, num.nonzeros_row, nonzeros_row, file="data/application_florida_list.RData")
+
+data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
+
+data.sum <- unlist(mclapply(data.pareto,function(x){sum(x[[2]])},mc.cores=4))
+
+data.max <- unlist(mclapply(data.pareto,function(x){max(x[[2]])},mc.cores=4))
+
+thres <- quantile(data.sum, seq(0.8,0.99,length.out=30))
+tstab.gpd(data.sum,thresh=thres,plot=TRUE)
+
+thres <- quantile(data.max, seq(0.8,0.99,length.out=30))
+tstab.gpd(data.max,thresh=thres,plot=TRUE)
 
