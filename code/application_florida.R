@@ -28,7 +28,7 @@ grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
 intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
 
 fill_basin <- as.factor(rep(1:8,length.out=172))
-all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))
+all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))[-1]
 all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
 fill_grid = grid.sf$PIXEL %in% all_IDs_num
 
@@ -105,4 +105,21 @@ tstab.gpd(data.sum,thresh=thres,plot=TRUE)
 thres <- quantile(data.max, seq(0.999,0.9999,length.out=30))
 tstab.gpd(data.max,thresh=thres,plot=TRUE)
 
-data.fit <- data.pareto[[]]
+data.fit.sum <- data.pareto[data.sum>quantile(data.sum,0.999)]
+data.fit.max <- data.pareto[data.max>quantile(data.max,0.999)]
+
+coord <- as.data.frame(st_coordinates(grid.sf))
+idx.pixel <- unlist(lapply(all_IDs_num,function(x){which(grid.sf$PIXEL==x)}))
+coord.grid <- matrix(unlist(lapply(idx.pixel, function(i){apply(coord[coord$L2==i,1:2][1:4,],2,mean)})),ncol=2,byrow=TRUE)
+
+ggplot() + geom_point(data=coord,aes(X,Y),color="black") + 
+geom_point(data=subset(coord,L2 %in% idx.pixel),aes(x=X,y=Y),color="red") + geom_point(data=as.data.frame(coord.grid),aes(V1,V2),color="yellow")
+
+
+cov.mat = vario.func2(coord.grid,c(60000,1,1,1))
+a=as.matrix(dist(coord.grid))
+
+# fit.model(data=data.fit.sum)
+
+
+

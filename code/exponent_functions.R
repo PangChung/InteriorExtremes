@@ -750,6 +750,7 @@ vario.func2 <- function(loc,par){
     if(!is.matrix(loc)){loc = matrix(loc,nrow=1)}
     Omega = matrix(c(cos(theta),a*sin(theta),-sin(theta),a*cos(theta)),nrow=2,ncol=2)
     loc = loc %*% Omega
+    n = nrow(loc)
     if(n==1){
         loc.new <- loc %*%   
         val=(sqrt(sum(loc[1,]^2))/lambda)^alpha
