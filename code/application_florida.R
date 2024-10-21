@@ -116,8 +116,8 @@ ggplot() + geom_point(data=coord,aes(X,Y),color="black") +
 geom_point(data=subset(coord,L2 %in% idx.pixel),aes(x=X,y=Y),color="red") + geom_point(data=as.data.frame(coord.grid),aes(V1,V2),color="yellow")
 
 
-cov.mat = vario.func2(coord.grid,c(60000,1,1,1))
-a=as.matrix(dist(coord.grid))
+system.time({cov.mat <- vario.func2(coord.grid,c(60000,1,1,1),ncores=NULL)})
+a = as.matrix(dist(coord.grid))
 
 # fit.model(data=data.fit.sum)
 
