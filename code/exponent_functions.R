@@ -600,8 +600,8 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
                 omega2 = diag(sigma)
                 a = log(2) + pnorm(delta,log.p=TRUE)
                 computeScores <- function(i){
-                    ind = data[[i]][[2]]
-                    x = data[[i]][[1]]
+                    ind = data[[i]][[1]]
+                    x = data[[i]][[2]]
                     n = length(x)
                     if(n==1) return(1/(x^2))
                     sigma.i = sigma[ind,ind]

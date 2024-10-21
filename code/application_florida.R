@@ -119,7 +119,13 @@ geom_point(data=subset(coord,L2 %in% idx.pixel),aes(x=X,y=Y),color="red") + geom
 system.time({cov.mat <- vario.func2(coord.grid,c(60000,1,1,1))})
 a = as.matrix(dist(coord.grid))
 
-# fit.model(data=data.fit.sum)
+init = c(60000,1,1,1,0,0,0)
+fixed = c(F,F,F,F,T,T,T)
+basis = matrix(0,ncol=3,nrow=nrow(coord.grid))
+ub = c(Inf,1.99,pi/2,Inf,Inf,Inf,Inf)
+lb = c(0.01,0.01,-pi/2,0.01,-Inf,-Inf,-Inf)
+idx.para = c(1:4)
+fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=5,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
 
 
 
