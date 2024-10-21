@@ -21,7 +21,7 @@ library(Matrix)
 library(sf)
 library(ggplot2)
 library(evd)
-eset.seed(12342)
+set.seed(12342)
 ## load the data##
 
 grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
@@ -125,6 +125,7 @@ basis = matrix(0,ncol=3,nrow=nrow(coord.grid))
 ub = c(Inf,1.99,pi/2,Inf,Inf,Inf,Inf)
 lb = c(0.01,0.01,-pi/2,0.01,-Inf,-Inf,-Inf)
 idx.para = c(1:4)
+save(data, data.fit.sum, data.fit.max, coord.grid, num.nonzeros_row, nonzeros_row, file="data/application_florida_list.RData")
 fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=5,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
 
 
