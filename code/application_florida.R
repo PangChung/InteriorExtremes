@@ -13,17 +13,17 @@ library(TruncatedNormal)
 library(evd)
 library(partitions)
 library(Rfast)
-# library(matrixStats)
-# library(Matrix)
-# library(sf)
-# library(ggplot2)
 library(evd)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 set.seed(12342)
-## load the data##
 
+## load the data##
+# library(matrixStats)
+# library(Matrix)
+# library(sf)
+# library(ggplot2)
 # grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
 # intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
 
