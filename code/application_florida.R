@@ -106,8 +106,8 @@ set.seed(12342)
 # thres <- quantile(data.max, seq(0.999,0.9999,length.out=30))
 # tstab.gpd(data.max,thresh=thres,plot=TRUE)
 
-# data.fit.sum <- data.pareto[data.sum>quantile(data.sum,0.999)]
-# data.fit.max <- data.pareto[data.max>quantile(data.max,0.999)]
+# data.fit.sum <- data.pareto[data.sum>quantile(data.sum,0.9995)]
+# data.fit.max <- data.pareto[data.max>quantile(data.max,0.9995)]
 
 # coord <- as.data.frame(st_coordinates(grid.sf))
 # idx.pixel <- unlist(lapply(all_IDs_num,function(x){which(grid.sf$PIXEL==x)}))
