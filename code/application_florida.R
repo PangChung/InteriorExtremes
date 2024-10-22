@@ -133,7 +133,7 @@ basis <- lapply(1:nrow(basis.centers),function(i){
 basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 idx.para = c(1:4)
 ncores = detectCores()/2
-init = c(1,1,0,1,rep(0,nrow(basis.centers)))
+init = c(0.1,1,0,1,rep(0,nrow(basis.centers)))
 ub = c(Inf,1.99,pi/4,Inf,rep(Inf,nrow(basis.centers)))
 lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,nrow(basis.centers)))
 
