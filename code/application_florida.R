@@ -125,12 +125,12 @@ load("data/application_florida_list.RData")
 coord.grid = coord.grid/60000
 ### fit the skewd-BR model ###
 basis.centers <- expand.grid(quantile(coord.grid[,1],c(0.2,0.5,0.8)),quantile(coord.grid[,2],c(0.2,0.5,0.8)))
-basis.2 <- lapply(1:nrow(basis.centers),function(i){
+basis <- lapply(1:nrow(basis.centers),function(i){
     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
     y=y-mean(y)
     y/sqrt(sum(y^2))
 })
-basis.2 <- matrix(unlist(basis.2),nrow=nrow(coord.grid),byrow=FALSE)
+basis <- matrix(unlist(basis.2),nrow=nrow(coord.grid),byrow=FALSE)
 idx.para = c(1:4)
 ncores = detectCores()/2
 init = c(1,1,0,1,rep(0,nrow(basis.centers)))
