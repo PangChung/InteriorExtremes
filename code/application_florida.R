@@ -121,14 +121,17 @@ p <- ggplot() + geom_sf(data=intb.sf, aes(fill=fill_basin)) + scale_fill_brewer(
 
 ### fit the model ###
 load("data/application_florida_list.RData")
-init = c(60000,1,1,1,0,0,0)
+coord.grid = coord.grid/60000
+init = c(1,1,0,1,0,0,0)
 fixed = c(F,F,F,F,T,T,T)
 basis = matrix(0,ncol=3,nrow=nrow(coord.grid))
 ub = c(Inf,1.99,pi/4,Inf,Inf,Inf,Inf)
 lb = c(0.01,0.01,-pi/4,0.01,-Inf,-Inf,-Inf)
 idx.para = c(1:4)
 ncores = detectCores()/2
-fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=5,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
+fit.result.sum <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=5,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
+
+fit.result.max <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=5,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
 
 ### fit the skewd-BR model ##
 
