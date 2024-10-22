@@ -1,6 +1,7 @@
 rm(list=ls())
 args <- commandArgs(TRUE)
 computer = "local"
+id = 1
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -122,9 +123,7 @@ set.seed(12342)
 ### fit the model ###
 load("data/application_florida_list.RData")
 coord.grid = coord.grid/60000
-init = c(1,1,0,1,0,0,0)
-fixed = c(F,F,F,F,T,T,T)
-basis.1 = matrix(0,ncol=3,nrow=nrow(coord.grid))
+### fit the skewd-BR model ###
 basis.centers <- expand.grid(quantile(coord.grid[,1],c(0.2,0.5,0.8)),quantile(coord.grid[,2],c(0.2,0.5,0.8)))
 basis.2 <- lapply(1:nrow(basis.centers),function(i){
     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
@@ -132,26 +131,16 @@ basis.2 <- lapply(1:nrow(basis.centers),function(i){
     y/sqrt(sum(y^2))
 })
 basis.2 <- matrix(unlist(basis.2),nrow=nrow(coord.grid),byrow=FALSE)
-
-ub = c(Inf,1.99,pi/4,Inf,Inf,Inf,Inf)
-lb = c(0.01,0.01,-pi/4,0.01,-Inf,-Inf,-Inf)
 idx.para = c(1:4)
 ncores = detectCores()/2
-
-fit.result.sum <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
-
-fit.result.max <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
-
-save(fit.result.sum,fit.result.max,file="data/application_florida_results.RData")
-
-### fit the skewd-BR model ###
 init = c(1,1,0,1,rep(0,nrow(basis.centers)))
-fixed = c(F,F,F,F,rep(F,nrow(basis.centers)))
 ub = c(Inf,1.99,pi/4,Inf,rep(Inf,nrow(basis.centers)))
 lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,nrow(basis.centers)))
 
-fit.result.sum.2 <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
+switch(id,
+1={fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+2={fit.result <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+3={fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+4={fit.result <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)})
 
-fit.result.max.2 <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
-
-save(fit.result.sum,fit.result.max,fit.result.sum.2,fit.result.max.2,basis.centers,file="data/application_florida_results.RData")
+save(fit.result,basis.centers,file=paste0("data/application_florida_results_",id,".RData"))
