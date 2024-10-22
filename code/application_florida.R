@@ -24,15 +24,15 @@ source("code/likelihood_inference.R")
 set.seed(12342)
 ## load the data##
 
-grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
-intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
+# grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
+# intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
 
-fill_basin <- as.factor(rep(1:8,length.out=172))
-all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))[-1]
-all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
-fill_grid = grid.sf$PIXEL %in% all_IDs_num
+# fill_basin <- as.factor(rep(1:8,length.out=172))
+# all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))[-1]
+# all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
+# fill_grid = grid.sf$PIXEL %in% all_IDs_num
 
-p <- ggplot() + geom_sf(data=intb.sf, aes(fill=fill_basin)) + scale_fill_brewer(palette = "RdBu",name="Basins")  + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid)),alpha=0.1) + scale_color_brewer(palette = "Set1",name="Grid") + xlim(c(317734,433386)) + ylim(3047561,3191794)
+# p <- ggplot() + geom_sf(data=intb.sf, aes(fill=fill_basin)) + scale_fill_brewer(palette = "RdBu",name="Basins")  + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid)),alpha=0.1) + scale_color_brewer(palette = "Set1",name="Grid") + xlim(c(317734,433386)) + ylim(3047561,3191794)
 
 ## extract the data for the year 1995--2019 ##
 # format_string <- "%d-%b-%Y %H:%M:%S"
@@ -148,3 +148,5 @@ lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,nrow(basis.centers)))
 fit.result.sum.2 <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
 
 fit.result.max.2 <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=fixed,model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method="Nelder-Mead",lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)
+
+save(fit.result.sum,fit.result.max,fit.result.sum.2,fit.result.max.2,basis.centers,file="data/application_florida_results.RData")
