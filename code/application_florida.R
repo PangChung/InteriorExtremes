@@ -130,7 +130,7 @@ basis <- lapply(1:nrow(basis.centers),function(i){
     y=y-mean(y)
     y/sqrt(sum(y^2))
 })
-basis <- matrix(unlist(basis.2),nrow=nrow(coord.grid),byrow=FALSE)
+basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 idx.para = c(1:4)
 ncores = detectCores()/2
 init = c(1,1,0,1,rep(0,nrow(basis.centers)))
