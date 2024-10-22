@@ -140,6 +140,7 @@ basis <- lapply(1:nrow(basis.centers),function(i){
     y=y-mean(y)
     y/sqrt(sum(y^2))
 })
+basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 init = c(1,1,0,1,rep(0,nrow(basis.centers)))
 fixed = c(F,F,F,F,rep(F,nrow(basis.centers)))
 ub = c(Inf,1.99,pi/4,Inf,rep(Inf,nrow(basis.centers)))
