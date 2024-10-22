@@ -14,7 +14,8 @@ module load gsl/2.7.1
 module load gmp/6.2.1 
 module load r/4.3.1
 
-Rscript $script "computer=\"hpc\";id=${PBS_ARRAY_INDEX}" 
+#Rscript $script "computer=\"hpc\";id=${PBS_ARRAY_INDEX}" 
+Rscript code/application_florida.R "computer=\"hpc\";id=${PBS_ARRAY_INDEX}" 
 #Rscript code/application.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\""
 # Rscript code/application.R "computer=\"hpc\""
 # Rscript code/simulation_studies_comp.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\";d=15;m=100"
