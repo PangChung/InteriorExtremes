@@ -720,7 +720,7 @@ create_lists <- function(x){
     }
 }
 
-vario.func <- function(loc,par){ ##return a covariance matrix
+vario.func <- function(loc,par,ncores=1){ ##return a covariance matrix
     lambda = par[1];alpha = par[2]
     if(!is.matrix(loc)){loc = matrix(loc,nrow=1)}
     n = nrow(loc)
@@ -733,15 +733,13 @@ vario.func <- function(loc,par){ ##return a covariance matrix
         else {val <- (sqrt(sum((coord[1,]-coord[2,])^2))/lambda)^alpha}
         return(val)
     }
-    all.pairs = combn(1:n,2)
-    all.pairs.list = split(all.pairs,col(all.pairs))
-    gamma.vec = unlist(lapply(all.pairs.list,function(idx) vario(loc[idx,])))
-    gamma.origin = sapply(1:n,function(i) vario(loc[i,]))
-    cov.mat = diag(2*gamma.origin)
-    cov.mat[t(all.pairs)] <- sapply(1:length(gamma.vec),function(i){
-        idx = all.pairs[,i]
-        return(gamma.origin[idx[1]] + gamma.origin[idx[2]] - gamma.vec[i])})
-    cov.mat[t(all.pairs[2:1,])] <- cov.mat[t(all.pairs)]         
+    all.pairs = Rfast::comb_n(1:n,2)
+    gamma.vec=unlist(mclapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])} ,mc.cores=ncores))
+    gamma.origin = unlist(mclapply(1:n,function(i) vario(loc[i,]),mc.cores=ncores))
+    cov.mat = matrix(0,n,n);
+    cov.mat[t(all.pairs)] <- gamma.vec
+    cov.mat[t(all.pairs[2:1,])] <- gamma.vec
+    cov.mat = matrix(gamma.origin,n,n,byrow=TRUE) + matrix(gamma.origin,n,n,byrow=FALSE) - cov.mat
     return(cov.mat + .Machine$double.eps * diag(n))
 }
 
