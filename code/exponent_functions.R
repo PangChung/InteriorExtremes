@@ -591,7 +591,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             par2 = init; par2[!fixed2] = par
             par.1 = par2[idx.para];par.2 = par2[-idx.para]
-            sigma = FUN(loc,par.1)
+            sigma = FUN(loc,par.1,ncores)
             alpha = alpha.func(par=par.2,b.mat= basis)
             if(!partial){
                 val = intensity_logskew_constraint(data,par=list(sigma,alpha),log=TRUE) 
