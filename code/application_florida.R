@@ -2,6 +2,7 @@ rm(list=ls())
 args <- commandArgs(TRUE)
 computer = "local"
 id = 1
+method = "L-BFGS-B"
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -133,12 +134,11 @@ basis <- lapply(1:nrow(basis.centers),function(i){
 unit = 2/0.03128403
 basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 idx.para = c(1:4)
-ncores = detectCores()/2
+ncores = detectCores()
 init = c(0.1,1,0,1,rep(0,nrow(basis.centers)))
 ub = c(Inf,1.99,pi/4,Inf,rep(Inf,nrow(basis.centers)))
 lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,nrow(basis.centers)))
 
-method = "L-BFGS-B"
 switch(id,
     {fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
     {fit.result <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
