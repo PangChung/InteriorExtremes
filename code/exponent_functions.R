@@ -749,16 +749,17 @@ vario.func2 <- function(loc,par){
     lambda = par[1];alpha = par[2];theta = par[3];a = par[4]
     if(!is.matrix(loc)){loc = matrix(loc,nrow=1)}
     Omega = matrix(c(cos(theta),a*sin(theta),-sin(theta),a*cos(theta)),nrow=2,ncol=2)
-    loc = loc %*% Omega
     n = nrow(loc)
     if(n==1){
-        loc.new <- loc %*%   
-        val=(sqrt(sum(loc[1,]^2))/lambda)^alpha
+        val=(sqrt( c(loc[1,] %*% Omega %*% loc[1,]) )/lambda)^alpha
         return(val)
     }
     vario <- function(coord){
-        if(!is.matrix(coord)) {val <- (sqrt(sum(coord^2))/lambda)^alpha}
-        else {val <- (sqrt(sum((coord[1,]-coord[2,])^2))/lambda)^alpha}
+        if(!is.matrix(coord)){
+            val <- (sqrt( c(coord %*% Omega %*% coord) )/lambda)^alpha
+        }else{
+            coord = coord[1,] - coord[2,]
+            val <- (sqrt( c(coord %*% Omega %*% coord) )/lambda)^alpha}
         return(val)
     }
     all.pairs = combn(1:n,2)
