@@ -14,6 +14,8 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 load("data/application_florida_list.RData")
+
+pairs <- comb_n(1:nrow(coord.grid),2)
 data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
 len.row <- unlist(lapply(1:length(data.pareto),function(i){length(data.pareto[[i]][[1]])}))
 data.pareto.mat <- sparseMatrix(i=rep(1:length(data.pareto),times=len.row),j=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[1]]})),x=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
