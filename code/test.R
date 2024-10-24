@@ -21,9 +21,9 @@ data.pareto.mat <- sparseMatrix(i=rep(1:length(data.pareto),times=len.row),j=unl
 
 
 empirical.extcoef <- function(data){
-    u = 10
     x = data[,1]
     y = data[,2]
+    u = quantile(c(x,y),0.9)
     return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
 }
 
@@ -31,4 +31,4 @@ data.pareto.mat.nonsparse <- as.matrix(data.pareto.mat)
 
 system.time({emp.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat.nonsparse[,x])},mc.cores=detectCores(),mc.set.seed = FALSE))})
 
-save(data.pareto.mat,emp.extcoef,file="data/application_florida/application_florida_results_ext_1.RData")
+save(data.pareto.mat,emp.extcoef,file="data/application_florida_results_ext_1.RData")
