@@ -29,7 +29,6 @@ fill_grid = grid.sf$PIXEL %in% all_IDs_num
 #     scale_color_brewer(palette = "Set1",name="Grid") + xlim(c(317734,433386)) + ylim(3047561,3191794)
 # p
 
-register_google(key="AIzaSyA4GHwem8rdsXo1mgSNx-8uUqEDOjr39Ds")
 map <- get_googlemap(center=c(-82.273528,28.209394),zoom=9,maptype = "terrain",style = "feature:all|element:all|saturation:-100|lightness:50")
 intb.transform <- st_transform(intb.sf, crs = 4326)
 grid.transform <- st_transform(grid.sf, crs = 4326)
