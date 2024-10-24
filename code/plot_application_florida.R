@@ -58,11 +58,33 @@ alpha <- alpha.func(fit.result$par[-c(1:4)],basis)
 cov.mat <- vario.func2(coord.grid.new,fit.result$par[1:4],ncores=5)
 par.list <- alpha2delta(list(cov.mat,alpha))
 pairs <- comb_n(1:nrow(coord.grid),2)
-idx = pairs[,1]
-V_bi_logskew(c(1,1),list(par.list[[1]][idx,idx],par.list[[2]][idx]),alpha.para=FALSE)
 
 fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
 
 range(fitted.extcoef)
 
 fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
+
+table(unlist(lapply(1:length(data.fit.max),function(i){data.fit.max[[i]][[1]]})))
+
+data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
+
+len.row <- unlist(lapply(1:length(data.pareto),function(i){length(data.pareto[[i]][[1]])}))
+
+data.pareto.mat <- sparseMatrix(i=rep(1:length(data.pareto),times=len.row),j=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[1]]})),x=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
+
+rm(data.pareto,data);gc()
+
+empirical.extcoef <- function(data){
+    u=10
+    x = data[,1]
+    y= data[,2]
+    return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
+}
+
+
+data.pareto.mat.nonsparse <- as.matrix(data.pareto.mat)
+
+system.time({emp.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat.nonsparse[,x])},mc.cores=5,mc.set.seed = FALSE))})
+
+save(data.pareto.mat,emp.extcoef,fitted.extcoef.mat,file="data/application_florida/application_florida_results_ext_1.RData")
