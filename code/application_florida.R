@@ -123,7 +123,7 @@ set.seed(12342)
 
 ### fit the model ###
 load("data/application_florida_list.RData")
-coord.grid = coord.grid/60000
+coord.grid = apply(coord.grid/60000,2,function(x){x-median(x)})
 ### fit the skewd-BR model ###
 basis.centers <- expand.grid(quantile(coord.grid[,1],c(0.2,0.5,0.8)),quantile(coord.grid[,2],c(0.2,0.5,0.8)))
 basis <- lapply(1:nrow(basis.centers),function(i){

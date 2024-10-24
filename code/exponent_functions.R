@@ -308,8 +308,8 @@ V_bi_logskew <- function(x,par,alpha.para=TRUE){
     }else{
         delta = par[[2]]
     }
-    phi.delta = pnorm(delta)
-    phi.delta.log = log(phi.delta)
+    phi.delta.log = pnorm(delta,log.p=TRUE)
+    phi.delta = exp(phi.delta.log)
     vario.sqrt = sigma[1,1] + sigma[2,2] - 2*sigma[1,2]
     if(!is.matrix(x)) x <- matrix(x,ncol=2)
     sigma.1 = matrix(c(vario.sqrt,delta[1]-delta[2],delta[1]-delta[2],1),nrow=2)
