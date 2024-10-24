@@ -47,7 +47,7 @@ idx.pixel <- unlist(lapply(all_IDs_num,function(x){which(grid.transform$PIXEL==x
 coord.geo <- matrix(unlist(lapply(idx.pixel, function(i){apply(coord.geo[coord.geo$L2==i,1:2][1:4,],2,mean)})),ncol=2,byrow=TRUE)
 coord.grid = coord.grid/60000
 coord.grid.new <- apply(coord.grid,2,function(x){x-median(x)})
-load("data/application_florida/application_florida_results_1_Nelder-Mead.RData")
+load("data/application_florida/application_florida_results_3_L-BFGS-B.RData")
 basis <- lapply(1:nrow(basis.centers),function(i){
     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
     y=y-mean(y)
@@ -65,26 +65,27 @@ range(fitted.extcoef)
 
 fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
 
-table(unlist(lapply(1:length(data.fit.max),function(i){data.fit.max[[i]][[1]]})))
+center.coord <- apply(coord.geo,2,median)
+idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
+data.df <- data.frame(lon=coord.geo[,1],lat=coord.geo[,2],extcoef=fitted.extcoef.mat[,idx.center])
+data.df$extcoef[idx.center] = NA
+p<-ggmap(map) + theme_void() + 
+ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=extcoef),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "Spectral",trans="reverse") + coord_fixed()
 
-data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
+save(fitted.extcoef.mat, par.list, file="data/application_florida/application_florida_fitted_extcoef_3.RData")
 
-len.row <- unlist(lapply(1:length(data.pareto),function(i){length(data.pareto[[i]][[1]])}))
+# data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
+# len.row <- unlist(lapply(1:length(data.pareto),function(i){length(data.pareto[[i]][[1]])}))
+# data.pareto.mat <- sparseMatrix(i=rep(1:length(data.pareto),times=len.row),j=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[1]]})),x=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
+# rm(data.pareto,data);gc()
+# empirical.extcoef <- function(data){
+#     u=10
+#     x = data[,1]
+#     y= data[,2]
+#     return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
+# }
+# data.pareto.mat.nonsparse <- as.matrix(data.pareto.mat)
+# system.time({emp.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat.nonsparse[,x])},mc.cores=5,mc.set.seed = FALSE))})
 
-data.pareto.mat <- sparseMatrix(i=rep(1:length(data.pareto),times=len.row),j=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[1]]})),x=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
+# save(data.pareto.mat,emp.extcoef,fitted.extcoef.mat,file="data/application_florida/application_florida_results_ext_1.RData")
 
-rm(data.pareto,data);gc()
-
-empirical.extcoef <- function(data){
-    u=10
-    x = data[,1]
-    y= data[,2]
-    return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
-}
-
-
-data.pareto.mat.nonsparse <- as.matrix(data.pareto.mat)
-
-system.time({emp.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat.nonsparse[,x])},mc.cores=5,mc.set.seed = FALSE))})
-
-save(data.pareto.mat,emp.extcoef,fitted.extcoef.mat,file="data/application_florida/application_florida_results_ext_1.RData")
