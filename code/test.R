@@ -29,6 +29,6 @@ empirical.extcoef <- function(data){
 
 data.pareto.mat.nonsparse <- as.matrix(data.pareto.mat)
 
-system.time({emp.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat.nonsparse[,x])},mc.cores=detectCores(),mc.set.seed = FALSE))})
+system.time({emp.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat.nonsparse[,x])},mc.cores=detectCores()/2,mc.set.seed = FALSE))})
 
 save(data.pareto.mat,emp.extcoef,file="data/application_florida_results_ext_1.RData")
