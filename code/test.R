@@ -18,9 +18,9 @@ data.pareto.mat <- sparseMatrix(i=rep(1:length(data.pareto),times=len.row),j=unl
 
 
 empirical.extcoef <- function(data){
-    u=10
+    u = 10
     x = data[,1]
-    y= data[,2]
+    y = data[,2]
     return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
 }
 
