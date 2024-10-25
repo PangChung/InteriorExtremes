@@ -65,12 +65,27 @@ range(fitted.extcoef)
 
 fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
 
-center.coord <- apply(coord.geo,2,median)
-idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
-data.df <- data.frame(lon=coord.geo[,1],lat=coord.geo[,2],extcoef=fitted.extcoef.mat[,idx.center])
-data.df$extcoef[idx.center] = NA
-p<-ggmap(map) + theme_void() + 
-ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=extcoef),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "Spectral",trans="reverse") + coord_fixed()
+
+coord.ratio <- 0.01796407/0.01912047
+basis.centers.geo <- expand.grid(quantile(coord.geo[,1],seq(0.1,0.9,length.out=10)),quantile(coord.geo[,2],seq(0.1,0.9,length.out=10)))
+p <- list()
+for(i in 1:nrow(basis.centers.geo)){
+    center.coord <- basis.centers.geo[i,]
+    idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
+    data.df <- data.frame(lon=round(coord.geo[,1],5),lat=round(coord.geo[,2],5),z=fitted.extcoef.mat[,idx.center])
+    data.df$z[idx.center] = NA
+    brks = round(quantile(data.df$z,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
+    p[[i]]<-ggmap(map) + theme_void() + 
+    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=z),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "Spectral",trans="reverse") + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=z),breaks = brks,colour = "black")
+}
+
+for(i in 1:length(p)){
+    png(paste0("figures/application/florida_extcoef_",sprintf(i,fmt="%.3d"),".png"),width=800,height=800)
+    print(p[[i]])
+    dev.off()
+}
+
+
 
 save(fitted.extcoef.mat, par.list, file="data/application_florida/application_florida_fitted_extcoef_3.RData")
 
