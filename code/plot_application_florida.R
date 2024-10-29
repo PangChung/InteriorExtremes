@@ -146,9 +146,10 @@ for(i in 1:nrow(basis.centers.geo)){
                 sbr=e3$fitted.extcoef.mat[,idx.center],br2=e2$fitted.extcoef.mat[,idx.center],sbr2=e4$fitted.extcoef.mat[,idx.center])
     data.df[idx.center,-c(1:2)] = NA
     p1[[i]]<-ggmap(map) + 
-    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "RdBu",limits=c(1,2)) + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks,colour = "black",linetype="dotted")
+    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "RdBu",limits=c(1,2)) + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks,colour = "black",linetype="dotted") + guides(fill = guide_legend(override.aes = list(alpha = 0.5))) 
+    
     p2[[i]]<-ggmap(map) + 
-    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette="RdBu",limits=c(1,2)) + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks,colour = "black",linetype="dotted")  
+    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette="RdBu",limits=c(1,2)) + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks,colour = "black",linetype="dotted")  + guides(fill = guide_legend(override.aes = list(alpha = 0.5))) 
 }
 
 for(i in 1:length(p1)){
@@ -169,18 +170,10 @@ system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png fig
 
 x = as.matrix(dist(coord.grid))[t(pairs)]
 
-png("figures/application/florida_extcoef_1_scatter.png",width=800,height=800)
+png("figures/application/florida_extcoef_scatter.png",width=800*2,height=800*2)
+par(mfrow=c(2,2),mar=c(4,4,2,1))
 plot(x,t(e1$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
-dev.off()
-
-png("figures/application/florida_extcoef_2_scatter.png",width=800,height=800)
 plot(x,t(e2$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
-dev.off()
-
-png("figures/application/florida_extcoef_3_scatter.png",width=800,height=800)
 plot(x,t(e3$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
-dev.off()
-
-png("figures/application/florida_extcoef_4_scatter.png",width=800,height=800)
 plot(x,t(e4$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
 dev.off()
