@@ -49,23 +49,27 @@ coord.grid = coord.grid/60000
 coord.grid.new <- apply(coord.grid,2,function(x){x-median(x)})
 pairs <- comb_n(1:nrow(coord.grid),2)
 coord.ratio <- 0.01796407/0.01912047
+basis.centers <- expand.grid(quantile(coord.grid[,1],seq(0.1,0.9,length.out=10)),quantile(coord.grid[,2],seq(0.1,0.9,length.out=10)))
 basis.centers.geo <- expand.grid(quantile(coord.geo[,1],seq(0.1,0.9,length.out=10)),quantile(coord.geo[,2],seq(0.1,0.9,length.out=10)))
-# load("data/application_florida/application_florida_results_3_L-BFGS-B.RData")
-# basis <- lapply(1:nrow(basis.centers),function(i){
-#     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
-#     y=y-mean(y)
-#     y/sqrt(sum(y^2))
-# })
+basis <- lapply(1:nrow(basis.centers),function(i){
+    y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
+    y=y-mean(y)
+    y/sqrt(sum(y^2))
+})
+basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 
-# basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
-# alpha <- alpha.func(fit.result$par[-c(1:4)],basis)
-# cov.mat <- vario.func2(coord.grid.new,fit.result$par[1:4],ncores=5)
-# par.list <- alpha2delta(list(cov.mat,alpha))
-# fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
+file.save = "data/application_florida/application_florida_results_1_L-BFGS-B.RData"
+load(file.save,e<-new.env())
+alpha <- alpha.func(e$fit.result$par[-c(1:4)],basis)
+cov.mat <- vario.func2(coord.grid.new,fit.result$par[1:4],ncores=5)
+par.list <- alpha2delta(list(cov.mat,alpha))
+fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
 
-# range(fitted.extcoef)
+range(fitted.extcoef)
 
-# fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
+fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
+save(fitted.extcoef.mat, par.list, file="data/application_florida/application_florida_fitted_extcoef_3.RData") 
+
 # p <- list()
 # brks = round(quantile(fitted.extcoef.mat@x,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
 # for(i in 1:nrow(basis.centers.geo)){
@@ -83,7 +87,7 @@ basis.centers.geo <- expand.grid(quantile(coord.geo[,1],seq(0.1,0.9,length.out=1
 #     dev.off()
 # }
 
-# save(fitted.extcoef.mat, par.list, file="data/application_florida/application_florida_fitted_extcoef_3.RData") 
+
 
 load("data/application_florida/application_florida_results_ext_1.RData",e<-new.env())
 load("data/application_florida/application_florida_fitted_extcoef.RData",e1<-new.env())
