@@ -6,7 +6,7 @@
 #PBS -j oe 
 #PBS -J 1-70
 #PBS -m ae
-#PBS -M peng.zhong@unsw.edu.au 
+##PBS -M peng.zhong@unsw.edu.au 
 
 cd ${PBS_O_WORKDIR}
 
