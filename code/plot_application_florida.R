@@ -86,30 +86,55 @@ basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 #     dev.off()
 # }
 
-# data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
-# len.row <- unlist(lapply(1:length(data.pareto),function(i){length(data.pareto[[i]][[1]])}))
-# data.pareto.mat <- sparseMatrix(i=rep(1:length(data.pareto),times=len.row),j=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[1]]})),x=unlist(lapply(1:length(data.pareto),function(i){data.pareto[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
-# rm(data.pareto,data);gc()
-# empirical.extcoef <- function(data){
-#     u=10
-#     x = data[,1]
+data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
 
-#     y= data[,2]
-#     return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
-# }
-# data.pareto.mat.nonsparse <- as.matrix(data.pareto.mat)
-# system.time({emp.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat.nonsparse[,x])},mc.cores=5,mc.set.seed = FALSE))})
+data.sum <- unlist(mclapply(data.pareto,function(x){mean(x[[2]])},mc.cores=4))
 
-# save(data.pareto.mat,emp.extcoef,fitted.extcoef.mat,file="data/application_florida/application_florida_results_ext_1.RData")
+data.max <- unlist(mclapply(data.pareto,function(x){max(x[[2]])},mc.cores=4))
+
+data.fit <- data.pareto[data.sum>quantile(data.sum,0.95)]
+len.row <- unlist(lapply(1:length(data.fit),function(i){length(data.fit[[i]][[1]])}))
+data.pareto.mat <- sparseMatrix(i=rep(1:length(data.fit),times=len.row),j=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[1]]})),x=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
+data.pareto.mat <- as.matrix(data.pareto.mat)
+empirical.extcoef <- function(data){
+    x = data[,1]
+    y= data[,2]
+    u = 10
+    return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
+}
+
+emp.extcoef1 <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat[,x])},mc.cores=5,mc.set.seed = FALSE))
+
+emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef1,symmetric = TRUE,dimnames=NULL)
+
+png("figures/application/florida_extcoef_scatter_emp_1.png",width=800,height=800)
+plot(x,2-t(emp.extcoef.mat)@x,pch=20,cex=0.01) 
+dev.off()
+
+data.fit <- data.pareto[data.max>quantile(data.max,0.95)]
+len.row <- unlist(lapply(1:length(data.fit),function(i){length(data.fit[[i]][[1]])}))
+data.pareto.mat <- sparseMatrix(i=rep(1:length(data.fit),times=len.row),j=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[1]]})),x=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
+data.pareto.mat <- as.matrix(data.pareto.mat)
+
+emp.extcoef2 <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat[,x])},mc.cores=5,mc.set.seed = FALSE))
+
+emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef2,symmetric = TRUE,dimnames=NULL)
+png("figures/application/florida_extcoef_scatter_emp_2.png",width=800,height=800)
+plot(x,2-t(emp.extcoef.mat)@x,pch=20,cex=0.01) 
+dev.off()
+
+save(emp.extcoef1,emp.extcoef2,file="data/application_florida/application_florida_results_emp.RData")
 
 
-load("data/application_florida/application_florida_results_ext_1.RData",e<-new.env())
+load("data/application_florida/application_florida_results_emp.RData",e<-new.env())
 load("data/application_florida/application_florida_results_1_L-BFGS-B.RData",e1<-new.env())
 load("data/application_florida/application_florida_results_2_L-BFGS-B.RData",e2<-new.env())
 load("data/application_florida/application_florida_results_3_L-BFGS-B.RData",e3<-new.env())
 load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<-new.env())
 
-emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef,symmetric = TRUE,dimnames=NULL)
+emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
+emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
+
 p1 <- p2 <- list()
 brks = round(quantile(c(e1$fitted.extcoef.mat@x,e2$fitted.extcoef.mat@x),probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
 brks.emp <- round(quantile(2-emp.extcoef.mat@x,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
@@ -117,13 +142,13 @@ for(i in 1:nrow(basis.centers.geo)){
     center.coord <- basis.centers.geo[i,]
     idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
     data.df <- data.frame(lon=round(coord.geo[,1],5),lat=round(coord.geo[,2],5),
-                emp=2-emp.extcoef.mat[,idx.center],br=e1$fitted.extcoef.mat[,idx.center],
+                emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=e1$fitted.extcoef.mat[,idx.center],
                 sbr=e3$fitted.extcoef.mat[,idx.center],br2=e2$fitted.extcoef.mat[,idx.center],sbr2=e4$fitted.extcoef.mat[,idx.center])
     data.df[idx.center,-c(1:2)] = NA
     p1[[i]]<-ggmap(map) + 
-    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "RdBu",limits=c(1,2)) + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp),breaks = brks,colour = "black",linetype="dotted")
+    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "RdBu",limits=c(1,2)) + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks,colour = "black",linetype="dotted")
     p2[[i]]<-ggmap(map) + 
-    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette="RdBu",limits=c(1,2)) + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp),breaks = brks,colour = "black",linetype="dotted")  
+    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette="RdBu",limits=c(1,2)) + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks,colour = "black",linetype="dotted")  
 }
 
 for(i in 1:length(p1)){
@@ -132,17 +157,17 @@ for(i in 1:length(p1)){
     dev.off()
 }
 
+system("magick -delay 20 -loop 0 figures/application/florida_extcoef_1_*.png figures/application/combined1.gif;rm figures/application/florida_extcoef_1_*.png")
+
 for(i in 1:length(p2)){
     png(paste0("figures/application/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),width=800,height=800)
     print(p2[[i]])
     dev.off()
 }
 
-x = as.matrix(dist(coord.grid))[t(pairs)]
+system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png figures/application/combined2.gif;rm figures/application/florida_extcoef_2_*.png")
 
-png("figures/application/florida_extcoef_scatter.png",width=800,height=800)
-plot(x,2-t(emp.extcoef.mat)@x,pch=20,cex=0.01) 
-dev.off()
+x = as.matrix(dist(coord.grid))[t(pairs)]
 
 png("figures/application/florida_extcoef_1_scatter.png",width=800,height=800)
 plot(x,t(e1$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
