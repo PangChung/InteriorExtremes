@@ -47,43 +47,43 @@ idx.pixel <- unlist(lapply(all_IDs_num,function(x){which(grid.transform$PIXEL==x
 coord.geo <- matrix(unlist(lapply(idx.pixel, function(i){apply(coord.geo[coord.geo$L2==i,1:2][1:4,],2,mean)})),ncol=2,byrow=TRUE)
 coord.grid = coord.grid/60000
 coord.grid.new <- apply(coord.grid,2,function(x){x-median(x)})
-load("data/application_florida/application_florida_results_3_L-BFGS-B.RData")
-basis <- lapply(1:nrow(basis.centers),function(i){
-    y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
-    y=y-mean(y)
-    y/sqrt(sum(y^2))
-})
-basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
-alpha <- alpha.func(fit.result$par[-c(1:4)],basis)
-cov.mat <- vario.func2(coord.grid.new,fit.result$par[1:4],ncores=5)
-par.list <- alpha2delta(list(cov.mat,alpha))
 pairs <- comb_n(1:nrow(coord.grid),2)
-
-fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
-
-range(fitted.extcoef)
-
-fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
-
-
 coord.ratio <- 0.01796407/0.01912047
 basis.centers.geo <- expand.grid(quantile(coord.geo[,1],seq(0.1,0.9,length.out=10)),quantile(coord.geo[,2],seq(0.1,0.9,length.out=10)))
-p <- list()
-brks = round(quantile(fitted.extcoef.mat@x,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
-for(i in 1:nrow(basis.centers.geo)){
-    center.coord <- basis.centers.geo[i,]
-    idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
-    data.df <- data.frame(lon=round(coord.geo[,1],5),lat=round(coord.geo[,2],5),z=fitted.extcoef.mat[,idx.center])
-    data.df$z[idx.center] = NA
-    p[[i]]<-ggmap(map) + theme_void() + 
-    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=z),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "Spectral",trans="reverse") + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=z),breaks = brks,colour = "black")
-}
+# load("data/application_florida/application_florida_results_3_L-BFGS-B.RData")
+# basis <- lapply(1:nrow(basis.centers),function(i){
+#     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
+#     y=y-mean(y)
+#     y/sqrt(sum(y^2))
+# })
 
-for(i in 1:length(p)){
-    png(paste0("figures/application/florida_extcoef_",sprintf(i,fmt="%.3d"),".png"),width=800,height=800)
-    print(p[[i]])
-    dev.off()
-}
+# basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
+# alpha <- alpha.func(fit.result$par[-c(1:4)],basis)
+# cov.mat <- vario.func2(coord.grid.new,fit.result$par[1:4],ncores=5)
+# par.list <- alpha2delta(list(cov.mat,alpha))
+# fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
+
+# range(fitted.extcoef)
+
+# fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
+# p <- list()
+# brks = round(quantile(fitted.extcoef.mat@x,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
+# for(i in 1:nrow(basis.centers.geo)){
+#     center.coord <- basis.centers.geo[i,]
+#     idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
+#     data.df <- data.frame(lon=round(coord.geo[,1],5),lat=round(coord.geo[,2],5),z=fitted.extcoef.mat[,idx.center])
+#     data.df$z[idx.center] = NA
+#     p[[i]]<-ggmap(map) + theme_void() + 
+#     ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=z),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "Spectral",trans="reverse") + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=z),breaks = brks,colour = "black")
+# }
+
+# for(i in 1:length(p)){
+#     png(paste0("figures/application/florida_extcoef_",sprintf(i,fmt="%.3d"),".png"),width=800,height=800)
+#     print(p[[i]])
+#     dev.off()
+# }
+
+# save(fitted.extcoef.mat, par.list, file="data/application_florida/application_florida_fitted_extcoef_3.RData") 
 
 load("data/application_florida/application_florida_results_ext_1.RData",e<-new.env())
 load("data/application_florida/application_florida_fitted_extcoef.RData",e1<-new.env())
@@ -91,6 +91,7 @@ load("data/application_florida/application_florida_fitted_extcoef_3.RData",e2<-n
 emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef,symmetric = TRUE,dimnames=NULL)
 p <- list()
 brks = round(quantile(c(e1$fitted.extcoef.mat@x,e2$fitted.extcoef.mat@x),probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
+brks.emp <- round(quantile(2-emp.extcoef.mat@x,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
 for(i in 1:nrow(basis.centers.geo)){
     center.coord <- basis.centers.geo[i,]
     idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
@@ -99,7 +100,7 @@ for(i in 1:nrow(basis.centers.geo)){
                 sbr=e2$fitted.extcoef.mat[,idx.center])
     data.df[idx.center,-c(1:2)] = NA
     p[[i]]<-ggmap(map) + theme_void() + 
-    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "Spectral",trans="reverse") + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black")
+    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "Spectral",trans="reverse") + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black") + stat_contour(data=data.df,aes(x=lon,y=lat,z=emp),breaks = brks.emp,colour = "black",linetype="dotted")
 }
 
 for(i in 1:length(p)){
@@ -108,7 +109,6 @@ for(i in 1:length(p)){
     dev.off()
 }
 
-save(fitted.extcoef.mat, par.list, file="data/application_florida/application_florida_fitted_extcoef_3.RData")
 
 # data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
 # len.row <- unlist(lapply(1:length(data.pareto),function(i){length(data.pareto[[i]][[1]])}))
@@ -117,6 +117,7 @@ save(fitted.extcoef.mat, par.list, file="data/application_florida/application_fl
 # empirical.extcoef <- function(data){
 #     u=10
 #     x = data[,1]
+
 #     y= data[,2]
 #     return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
 # }
