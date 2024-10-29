@@ -141,9 +141,12 @@ ub = c(Inf,1.99,pi/4,Inf,rep(Inf,nrow(basis.centers)))
 lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,nrow(basis.centers)))
 file.save = paste0(DataPath,"/data/application_florida_results_",id,"_",method,"_",idx.jack,".RData")
 file.origin = paste0(DataPath,"/data/application_florida_results_",id,"_",method,".RData")
-if(file.exists(file.origin)){
-    load(file.origin,e<-new.env())
-    init = e$fit.result$par
+# if(file.exists(file.origin)){
+#     load(file.origin,e<-new.env())
+#     init = e$fit.result$par
+# }
+if(file.exists(file.save)){
+    stop("job already done")
 }
 switch(id,
     {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
