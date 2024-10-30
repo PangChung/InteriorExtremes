@@ -101,7 +101,7 @@ data.pareto.mat <- as.matrix(data.pareto.mat)
 empirical.extcoef <- function(data){
     x = data[,1]
     y= data[,2]
-    u = 50
+    u = 30
     return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
 }
 
@@ -157,8 +157,9 @@ for(i in 1:nrow(basis.centers.geo)){
     p1[[i]]<-ggmap(map) +
     geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
-    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp1,colour = "black",linetype="dashed") + 
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp1,colour = "black",linetype="dashed") +
     stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp1,colour = "black") + labs(x="Longitude", y="Latitude") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks.emp1,colour = "black",linetype="dotted") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
     theme(axis.text = element_text(size=10), 
@@ -174,6 +175,7 @@ for(i in 1:nrow(basis.centers.geo)){
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),alpha=0.8,mid=exp(1.6),name=expression(hat(theta)[2]),trans="exp") + 
     coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp2,colour = "black",linetype="dashed") + 
     stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks.emp2,colour = "black") + labs(x="Longitude",y="Latitude") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks.emp2,colour = "black",linetype="dotted") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
     theme(axis.text = element_text(size=10), 
