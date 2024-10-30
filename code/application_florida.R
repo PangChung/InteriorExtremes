@@ -131,7 +131,7 @@ basis.centers <- rbind(basis.centers,apply(basis.centers,2,function(x){median(x)
 basis <- lapply(1:nrow(basis.centers),function(i){
     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
     y=y-mean(y)
-    y/max(y^2)
+    y/sqrt(sum(y^2))
 })
 unit = 2/0.03128403
 basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
