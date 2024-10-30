@@ -567,7 +567,7 @@ for(i in 1:length(idx.centers)){
             scale_fill_manual(values=c("red","blue")) +
             theme(plot.title = element_text(hjust = 0.5), plot.title.position = "plot",legend.position = "right") + 
             coord_fixed() + 
-            labs(title = paste("Skewed BR is closer to the Empirical?",round(mean(data$z<0)*100,1),"%"), x = "Longitude", y = "Latitude",fill="Values")+
+            labs(title = paste("Skewed BR is closer to the Empirical?",round(mean(data$z<0)*100,1),"%"), x = "Longitude", y = "Latitude",fill="Values") +
             geom_point(aes(x = loc.sub[idx.centers[i],1], y = loc.sub[idx.centers[i],2]),shape=1, size = 2, color = "black") +
             geom_point(aes(x = loc.sub[e$idx.centers,1], y = loc.sub[e$idx.centers,2]),shape=8, size = 2, color = "black")
 }

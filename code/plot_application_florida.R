@@ -135,9 +135,14 @@ load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<
 emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
 
+
 p1 <- p2 <- list()
 brks = round(quantile(c(e1$fitted.extcoef.mat@x,e2$fitted.extcoef.mat@x),probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
 brks.emp <- round(quantile(2-emp.extcoef.mat@x,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
+ewbreaks <- c(-82.9,-82.5,-82.1,-81.6)
+nsbreaks <- c(27.7, 28, 28.4, 28.8)
+ewlabels <- unlist(lapply(-ewbreaks, function(x) paste(" ",abs(x), "ºW")))
+nslabels <- unlist(lapply(nsbreaks, function(x) paste(" ",x, "ºN")))
 for(i in 1:nrow(basis.centers.geo)){
     center.coord <- basis.centers.geo[i,]
     idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
@@ -145,28 +150,45 @@ for(i in 1:nrow(basis.centers.geo)){
                 emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=e1$fitted.extcoef.mat[,idx.center],
                 sbr=e3$fitted.extcoef.mat[,idx.center],br2=e2$fitted.extcoef.mat[,idx.center],sbr2=e4$fitted.extcoef.mat[,idx.center])
     data.df[idx.center,-c(1:2)] = NA
-    p1[[i]]<-ggmap(map) + 
-    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.5) + scale_fill_gradientn(colors= alpha(c(brewer.pal(11, "RdBu")), alpha = 0.5),limits=c(1,2),name="Extremal Coef.") + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black") #+ stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks,colour = "black",linetype="dotted")
+    p1[[i]]<-ggmap(map) +
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.5) + scale_fill_gradientn(colors= alpha(c(brewer.pal(11, "RdBu")), alpha = 0.5),limits=c(1,2),name=expression(hat(theta)[2])) +
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black") + labs(x="Longitude", y="Latitude") + 
+    scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
+    scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
+    theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14),
+                            axis.text.y = element_text(angle=90,vjust=0.5,hjust=1),
+                            legend.title = element_text(size=14),legend.position = "right",
+                            plot.margin=unit(c(0.2,0.2,0,0.5),"cm")) 
     
     p2[[i]]<-ggmap(map) + 
-    ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.5) + scale_fill_gradientn(colors= alpha(c(brewer.pal(11, "RdBu")), alpha = 0.5),limits=c(1,2),name="Extremal Coef.") + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks,colour = "black",linetype="dashed") + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks,colour = "black") #+ stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks,colour = "black",linetype="dotted")  
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.5) + scale_fill_gradientn(colors= alpha(c(brewer.pal(11, "RdBu")), alpha = 0.5),limits=c(1,2),name=expression(hat(theta)[2])) + 
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks,colour = "black",linetype="dashed") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks,colour = "black") + labs(x="Longitude",y="Latitude") + 
+    scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
+    scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
+    theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.text.y = element_text(angle=90,vjust=0.5,hjust=1),
+                            axis.title.y = element_text(size=14), 
+                            legend.title = element_text(size=14),legend.position = "right",plot.margin=unit(c(0.2,0.2,0,0.5),"cm"))
 }
 
 for(i in 1:length(p1)){
-    png(paste0("figures/application/florida_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),width=800,height=800)
-    print(p1[[i]])
-    dev.off()
+    ggsave(paste0("figures/application/florida_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=6.4,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/florida_extcoef_1_*.png figures/application/combined1.gif;rm figures/application/florida_extcoef_1_*.png")
+system("magick -delay 20 -loop 0 figures/application/florida_extcoef_1_*.png figures/application/combined1.gif;")
 
 for(i in 1:length(p2)){
-    png(paste0("figures/application/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),width=800,height=800)
-    print(p2[[i]])
-    dev.off()
+    ggsave(paste0("figures/application/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png figures/application/combined2.gif;rm figures/application/florida_extcoef_2_*.png")
+system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png figures/application/combined2.gif;")
 
 x = as.matrix(dist(coord.grid))[t(pairs)]
 
