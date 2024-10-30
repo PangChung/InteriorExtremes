@@ -11,6 +11,7 @@ library(Matrix)
 library(sf)
 library(ggplot2)
 library(ggmap)
+library(RColorBrewer)
 library(Matrix)
 # load the data##
 source("code/simulation.R")
@@ -43,8 +44,7 @@ coord.grid = coord.grid/60000
 coord.grid.new <- apply(coord.grid,2,function(x){x-median(x)})
 pairs <- comb_n(1:nrow(coord.grid),2)
 coord.ratio <- 0.01796407/0.01912047
-basis.centers.geo <- expand.grid(quantile(coord.geo[,1],seq(0.1,0.9,length.out=10)),quantile(coord.geo[,2],seq(0.1,0.9,length.out=10)))
-basis.centers <- expand.grid(quantile(coord.grid[,1],c(0.2,0.5,0.8)),quantile(coord.grid[,2],c(0.2,0.5,0.8)))
+basis.centers <- expand.grid(quantile(coord.grid[,1],c(0.2,0.8)),quantile(coord.grid[,2],c(0.2,0.8)))
 basis <- lapply(1:nrow(basis.centers),function(i){
     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
     y=y-mean(y)
@@ -93,13 +93,15 @@ data.sum <- unlist(mclapply(data.pareto,function(x){mean(x[[2]])},mc.cores=4))
 data.max <- unlist(mclapply(data.pareto,function(x){max(x[[2]])},mc.cores=4))
 
 data.fit <- data.pareto[data.sum>quantile(data.sum,0.95)]
+
 len.row <- unlist(lapply(1:length(data.fit),function(i){length(data.fit[[i]][[1]])}))
 data.pareto.mat <- sparseMatrix(i=rep(1:length(data.fit),times=len.row),j=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[1]]})),x=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
+
 data.pareto.mat <- as.matrix(data.pareto.mat)
 empirical.extcoef <- function(data){
     x = data[,1]
     y= data[,2]
-    u = 10
+    u = 50
     return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
 }
 
@@ -107,6 +109,7 @@ emp.extcoef1 <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical
 
 emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 
+x = as.matrix(dist(coord.grid))[t(pairs)]
 png("figures/application/florida_extcoef_scatter_emp_1.png",width=800,height=800)
 plot(x,2-t(emp.extcoef.mat)@x,pch=20,cex=0.01) 
 dev.off()
@@ -137,12 +140,13 @@ emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmet
 
 
 p1 <- p2 <- list()
-brks = round(quantile(c(e1$fitted.extcoef.mat@x,e2$fitted.extcoef.mat@x),probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
-brks.emp <- round(quantile(2-emp.extcoef.mat@x,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
+brks.emp1 <- c(1.2,1.35,1.5,1.65,1.8,1.95)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
+brks.emp2 <- c(1.2,1.35,1.5,1.65,1.8,1.95)#round(quantile(2-emp.extcoef.mat2@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
 ewbreaks <- c(-82.9,-82.5,-82.1,-81.6)
 nsbreaks <- c(27.7, 28, 28.4, 28.8)
 ewlabels <- unlist(lapply(-ewbreaks, function(x) paste(" ",abs(x), "ºW")))
 nslabels <- unlist(lapply(nsbreaks, function(x) paste(" ",x, "ºN")))
+basis.centers.geo <- expand.grid(quantile(coord.geo[,1],seq(0.25,0.75,length.out=8)),quantile(coord.geo[,2],seq(0.25,0.75,length.out=8)))
 for(i in 1:nrow(basis.centers.geo)){
     center.coord <- basis.centers.geo[i,]
     idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
@@ -151,9 +155,10 @@ for(i in 1:nrow(basis.centers.geo)){
                 sbr=e3$fitted.extcoef.mat[,idx.center],br2=e2$fitted.extcoef.mat[,idx.center],sbr2=e4$fitted.extcoef.mat[,idx.center])
     data.df[idx.center,-c(1:2)] = NA
     p1[[i]]<-ggmap(map) +
-    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.5) + scale_fill_gradientn(colors= alpha(c(brewer.pal(11, "RdBu")), alpha = 0.5),limits=c(1,2),name=expression(hat(theta)[2])) +
-    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks,colour = "black",linetype="dashed") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks,colour = "black") + labs(x="Longitude", y="Latitude") + 
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
+    colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp1,colour = "black",linetype="dashed") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp1,colour = "black") + labs(x="Longitude", y="Latitude") + 
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
     theme(axis.text = element_text(size=10), 
@@ -165,9 +170,10 @@ for(i in 1:nrow(basis.centers.geo)){
                             plot.margin=unit(c(0.2,0.2,0,0.5),"cm")) 
     
     p2[[i]]<-ggmap(map) + 
-    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.5) + scale_fill_gradientn(colors= alpha(c(brewer.pal(11, "RdBu")), alpha = 0.5),limits=c(1,2),name=expression(hat(theta)[2])) + 
-    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks,colour = "black",linetype="dashed") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks,colour = "black") + labs(x="Longitude",y="Latitude") + 
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.8) + 
+    colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),alpha=0.8,mid=exp(1.6),name=expression(hat(theta)[2]),trans="exp") + 
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp2,colour = "black",linetype="dashed") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks.emp2,colour = "black") + labs(x="Longitude",y="Latitude") + 
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
     theme(axis.text = element_text(size=10), 
@@ -182,15 +188,14 @@ for(i in 1:length(p1)){
     ggsave(paste0("figures/application/florida_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=6.4,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/florida_extcoef_1_*.png figures/application/combined1.gif;")
-
 for(i in 1:length(p2)){
     ggsave(paste0("figures/application/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png figures/application/combined2.gif;")
+system("magick -delay 20 -loop 0 figures/application/florida_extcoef_1_*.png figures/application/combined1.gif")
 
-x = as.matrix(dist(coord.grid))[t(pairs)]
+system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png figures/application/combined2.gif")
+
 
 png("figures/application/florida_extcoef_scatter.png",width=800*2,height=800*2)
 par(mfrow=c(2,2),mar=c(4,4,2,1))
