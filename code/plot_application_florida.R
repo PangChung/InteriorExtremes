@@ -44,47 +44,37 @@ coord.grid = coord.grid/60000
 coord.grid.new <- apply(coord.grid,2,function(x){x-median(x)})
 pairs <- comb_n(1:nrow(coord.grid),2)
 coord.ratio <- 0.01796407/0.01912047
-basis.centers <- expand.grid(quantile(coord.grid[,1],c(0.2,0.8)),quantile(coord.grid[,2],c(0.2,0.8)))
+basis.centers <- as.matrix(expand.grid(quantile(coord.grid[,1],c(0.2,0.8)),quantile(coord.grid[,2],c(0.2,0.8))))
+basis.centers <- rbind(basis.centers,apply(basis.centers,2,function(x){median(x)}))
 basis <- lapply(1:nrow(basis.centers),function(i){
     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
     y=y-mean(y)
     y/sqrt(sum(y^2))
 })
+# basis.centers <- expand.grid(quantile(coord.grid[,1],c(0.2,0.8)),quantile(coord.grid[,2],c(0.2,0.8)))
+# basis <- lapply(1:nrow(basis.centers),function(i){
+#     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
+#     y=y-mean(y)
+#     y/sqrt(sum(y^2))
+# })
 basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 
-# for(i in 1:4){
-#     file.save = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B.RData")
-#     load(file.save,e<-new.env())
-#     alpha <- alpha.func(e$fit.result$par[-c(1:4)],basis)
-#     cov.mat <- vario.func2(coord.grid.new,e$fit.result$par[1:4],ncores=5)
-#     range(cov.mat)
-#     par.list <- alpha2delta(list(cov.mat,alpha))
-#     fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
+for(i in 1:4){
+    file.save = paste0("data/application_florida/application_florida_results_",i,"_Nelder-Mead.RData")
+    load(file.save,e<-new.env())
+    alpha <- alpha.func(e$fit.result$par[-c(1:4)],basis)
+    cov.mat <- vario.func2(coord.grid.new,e$fit.result$par[1:4],ncores=5)
+    range(cov.mat)
+    par.list <- alpha2delta(list(cov.mat,alpha))
+    fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
 
-#     range(fitted.extcoef)
+    range(fitted.extcoef)
 
-#     e$fitted.extcoef.mat <- sparseMatrix(i=pairs[2,],j=pairs[1,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
-#     e$par.list = par.list
+    e$fitted.extcoef.mat <- sparseMatrix(i=pairs[2,],j=pairs[1,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
+    e$par.list = par.list
 
-#     save(list=ls(e),file=file.save,envir = e)
-# }
-
-# p <- list()
-# brks = round(quantile(fitted.extcoef.mat@x,probs=c(0.001,0.005,0.01,0.05,0.1,0.2,0.5,0.8),na.rm=TRUE),4)
-# for(i in 1:nrow(basis.centers.geo)){
-#     center.coord <- basis.centers.geo[i,]
-#     idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
-#     data.df <- data.frame(lon=round(coord.geo[,1],5),lat=round(coord.geo[,2],5),z=fitted.extcoef.mat[,idx.center])
-#     data.df$z[idx.center] = NA
-#     p[[i]]<-ggmap(map) + theme_void() + 
-#     ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5)) + geom_tile(data=data.df,aes(x=lon,y=lat,fill=z),alpha=0.5) + scale_fill_distiller(name="Extremal Coefficient",palette = "Spectral",trans="reverse") + coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=z),breaks = brks,colour = "black")
-# }
-
-# for(i in 1:length(p)){
-#     png(paste0("figures/application/florida_extcoef_",sprintf(i,fmt="%.3d"),".png"),width=800,height=800)
-#     print(p[[i]])
-#     dev.off()
-# }
+    save(list=ls(e),file=file.save,envir = e)
+}
 
 data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
 
@@ -130,10 +120,15 @@ save(emp.extcoef1,emp.extcoef2,file="data/application_florida/application_florid
 
 
 load("data/application_florida/application_florida_results_emp.RData",e<-new.env())
-load("data/application_florida/application_florida_results_1_L-BFGS-B.RData",e1<-new.env())
-load("data/application_florida/application_florida_results_2_L-BFGS-B.RData",e2<-new.env())
-load("data/application_florida/application_florida_results_3_L-BFGS-B.RData",e3<-new.env())
-load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<-new.env())
+# load("data/application_florida/application_florida_results_1_L-BFGS-B.RData",e1<-new.env())
+# load("data/application_florida/application_florida_results_2_L-BFGS-B.RData",e2<-new.env())
+# load("data/application_florida/application_florida_results_3_L-BFGS-B.RData",e3<-new.env())
+# load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<-new.env())
+
+load("data/application_florida/application_florida_results_1_Nelder-Mead.RData",e1<-new.env())
+load("data/application_florida/application_florida_results_2_Nelder-Mead.RData",e2<-new.env())
+load("data/application_florida/application_florida_results_3_Nelder-Mead.RData",e3<-new.env())
+load("data/application_florida/application_florida_results_4_Nelder-Mead.RData",e4<-new.env())
 
 emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
@@ -194,15 +189,15 @@ for(i in 1:length(p2)){
     ggsave(paste0("figures/application/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/florida_extcoef_1_*.png figures/application/combined1.gif")
+system("magick -delay 20 -loop 0 figures/application/florida_extcoef_1_*.png figures/application/combined1_1.gif")
 
-system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png figures/application/combined2.gif")
+system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png figures/application/combined2_1.gif")
 
 
 png("figures/application/florida_extcoef_scatter.png",width=800*2,height=800*2)
 par(mfrow=c(2,2),mar=c(4,4,2,1))
-plot(x,t(e1$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
-plot(x,t(e2$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
-plot(x,t(e3$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
-plot(x,t(e4$fitted.extcoef.mat)@x,pch=20,cex=0.01) 
+plot(x,e1$fitted.extcoef.mat@x,pch=20,cex=0.01) 
+plot(x,e2$fitted.extcoef.mat@x,pch=20,cex=0.01) 
+plot(x,e3$fitted.extcoef.mat@x,pch=20,cex=0.01) 
+plot(x,e4$fitted.extcoef.mat@x,pch=20,cex=0.01) 
 dev.off()
