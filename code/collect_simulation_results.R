@@ -281,7 +281,7 @@ for(i in 1:2){
 }
 
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < thres.lambda)
+    data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < thres.lambda & )
     print(dim(data));print(dim(subset(fit.pareto.truncT.3,method==i & !is.na(`hat(lambda)`))))
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
