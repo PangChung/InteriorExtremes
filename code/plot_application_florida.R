@@ -200,12 +200,12 @@ x = as.matrix(dist(coord.grid))[t(pairs)]
 png("figures/application/florida/florida_extcoef_scatter.png", width=800*2, height=800)
 par(mfrow=c(1,2), mar=c(4,4,2,1))
 
-plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2])) 
-points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.5))  # Red with transparency
-points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
+points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
+points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
 
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2])) 
-points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.5))  # Red with transparency
-points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
+points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
+points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
 
 dev.off()
