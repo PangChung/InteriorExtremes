@@ -93,7 +93,7 @@ data.pareto.mat <- as.matrix(data.pareto.mat)
 empirical.extcoef <- function(data){
     x = data[,1]
     y= data[,2]
-    u = 30
+    u = 50
     return( sum(x>u & y>u)/(sum(x>u)+sum(y>u))*2)
 }
 
@@ -101,10 +101,6 @@ emp.extcoef1 <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical
 
 emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 
-
-png("figures/application/florida_extcoef_scatter_emp_1.png",width=800,height=800)
-plot(x,2-t(emp.extcoef.mat)@x,pch=20,cex=0.01) 
-dev.off()
 
 data.fit <- data.pareto[data.max>quantile(data.max,0.95)]
 len.row <- unlist(lapply(1:length(data.fit),function(i){length(data.fit[[i]][[1]])}))
@@ -114,9 +110,6 @@ data.pareto.mat <- as.matrix(data.pareto.mat)
 emp.extcoef2 <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat[,x])},mc.cores=5,mc.set.seed = FALSE))
 
 emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef2,symmetric = TRUE,dimnames=NULL)
-png("figures/application/florida_extcoef_scatter_emp_2.png",width=800,height=800)
-plot(x,2-t(emp.extcoef.mat)@x,pch=20,cex=0.01) 
-dev.off()
 
 save(emp.extcoef1,emp.extcoef2,file="data/application_florida/application_florida_results_emp.RData")
 
@@ -209,3 +202,9 @@ points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # R
 points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
 
 dev.off()
+
+
+summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
+summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
+
+
