@@ -660,7 +660,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
         if(method=="L-BFGS-B"){
             opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e6),hessian=hessian,ncore=ncores)
         }else{
-            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-6),hessian=hessian,ncore=ncores)
+            opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-8),hessian=hessian,ncore=ncores)
         }
         if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
             n.alpha = sum(!fixed[-idx.para])
@@ -679,7 +679,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             if(method=="L-BFGS-B"){
                 opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE,factr=1e6),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }else{
-                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-6),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-8),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }
             opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$value,error=function(e){return(Inf)})}))
             opt.result = opt.result2[[which.min(opt.values)]]
@@ -688,7 +688,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             if(method=="L-BFGS-B"){
                 opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,factr=1e6),hessian=hessian)
             }else{
-                opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-6),hessian=hessian)
+                opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-8),hessian=hessian)
             }
             opt.result$others = opt.result2
         }
