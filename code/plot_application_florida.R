@@ -47,7 +47,7 @@ coord.grid.new <- apply(coord.grid,2,function(x){x-median(x)})
 pairs <- comb_n(1:nrow(coord.grid),2)
 coord.ratio <- 0.01796407/0.01912047
 basis.centers <- as.matrix(expand.grid(quantile(coord.grid[,1],c(0.2,0.8)),quantile(coord.grid[,2],c(0.2,0.8))))
-basis.centers <- rbind(basis.centers,apply(basis.centers,2,function(x){median(x)}))
+# basis.centers <- rbind(basis.centers,apply(basis.centers,2,function(x){median(x)}))
 basis <- lapply(1:nrow(basis.centers),function(i){
     y=dnorm(sqrt((coord.grid[,1]-basis.centers[i,1])^2 + (coord.grid[,2]-basis.centers[i,2])^2),mean=0,sd=ncol(coord.grid)*2)
     y=y-mean(y)
@@ -62,7 +62,7 @@ basis <- lapply(1:nrow(basis.centers),function(i){
 basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 
 for(i in 1:4){
-    file.save = paste0("data/application_florida/application_florida_results_",i,"_Nelder-Mead.RData")
+    file.save = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B.RData")
     load(file.save,e<-new.env())
     alpha <- alpha.func(e$fit.result$par[-c(1:4)],basis)
     cov.mat <- vario.func2(coord.grid.new,e$fit.result$par[1:4],ncores=5)
@@ -115,10 +115,10 @@ save(emp.extcoef1,emp.extcoef2,file="data/application_florida/application_florid
 
 
 load("data/application_florida/application_florida_results_emp.RData",e<-new.env())
-load("data/application_florida/application_florida_results_1_Nelder-Mead.RData",e1<-new.env())
-load("data/application_florida/application_florida_results_2_Nelder-Mead.RData",e2<-new.env())
-load("data/application_florida/application_florida_results_3_Nelder-Mead.RData",e3<-new.env())
-load("data/application_florida/application_florida_results_4_Nelder-Mead.RData",e4<-new.env())
+load("data/application_florida/application_florida_results_1_L-BFGS-B.RData",e1<-new.env())
+load("data/application_florida/application_florida_results_2_L-BFGS-B.RData",e2<-new.env())
+load("data/application_florida/application_florida_results_3_L-BFGS-B.RData",e3<-new.env())
+load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<-new.env())
 
 emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
@@ -201,5 +201,6 @@ dev.off()
 
 summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
 summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
+
 
 
