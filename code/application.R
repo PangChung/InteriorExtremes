@@ -40,7 +40,7 @@ data.max = sapply(data,function(x) max(x[[2]]))
 # mev::tstab.gpd(data.max,thres)
 
 data.fit.sum = data[data.sum>quantile(data.sum,0.99)]
-data.fit.max = data[data.sum>quantile(data.max,0.99)]
+data.fit.max = data[data.max>quantile(data.max,0.99)]
 
 D = nrow(loc.sub.trans)
 ncores = floor(detectCores()/2)
