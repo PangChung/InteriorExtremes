@@ -210,9 +210,9 @@ data_true <- rbind(data_true,data_true)
 data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 p.list.logskew <- list()
-thres.b = 10
+thres.b = Inf
 for(i in 1:2){
-        data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b)
+        data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
         print(dim(data));print(dim(subset(fit.pareto.logskew.1,method==i & !is.na(`hat(b)[1]`))))
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
@@ -232,7 +232,7 @@ for(i in 1:2){
 }
 
 for(i in 1:2){
-        data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b)
+        data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
         print(dim(data));print(dim(subset(fit.pareto.logskew.3,method==i & !is.na(`hat(b)[1]`))))
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
@@ -259,9 +259,9 @@ data_true <- rbind(data_true,data_true)
 data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 p.list.truncT <- list()
-thres.lambda = 10
+thres.lambda = Inf
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.1, method==i & `hat(lambda)` < thres.lambda)
+    data = subset(fit.pareto.truncT.1, method==i & `hat(lambda)` < thres.lambda & case %in% c(3,4,7,8))
     print(dim(data));print(dim(subset(fit.pareto.truncT.1,method==i & !is.na(`hat(lambda)`))))
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
@@ -281,7 +281,7 @@ for(i in 1:2){
 }
 
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < thres.lambda & )
+    data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < thres.lambda & case %in% c(3,4,7,8))
     print(dim(data));print(dim(subset(fit.pareto.truncT.3,method==i & !is.na(`hat(lambda)`))))
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)

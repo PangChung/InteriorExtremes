@@ -37,7 +37,7 @@ basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distm
 pairs <- comb_n(1:nrow(loc.sub),2)
 
 for(i in 1:4){
-    file.save = paste0("data/application_RedSea/application_RedSea_results_",i,"_Nelder-Mead.RData")
+    file.save = paste0("data/application_RedSea/application_RedSea_results_",i,"_L-BFGS-B.RData")
     load(file.save,e<-new.env())
     alpha <- alpha.func(e$fit.result$par[-c(1:2)],basis)
     cov.mat <- vario.func(loc.sub.trans,e$fit.result$par[1:2],ncores=5)
@@ -85,10 +85,10 @@ save(emp.extcoef1,emp.extcoef2,file="data/application_RedSea/application_RedSea_
 
 
 load("data/application_RedSea/application_RedSea_results_emp.RData",e<-new.env())
-load("data/application_RedSea/application_RedSea_results_1_Nelder-Mead.RData",e1<-new.env())
-load("data/application_RedSea/application_RedSea_results_2_Nelder-Mead.RData",e2<-new.env())
-load("data/application_RedSea/application_RedSea_results_3_Nelder-Mead.RData",e3<-new.env())
-load("data/application_RedSea/application_RedSea_results_4_Nelder-Mead.RData",e4<-new.env())
+load("data/application_RedSea/application_RedSea_results_1_L-BFGS-B.RData",e1<-new.env())
+load("data/application_RedSea/application_RedSea_results_2_L-BFGS-B.RData",e2<-new.env())
+load("data/application_RedSea/application_RedSea_results_3_L-BFGS-B.RData",e3<-new.env())
+load("data/application_RedSea/application_RedSea_results_4_L-BFGS-B.RData",e4<-new.env())
 
 emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
@@ -171,5 +171,6 @@ summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.ext
 summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
 
 sum(data.sum > quantile(data.sum,0.9) & data.max > quantile(data.max,0.9))
+
 
 
