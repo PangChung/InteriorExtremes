@@ -57,7 +57,7 @@ lb = c(0.01,0.01,rep(-Inf,n.alpha))
 file.save = paste0(DataPath,"/data/application_RedSea_results_",id,"_",method,"_",idx.jack,".RData")
 file.origin = paste0(DataPath,"/data/application_RedSea_results_",id,"_",method,".RData")
 
-if(file.exists(file.save)){
+if(file.exists(file.save) | idx.jack > length(data.fit.max)){
     stop("job already done")
 }
 
