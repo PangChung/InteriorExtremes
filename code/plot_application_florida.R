@@ -18,24 +18,26 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 load("data/application_florida_list.RData")
-grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
-intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
-fill_basin <- as.factor(rep(1:8,length.out=172))
-all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))[-1]
-all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
-fill_grid = grid.sf$PIXEL %in% all_IDs_num
-
 load("data/maps_florida.RData")
-register_google(key=system("echo $g_key",intern = TRUE))
-map <- get_googlemap(center=c(-82.273528,28.209394),zoom=9,maptype = "terrain",style = "feature:all|element:all|saturation:-100|lightness:50")
-intb.transform <- st_transform(intb.sf, crs = 4326)
-grid.transform <- st_transform(grid.sf, crs = 4326)
 
-save(intb.transform,grid.transform,map,grid.sf,intb.sf,file="data/maps_florida.RData")
+# grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
+# intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
+# fill_basin <- as.factor(rep(1:8,length.out=172))
+# all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))[-1]
+# all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
+# fill_grid = grid.sf$PIXEL %in% all_IDs_num
 
-ggmap(map) + theme_void() + 
-ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5))  + 
-geom_sf(data=grid.transform, aes(colour=as.factor(fill_grid)),alpha=0.5,inherit.aes = FALSE) + scale_color_brewer(palette = "Set1",name="Grid")
+
+# register_google(key=system("echo $g_key",intern = TRUE))
+# map <- get_googlemap(center=c(-82.273528,28.209394),zoom=9,maptype = "terrain",style = "feature:all|element:all|saturation:-100|lightness:50")
+# intb.transform <- st_transform(intb.sf, crs = 4326)
+# grid.transform <- st_transform(grid.sf, crs = 4326)
+
+# save(intb.transform,grid.transform,map,grid.sf,intb.sf,file="data/maps_florida.RData")
+
+# ggmap(map) + theme_void() + 
+# ggtitle("Tampa Bay") + theme(plot.title = element_text(hjust = 0.5))  + 
+# geom_sf(data=grid.transform, aes(colour=as.factor(fill_grid)),alpha=0.5,inherit.aes = FALSE) + scale_color_brewer(palette = "Set1",name="Grid")
 
 coord.geo <- as.data.frame(st_coordinates(grid.transform))
 idx.pixel <- unlist(lapply(all_IDs_num,function(x){which(grid.transform$PIXEL==x)}))
@@ -99,7 +101,7 @@ emp.extcoef1 <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical
 
 emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 
-x = as.matrix(dist(coord.grid))[t(pairs)]
+
 png("figures/application/florida_extcoef_scatter_emp_1.png",width=800,height=800)
 plot(x,2-t(emp.extcoef.mat)@x,pch=20,cex=0.01) 
 dev.off()
@@ -182,22 +184,28 @@ for(i in 1:nrow(basis.centers.geo)){
 }
 
 for(i in 1:length(p1)){
-    ggsave(paste0("figures/application/florida_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=6.4,height=6,dpi=300)
+    ggsave(paste0("figures/application/florida/florida_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=6.4,height=6,dpi=300)
 }
 
 for(i in 1:length(p2)){
-    ggsave(paste0("figures/application/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
+    ggsave(paste0("figures/application/florida/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/florida_extcoef_1_*.png figures/application/combined1_1.gif")
+system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_1_*.png figures/application//florida/combined1_1.gif")
 
-system("magick -delay 20 -loop 0 figures/application/florida_extcoef_2_*.png figures/application/combined2_1.gif")
+system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_2_*.png figures/application/florida/combined2_1.gif")
 
 
-png("figures/application/florida_extcoef_scatter.png",width=800*2,height=800*2)
-par(mfrow=c(2,2),mar=c(4,4,2,1))
-plot(x,e1$fitted.extcoef.mat@x,pch=20,cex=0.01) 
-plot(x,e2$fitted.extcoef.mat@x,pch=20,cex=0.01) 
-plot(x,e3$fitted.extcoef.mat@x,pch=20,cex=0.01) 
-plot(x,e4$fitted.extcoef.mat@x,pch=20,cex=0.01) 
+x = as.matrix(dist(coord.grid))[t(pairs)]
+png("figures/application/florida/florida_extcoef_scatter.png", width=800*2, height=800)
+par(mfrow=c(1,2), mar=c(4,4,2,1))
+
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2])) 
+points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+
+plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2])) 
+points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+
 dev.off()

@@ -106,8 +106,8 @@ emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmet
 
 
 p1 <- p2 <- list()
-brks.emp1 <- c(1.2,1.35,1.5,1.65,1.8,1.95)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
-brks.emp2 <- c(1.2,1.35,1.5,1.65,1.8,1.95)#round(quantile(2-emp.extcoef.mat2@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
+brks.emp1 <- c(1.2,1.35,1.5,1.65,1.8,1.9)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
+brks.emp2 <- c(1.2,1.35,1.5,1.65,1.8,1.9)#round(quantile(2-emp.extcoef.mat2@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
 ewbreaks <- seq(34.4,41.6,2.4)
 nsbreaks <- seq(15.6,26.4,3.6)
 ewlabels <- unlist(lapply(ewbreaks, function(x) paste(" ",abs(x), "ºE")))
@@ -164,14 +164,15 @@ system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_1_*.p
 
 system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_2_*.png figures/application/RedSea/RedSea_combined2_1.gif")
 
+png("figures/application/RedSea/RedSea_extcoef_scatter.png", width=800*2, height=800)
+par(mfrow=c(1,2), mar=c(4,4,2,1))
 
-png("figures/application/RedSea_extcoef_scatter.png",width=800*2,height=800*3)
-par(mfrow=c(1,2),mar=c(4,4,2,1))
-plot(x,2-e$emp.extcoef1 ,pch=20,cex=0.01) 
-points(x,e1$fitted.extcoef.mat@x,pch=20,cex=0.01,col="red") 
-points(x,e3$fitted.extcoef.mat@x,pch=20,cex=0.01,col="blue") 
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2])) 
+points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
 
-plot(x,2-e$emp.extcoef2,pch=20,cex=0.01) 
-points(x,e2$fitted.extcoef.mat@x,pch=20,cex=0.01,col="red") 
-points(x,e4$fitted.extcoef.mat@x,pch=20,cex=0.01,col="blue") 
+plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2])) 
+points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+
 dev.off()
