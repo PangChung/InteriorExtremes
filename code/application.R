@@ -4,6 +4,9 @@ source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 computer = "local"
+id = 1
+idx.jack = 1
+method = "Nelder-Mead"
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
