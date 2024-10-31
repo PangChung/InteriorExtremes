@@ -168,11 +168,9 @@ points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # B
 
 dev.off()
 
-summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) 
-summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
+summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
 
-summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) 
-summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
+summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
 
-sum(data.sum > quantile(data.sum,0.99) & data.max > quantile(data.max,0.99))
+sum(data.sum > quantile(data.sum,0.9) & data.max > quantile(data.max,0.9))
 
