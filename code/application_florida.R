@@ -143,7 +143,7 @@ lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,nrow(basis.centers)))
 file.save = paste0(DataPath,"/data/application_florida_results_",id,"_",method,"_",idx.jack,".RData")
 file.origin = paste0(DataPath,"/data/application_florida_results_",id,"_",method,".RData")
 
-if(file.exists(file.save)){
+if(file.exists(file.save) | idx.jack > length(data.fit.max)){
     stop("job already done")
 }
 
