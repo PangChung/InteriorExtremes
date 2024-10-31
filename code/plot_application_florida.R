@@ -115,11 +115,6 @@ save(emp.extcoef1,emp.extcoef2,file="data/application_florida/application_florid
 
 
 load("data/application_florida/application_florida_results_emp.RData",e<-new.env())
-# load("data/application_florida/application_florida_results_1_L-BFGS-B.RData",e1<-new.env())
-# load("data/application_florida/application_florida_results_2_L-BFGS-B.RData",e2<-new.env())
-# load("data/application_florida/application_florida_results_3_L-BFGS-B.RData",e3<-new.env())
-# load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<-new.env())
-
 load("data/application_florida/application_florida_results_1_Nelder-Mead.RData",e1<-new.env())
 load("data/application_florida/application_florida_results_2_Nelder-Mead.RData",e2<-new.env())
 load("data/application_florida/application_florida_results_3_Nelder-Mead.RData",e3<-new.env())
