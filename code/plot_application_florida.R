@@ -20,12 +20,12 @@ source("code/likelihood_inference.R")
 load("data/application_florida_list.RData")
 load("data/maps_florida.RData")
 
-# grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
-# intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
-# fill_basin <- as.factor(rep(1:8,length.out=172))
-# all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))[-1]
-# all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
-# fill_grid = grid.sf$PIXEL %in% all_IDs_num
+grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
+intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
+fill_basin <- as.factor(rep(1:8,length.out=172))
+all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))[-1]
+all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
+fill_grid = grid.sf$PIXEL %in% all_IDs_num
 
 
 # register_google(key=system("echo $g_key",intern = TRUE))
@@ -131,10 +131,10 @@ ewbreaks <- c(-82.9,-82.5,-82.1,-81.6)
 nsbreaks <- c(27.7, 28, 28.4, 28.8)
 ewlabels <- unlist(lapply(-ewbreaks, function(x) paste(" ",abs(x), "ºW")))
 nslabels <- unlist(lapply(nsbreaks, function(x) paste(" ",x, "ºN")))
-basis.centers.geo <- expand.grid(quantile(coord.geo[,1],seq(0.25,0.75,length.out=8)),quantile(coord.geo[,2],seq(0.25,0.75,length.out=8)))
-for(i in 1:nrow(basis.centers.geo)){
-    center.coord <- basis.centers.geo[i,]
-    idx.center = which.min(apply(coord.geo,1,function(x){sum(x-center.coord)^2}))
+basis.centers.geo <- sample(1:4449,50)
+basis.centers.geo <- basis.centers.geo[order(coord.geo[basis.centers.geo,2])] 
+for(i in 1:length(basis.centers.geo)){
+    idx.center = basis.centers.geo[i]
     data.df <- data.frame(lon=round(coord.geo[,1],5),lat=round(coord.geo[,2],5),
                 emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=e1$fitted.extcoef.mat[,idx.center],
                 sbr=e3$fitted.extcoef.mat[,idx.center],br2=e2$fitted.extcoef.mat[,idx.center],sbr2=e4$fitted.extcoef.mat[,idx.center])
@@ -179,7 +179,7 @@ for(i in 1:length(p2)){
     ggsave(paste0("figures/application/florida/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_1_*.png figures/application//florida/combined1_1.gif")
+system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_1_*.png figures/application/florida/combined1_1.gif")
 
 system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_2_*.png figures/application/florida/combined2_1.gif")
 
@@ -201,6 +201,7 @@ dev.off()
 
 summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
 summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
+
 
 
 
