@@ -45,8 +45,6 @@ for(i in 1:4){
     par.list <- alpha2delta(list(cov.mat,alpha))
     fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
 
-    range(fitted.extcoef)
-
     e$fitted.extcoef.mat <- sparseMatrix(i=pairs[2,],j=pairs[1,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
     e$par.list = par.list
 
@@ -157,7 +155,7 @@ system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_2_*.p
 
 png("figures/application/RedSea/RedSea_extcoef_scatter.png", width=800*2, height=800)
 par(mfrow=c(1,2), mar=c(4,4,2,1))
-
+x = distmat[t(pairs)]
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
 points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
 points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
@@ -173,4 +171,5 @@ summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.ext
 summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
 
 sum(data.sum > quantile(data.sum,0.9) & data.max > quantile(data.max,0.9))
+
 
