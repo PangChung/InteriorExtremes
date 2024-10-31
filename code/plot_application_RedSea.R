@@ -31,9 +31,9 @@ ggmap(map) + theme(plot.title = element_text(hjust=0.5)) + ggtitle("Red Sea") + 
 
 save(map,loc.sub,loc.sub.trans,xy.center,xlim,ylim,file="data/maps_RedSea.RData")
 
-idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
-
+idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=3)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
 basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distmat)*2);y=y-mean(y);y/sqrt(sum(y^2))})
+
 pairs <- comb_n(1:nrow(loc.sub),2)
 
 for(i in 1:4){
@@ -153,16 +153,16 @@ for(i in 1:length(basis.centers.geo)){
 }
 
 for(i in 1:length(p1)){
-    ggsave(paste0("figures/application/RedSea_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=6.4,height=6,dpi=300)
+    ggsave(paste0("figures/application/RedSea/RedSea_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=5,height=6,dpi=300)
 }
 
 for(i in 1:length(p2)){
-    ggsave(paste0("figures/application/RedSea_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
+    ggsave(paste0("figures/application/RedSea/RedSea_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=5,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/RedSea_extcoef_1_*.png figures/application/RedSea_combined1_1.gif")
+system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_1_*.png figures/application/RedSea/RedSea_combined1_1.gif")
 
-system("magick -delay 20 -loop 0 figures/application/RedSea_extcoef_2_*.png figures/application/RedSea_combined2_1.gif")
+system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_2_*.png figures/application/RedSea/RedSea_combined2_1.gif")
 
 
 png("figures/application/RedSea_extcoef_scatter.png",width=800*2,height=800*3)
