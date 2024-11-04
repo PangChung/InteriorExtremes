@@ -147,6 +147,11 @@ if(file.exists(file.save) | idx.jack > length(data.fit.max)){
     stop("job already done")
 }
 
+if(file.exists(file.origin)){
+    load(file.origin,e<-new.env())
+    init = e$fit.result$par
+}
+
 if(idx.jack!=0){
     switch(id,
         {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
