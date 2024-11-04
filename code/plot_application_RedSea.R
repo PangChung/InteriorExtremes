@@ -177,7 +177,7 @@ dev.off()
 
 angles.pairs <- (apply(pairs,2,function(x){x1=loc.sub[x[1],1]-loc.sub[x[2],1];y1=loc.sub[x[1],2]-loc.sub[x[2],2];a=atan2(x1,y1)*180/pi}) + 180) %% 180
 
-png("figures/application/RedSea/RedSea_extcoef_angle/%03d.png", width=4*3, height=4*2,units="in",res=300)
+png("figures/application/RedSea/RedSea_extcoef_angle/%02d.png", width=4*3, height=4*2,units="in",res=300)
 for( angle in seq(0,180,10)){
     par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
     idx = angles.pairs < angle+2 & angles.pairs > angle-2
