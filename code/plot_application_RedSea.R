@@ -153,91 +153,52 @@ system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_1_*.p
 
 system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_2_*.png figures/application/RedSea/RedSea_combined2_1.gif")
 
-png("figures/application/RedSea/RedSea_extcoef_scatter.png", width=800*3, height=800*2)
-par(mfrow=c(2,3), mar=c(4,4,2,1))
 x = distmat[t(pairs)]
-plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
+png("figures/application/RedSea/RedSea_extcoef_scatter.png", width=4*3, height=4*2, units="in",res=300)
+par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
 
-plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
+
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
 points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
 
-plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
 points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
 
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
 
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
+plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
+
+plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
 points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
 
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
+plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
 points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
 dev.off()
 
-idx.south <- apply(pairs,2,function(x){any(loc.sub[x,2] < 18 )})
-idx.middle <- apply(pairs,2,function(x){any(loc.sub[x,2]>=18 & loc.sub[x,2] < 24)})
-idx.north <-   apply(pairs,2,function(x){any(loc.sub[x,2]>=24)})
+angles.pairs <- (apply(pairs,2,function(x){x1=loc.sub[x[1],1]-loc.sub[x[2],1];y1=loc.sub[x[1],2]-loc.sub[x[2],2];a=atan2(x1,y1)*180/pi}) + 180) %% 180
 
-png("figures/application/RedSea/RedSea_extcoef_scatter_south.png", width=800*3, height=800*2)
-par(mfrow=c(2,3), mar=c(4,4,2,1))
-x = distmat[t(pairs[,idx.south])]
-plot(x, 2-e$emp.extcoef1[idx.south], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
+png("figures/application/RedSea/RedSea_extcoef_angle/%03d.png", width=4*3, height=4*2,units="in",res=300)
+for( angle in seq(0,170,10)){
+    par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
+    idx = abs(angles.pairs) < angle+2 & abs(angles.pairs) > angle-2
+    plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
 
-plot(x, 2-e$emp.extcoef1[idx.south], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e3$fitted.extcoef.mat@x[idx.south], pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
+    plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
+    points(x[idx], e3$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
 
-plot(x, 2-e$emp.extcoef1[idx.south], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e1$fitted.extcoef.mat@x[idx.south], pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
+    plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
+    points(x[idx], e1$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(1, 0, 0, 0.5))  # Red with transparency
 
-plot(x, 2-e$emp.extcoef2[idx.south], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
 
-plot(x, 2-e$emp.extcoef2[idx.south], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e4$fitted.extcoef.mat@x[idx.south], pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
+    plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
 
-plot(x, 2-e$emp.extcoef2[idx.south], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e2$fitted.extcoef.mat@x[idx.south], pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
+    plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
+    points(x[idx], e4$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+
+    plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
+    points(x[idx], e2$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+}
 dev.off()
-
-png("figures/application/RedSea/RedSea_extcoef_scatter_middle.png", width=800*3, height=800*2)
-par(mfrow=c(2,3), mar=c(4,4,2,1))
-x = distmat[t(pairs[,idx.middle])]
-plot(x, 2-e$emp.extcoef1[idx.middle], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-
-plot(x, 2-e$emp.extcoef1[idx.middle], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e3$fitted.extcoef.mat@x[idx.middle], pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
-
-plot(x, 2-e$emp.extcoef1[idx.middle], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e1$fitted.extcoef.mat@x[idx.middle], pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
-
-plot(x, 2-e$emp.extcoef2[idx.middle], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-
-plot(x, 2-e$emp.extcoef2[idx.middle], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e4$fitted.extcoef.mat@x[idx.middle], pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
-
-plot(x, 2-e$emp.extcoef2[idx.middle], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e2$fitted.extcoef.mat@x[idx.middle], pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
-dev.off()
-
-png("figures/application/RedSea/RedSea_extcoef_scatter_north.png", width=800*3, height=800*2)
-par(mfrow=c(2,3), mar=c(4,4,2,1))
-x = distmat[t(pairs[,idx.north])]
-plot(x, 2-e$emp.extcoef1[idx.north], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-
-plot(x, 2-e$emp.extcoef1[idx.north], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e3$fitted.extcoef.mat@x[idx.north], pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
-
-plot(x, 2-e$emp.extcoef1[idx.north], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e1$fitted.extcoef.mat@x[idx.north], pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
-
-
-plot(x, 2-e$emp.extcoef2[idx.north], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-
-plot(x, 2-e$emp.extcoef2[idx.north], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e4$fitted.extcoef.mat@x[idx.north], pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
-
-plot(x, 2-e$emp.extcoef2[idx.north], pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5)) # Black with transparency
-points(x, e2$fitted.extcoef.mat@x[idx.north], pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
-dev.off()
-
 
 summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
 summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))

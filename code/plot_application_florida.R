@@ -185,8 +185,8 @@ system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_2_*
 
 
 x = as.matrix(dist(coord.grid))[t(pairs)]
-pdf("figures/application/florida/florida_extcoef_scatter.pdf", width=4*3, height=4*2, pointsize=12, useDingbats = TRUE)
-par(mfrow=c(2,3), mar=c(4,4,2,1))
+png("figures/application/florida/florida_extcoef.png", width=4*3, height=4*2,units="in",res=300)
+par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
 
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
 
@@ -211,7 +211,7 @@ angles.pairs <- (apply(pairs,2,function(x){x1=coord.geo[x[1],1]-coord.geo[x[2],1
 
 png("figures/application/florida/florida_extcoef_angle/%03d.png", width=4*3, height=4*2,units="in",res=300)
 for( angle in seq(0,180,10)){
-    par(mfrow=c(2,3), mar=c(4,4,2,1))
+    par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
     idx = abs(angles.pairs) < angle+2 & abs(angles.pairs) > angle-2
     plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2)) # Black with transparency
 
