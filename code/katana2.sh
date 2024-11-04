@@ -14,7 +14,7 @@ module load gsl/2.7.1
 module load gmp/6.2.1 
 module load r/4.3.1
 
-# Rscript $script "computer=\"hpc\";id=${PBS_ARRAY_INDEX}" 
+# Rscript $script "computer=\"hpc\";id=${PBS_ARR2AY_INDEX}" 
 # Rscript code/application_florida.R "computer=\"hpc\";idx.jack=${PBS_ARRAY_INDEX};method=\"Nelder-Mead\";id=${id}" 
 # Rscript code/application_florida.R "computer=\"hpc\";idx.jack=0;method=\"Nelder-Mead\";id=${PBS_ARRAY_INDEX}" 
 Rscript $script "computer=\"hpc\";idx.jack=0;method=\"L-BFGS-B\";id=${PBS_ARRAY_INDEX}" 
