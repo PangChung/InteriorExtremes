@@ -213,6 +213,7 @@ p.list.logskew <- list()
 thres.b = Inf
 for(i in 1:2){
         data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
+        data$case = factor(data$case,levels=1:6)
         print(dim(data));print(dim(subset(fit.pareto.logskew.1,method==i & !is.na(`hat(b)[1]`))))
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)

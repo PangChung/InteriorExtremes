@@ -31,13 +31,13 @@ ggmap(map) + theme(plot.title = element_text(hjust=0.5)) + ggtitle("Red Sea") + 
 
 save(map,loc.sub,loc.sub.trans,xy.center,xlim,ylim,file="data/maps_RedSea.RData")
 
-idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=3)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
+idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
 basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distmat)*2);y=y-mean(y);y/sqrt(sum(y^2))})
 
 pairs <- comb_n(1:nrow(loc.sub),2)
 
 for(i in 1:4){
-    file.save = paste0("data/application_RedSea/application_RedSea_results_",i,"_L-BFGS-B.RData")
+    file.save = paste0("data/application_RedSea2/application_RedSea_results_",i,"_L-BFGS-B.RData")
     load(file.save,e<-new.env())
     alpha <- alpha.func(e$fit.result$par[-c(1:2)],basis)
     cov.mat <- vario.func(loc.sub.trans,e$fit.result$par[1:2],ncores=5)
@@ -85,10 +85,10 @@ save(emp.extcoef1,emp.extcoef2,file="data/application_RedSea/application_RedSea_
 
 
 load("data/application_RedSea/application_RedSea_results_emp.RData",e<-new.env())
-load("data/application_RedSea/application_RedSea_results_1_L-BFGS-B.RData",e1<-new.env())
-load("data/application_RedSea/application_RedSea_results_2_L-BFGS-B.RData",e2<-new.env())
-load("data/application_RedSea/application_RedSea_results_3_L-BFGS-B.RData",e3<-new.env())
-load("data/application_RedSea/application_RedSea_results_4_L-BFGS-B.RData",e4<-new.env())
+load("data/application_RedSea2/application_RedSea_results_1_L-BFGS-B.RData",e1<-new.env())
+load("data/application_RedSea2/application_RedSea_results_2_L-BFGS-B.RData",e2<-new.env())
+load("data/application_RedSea2/application_RedSea_results_3_L-BFGS-B.RData",e3<-new.env())
+load("data/application_RedSea2/application_RedSea_results_4_L-BFGS-B.RData",e4<-new.env())
 
 emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
@@ -142,19 +142,19 @@ for(i in 1:length(basis.centers.geo)){
 }
 
 for(i in 1:length(p1)){
-    ggsave(paste0("figures/application/RedSea/RedSea_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=5,height=6,dpi=300)
+    ggsave(paste0("figures/application/RedSea2/RedSea_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=5,height=6,dpi=300)
 }
 
 for(i in 1:length(p2)){
-    ggsave(paste0("figures/application/RedSea/RedSea_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=5,height=6,dpi=300)
+    ggsave(paste0("figures/application/RedSea2/RedSea_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=5,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_1_*.png figures/application/RedSea/RedSea_combined1_1.gif")
+system("magick -delay 20 -loop 0 figures/application/RedSea2/RedSea_extcoef_1_*.png figures/application/RedSea2/RedSea_combined1_1.gif")
 
-system("magick -delay 20 -loop 0 figures/application/RedSea/RedSea_extcoef_2_*.png figures/application/RedSea/RedSea_combined2_1.gif")
+system("magick -delay 20 -loop 0 figures/application/RedSea2/RedSea_extcoef_2_*.png figures/application/RedSea2/RedSea_combined2_1.gif")
 
 x = distmat[t(pairs)]
-png("figures/application/RedSea/RedSea_extcoef_scatter.png", width=4*3, height=4*2, units="in",res=300)
+png("figures/application/RedSea2/RedSea_extcoef_scatter.png", width=4*3, height=4*2, units="in",res=300)
 par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
 
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
@@ -177,7 +177,7 @@ dev.off()
 
 angles.pairs <- (apply(pairs,2,function(x){x1=loc.sub[x[1],1]-loc.sub[x[2],1];y1=loc.sub[x[1],2]-loc.sub[x[2],2];a=atan2(x1,y1)*180/pi}) + 180) %% 180
 
-png("figures/application/RedSea/RedSea_extcoef_angle/%02d.png", width=4*3, height=4*2,units="in",res=300)
+png("figures/application/RedSea2/RedSea_extcoef_angle/%02d.png", width=4*3, height=4*2,units="in",res=300)
 for( angle in seq(0,180,10)){
     par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
     idx = angles.pairs < angle+2 & angles.pairs > angle-2
