@@ -213,13 +213,13 @@ p.list.logskew <- list()
 thres.b = Inf
 for(i in 1:2){
         data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
-        data$case = factor(data$case,levels=1:6)
+        data.true.sub <- subset(data_true,method==i & !(case %in% c(5,7,8,9,11,12)))
         print(dim(data));print(dim(subset(fit.pareto.logskew.1,method==i & !is.na(`hat(b)[1]`))))
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
         p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
         geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-        geom_point(data=subset(data_true,method==i),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+        geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
         facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
         labs(x = "Cases",
                 y = "Value",fill="Method") + 
@@ -234,12 +234,13 @@ for(i in 1:2){
 
 for(i in 1:2){
         data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
+        data.true.sub <- subset(data_true,method==i & !(case %in% c(5,7,8,9,11,12)))
         print(dim(data));print(dim(subset(fit.pareto.logskew.3,method==i & !is.na(`hat(b)[1]`))))
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
         p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
         geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-        geom_point(data=subset(data_true,method==i),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+        geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
         facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
         labs(x = "Cases",
                 y = "Value",fill="Method") + 
@@ -263,12 +264,13 @@ p.list.truncT <- list()
 thres.lambda = Inf
 for(i in 1:2){
     data = subset(fit.pareto.truncT.1, method==i & `hat(lambda)` < thres.lambda & case %in% c(3,4,7,8))
+    data.true.sub <- subset(data_true,method==i & case %in% c(3,4,7,8))
     print(dim(data));print(dim(subset(fit.pareto.truncT.1,method==i & !is.na(`hat(lambda)`))))
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
     p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
         geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-        geom_point(data=subset(data_true,method==i),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+        geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
         facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
         labs(x = "Cases",
                 y = "Value",fill="Method") + 
@@ -283,12 +285,13 @@ for(i in 1:2){
 
 for(i in 1:2){
     data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < thres.lambda & case %in% c(3,4,7,8))
+    data.true.sub <- subset(data_true,method==i & case %in% c(3,4,7,8))
     print(dim(data));print(dim(subset(fit.pareto.truncT.3,method==i & !is.na(`hat(lambda)`))))
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
     p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
         geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-        geom_point(data=subset(data_true,method==i),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+        geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
         facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
         labs(x = "Cases",
                 y = "Value",fill="Method") + 
