@@ -192,18 +192,23 @@ fit.pareto.truncT.3 <- do.call(rbind,lapply(files.pareto.truncT.3,collect_result
 
 load(files.pareto.logskew.1[1],e<-new.env());par.logskew <- e$par.skew.normal
 load(files.pareto.truncT.1[1],e<-new.env());par.truncT <- e$par.truncT
-names(fit.pareto.logskew.1) <- names(fit.pareto.logskew.3) <- c("case","method","time","val","hat(lambda)","hat(vartheta)","hat(b)[0]","hat(b)[1]","hat(b)[2]")
-names(fit.pareto.truncT.1) <- names(fit.pareto.truncT.3) <- c("case","method","time","val","hat(lambda)","hat(vartheta)")#,"deg")
+names(fit.pareto.logskew.1) <- names(fit.pareto.logskew.3) <- c("case","method","time","val","log(hat(lambda))","hat(vartheta)","hat(b)[0]","hat(b)[1]","hat(b)[2]")
+
+fit.pareto.logskew.1[,5] = log(fit.pareto.logskew.1[,5])
+fit.pareto.logskew.3[,5] = log(fit.pareto.logskew.3[,5])
+fit.pareto.truncT.1[,5] = log(fit.pareto.truncT.1[,5])
+fit.pareto.truncT.3[,5] = log(fit.pareto.truncT.3[,5])
+
+names(fit.pareto.truncT.1) <- names(fit.pareto.truncT.3) <- c("case","method","time","val","log(hat(lambda))","hat(vartheta)")#,"deg")
+
 par.logskew <- as.data.frame(par.logskew);par.truncT <- as.data.frame(par.truncT)
 names(par.logskew) = names(fit.pareto.logskew.1)[5:9];names(par.truncT) = names(fit.pareto.truncT.1)[5:7]
 par.logskew$case = 1:nrow(par.logskew);par.truncT$case = 1:nrow(par.truncT)
 
-
-# fit.pareto.logskew.1[,8:9] = fit.pareto.logskew.1[,8:9]/fit.pareto.logskew.1[,7]
-# fit.pareto.logskew.3[,8:9] = fit.pareto.logskew.3[,8:9]/fit.pareto.logskew.3[,7]
-
-levels = c("hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
+levels = c("log(hat(lambda))","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 data_true = par.logskew
+data_true[,1] = log(data_true[,1])
+
 data_true <- pivot_longer(data_true, cols=levels, names_to = "Variable", values_to = "Value")
 data_true$facet = factor(paste0(data_true$Variable),levels=levels)
 data_true <- rbind(data_true,data_true)
@@ -212,29 +217,29 @@ data_true$method = rep(1:2,each=nrow(data_true)/2)
 p.list.logskew <- list()
 thres.b = Inf
 for(i in 1:2){
-        data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
-        data.true.sub <- subset(data_true,method==i & !(case %in% c(5,7,8,9,11,12)))
-        print(dim(data));print(dim(subset(fit.pareto.logskew.1,method==i & !is.na(`hat(b)[1]`))))
-        data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
-        data_long$facet = factor(paste0(data_long$Variable),level=levels)
-        p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
-        geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-        geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-        facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
-        labs(x = "Cases",
-                y = "Value",fill="Method") + 
-        theme(axis.text = element_text(size = 14),
-                axis.title.x = element_text(size = 16),
-                strip.text = element_text(size = 16),
-                axis.title.y = element_text(size = 16),
-                plot.title = element_text(hjust = 0.5, size = 16),
-                legend.title = element_text(size = 16)) 
+    data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b) #& !(case %in% c(5,7,8,9,11,12)))
+    data.true.sub <- subset(data_true,method==i) #& !(case %in% c(5,7,8,9,11,12)))
+    print(dim(data));print(dim(subset(fit.pareto.logskew.1,method==i & !is.na(`hat(b)[1]`))))
+    data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
+    data_long$facet = factor(paste0(data_long$Variable),level=levels)
+    p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
+    geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+    geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+    facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
+    labs(x = "Cases",
+            y = "Value",fill="Method") + 
+    theme(axis.text = element_text(size = 14),
+            axis.title.x = element_text(size = 16),
+            strip.text = element_text(size = 16),
+            axis.title.y = element_text(size = 16),
+            plot.title = element_text(hjust = 0.5, size = 16),
+            legend.title = element_text(size = 16)) 
     p.list.logskew[[i]] <- p
 }
 
 for(i in 1:2){
-        data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
-        data.true.sub <- subset(data_true,method==i & !(case %in% c(5,7,8,9,11,12)))
+        data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < thres.b) #& abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
+        data.true.sub <- subset(data_true,method==i )#& !(case %in% c(5,7,8,9,11,12)))
         print(dim(data));print(dim(subset(fit.pareto.logskew.3,method==i & !is.na(`hat(b)[1]`))))
         data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
         data_long$facet = factor(paste0(data_long$Variable),level=levels)
@@ -253,8 +258,9 @@ for(i in 1:2){
     p.list.logskew[[i+2]] <- p
 }
 
-levels = c("hat(lambda)","hat(vartheta)")
+levels = c("log(hat(lambda))","hat(vartheta)")
 data_true = par.truncT[,-3]
+data_true[,1] = log(data_true[,1])
 data_true <- pivot_longer(data_true, cols=levels, names_to = "Variable", values_to = "Value")
 data_true$facet = factor(paste0(data_true$Variable),levels=levels)
 data_true <- rbind(data_true,data_true)
@@ -263,9 +269,8 @@ data_true$method = rep(1:2,each=nrow(data_true)/2)
 p.list.truncT <- list()
 thres.lambda = Inf
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.1, method==i & `hat(lambda)` < thres.lambda & case %in% c(3,4,7,8))
-    data.true.sub <- subset(data_true,method==i & case %in% c(3,4,7,8))
-    print(dim(data));print(dim(subset(fit.pareto.truncT.1,method==i & !is.na(`hat(lambda)`))))
+    data = subset(fit.pareto.truncT.1, method==i & `log(hat(lambda))` < thres.lambda) # & case %in% c(3,4,7,8))
+    data.true.sub <- subset(data_true,method==i) #& case %in% c(3,4,7,8))
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
     p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
@@ -284,9 +289,8 @@ for(i in 1:2){
 }
 
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.3, method==i & `hat(lambda)` < thres.lambda & case %in% c(3,4,7,8))
-    data.true.sub <- subset(data_true,method==i & case %in% c(3,4,7,8))
-    print(dim(data));print(dim(subset(fit.pareto.truncT.3,method==i & !is.na(`hat(lambda)`))))
+    data = subset(fit.pareto.truncT.3, method==i & `log(hat(lambda))` < thres.lambda) #& case %in% c(3,4,7,8))
+    data.true.sub <- subset(data_true,method==i) #& case %in% c(3,4,7,8))
     data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
     data_long$facet = factor(paste0(data_long$Variable),level=levels)
     p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
@@ -304,6 +308,9 @@ for(i in 1:2){
     p.list.truncT[[i+2]] <- p
 }
 
-pdf(file=paste0("figures/simulation_pareto_violin_",idx.file,"_",thres.b,"_",thres.lambda,".pdf"),width=8*4,height = 5*2,onefile = TRUE)
-grid.arrange(grobs=c(p.list.logskew,p.list.truncT),ncol=4,nrow=2)
+pdf(file=paste0("figures/simulation_pareto_violin_",idx.file,"_",thres.b,"_",thres.lambda,".pdf"),width=14,height = 5,onefile = TRUE)
+grid.arrange(grobs=p.list.logskew[1:2],ncol=2,nrow=1)
+grid.arrange(grobs=p.list.logskew[3:4],ncol=2,nrow=1)
+grid.arrange(grobs=p.list.truncT[1:2],ncol=2,nrow=1)
+grid.arrange(grobs=p.list.truncT[3:4],ncol=2,nrow=1)
 dev.off()
