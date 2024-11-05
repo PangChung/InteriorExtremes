@@ -60,7 +60,7 @@ data = data[idx.data]
 data.sum = sapply(data,function(x) mean(x[[2]]))
 data.max = sapply(data,function(x) max(x[[2]]))
 
-data.fit = data[data.sum>quantile(data.sum,0.9)]
+data.fit = data[data.sum>quantile(data.sum,0.75)]
 len.row <- unlist(lapply(1:length(data.fit),function(i){length(data.fit[[i]][[1]])}))
 data.pareto.mat <- sparseMatrix(i=rep(1:length(data.fit),times=len.row),j=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[1]]})),x=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
 data.pareto.mat <- as.matrix(data.pareto.mat)
@@ -74,7 +74,7 @@ empirical.extcoef <- function(data){
 emp.extcoef1 <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x]; empirical.extcoef(data.pareto.mat[,x])},mc.cores=5,mc.set.seed = FALSE))
 emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 
-data.fit <- data[data.max>quantile(data.max,0.9)]
+data.fit <- data[data.max>quantile(data.max,0.75)]
 len.row <- unlist(lapply(1:length(data.fit),function(i){length(data.fit[[i]][[1]])}))
 data.pareto.mat <- sparseMatrix(i=rep(1:length(data.fit),times=len.row),j=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[1]]})),x=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
 data.pareto.mat <- as.matrix(data.pareto.mat)
@@ -200,8 +200,13 @@ for( angle in seq(0,180,10)){
 }
 dev.off()
 
-summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
-summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
+summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) 
+summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
+summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) 
+summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
+
+
+
 
 
 
