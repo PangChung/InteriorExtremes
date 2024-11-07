@@ -335,8 +335,10 @@ dev.off()
 
 load("data/simulation_study_logskew_results_vario_30_BR.RData",e1<-new.env())
 load("data/simulation_study_logskew_results_vario_30_BR_comp.RData",e2<-new.env())
-data = cbind(rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list[[1]],nrow)),1,do.call(rbind,e1$est.mat.list[[1]]))
-data = rbind(data,cbind(rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]])))
+data1 = cbind(rep(1:nrow(e1$par.skew.normal),times=sapply(e1$est.mat.list,nrow)),1,do.call(rbind,e1$est.mat.list))
+data1 = as.matrix(data1)
+data2 = cbind(rep(1:nrow(e2$par.skew.normal),times=sapply(e2$est.mat.list[[1]],nrow)),2,do.call(rbind,e2$est.mat.list[[1]]))
+data = rbind(data1,data2)
 data = as.data.frame(data);names(data) = c("id","type","hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 data = data[,1:4]
 str(data)
