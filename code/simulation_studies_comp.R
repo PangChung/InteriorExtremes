@@ -73,7 +73,7 @@ model.fit <- function(i){
 
     data = samples.skew.normal[[i]]
     data.sum = apply(data,1,sum)
-    u = 50*ncol(data)
+    u = 30*ncol(data)
     data = data[data.sum>u,]/u
 
     fit.result <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,T,T),basis=basis,model="logskew",FUN=vario.func,alpha.func=alpha.func,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,step2=FALSE,ncores=3)
