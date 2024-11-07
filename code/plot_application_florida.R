@@ -90,6 +90,7 @@ len.row <- unlist(lapply(1:length(data.fit),function(i){length(data.fit[[i]][[1]
 data.pareto.mat <- sparseMatrix(i=rep(1:length(data.fit),times=len.row),j=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[1]]})),x=unlist(lapply(1:length(data.fit),function(i){data.fit[[i]][[2]]})),dimnames=NULL,symmetric = FALSE)
 
 data.pareto.mat <- as.matrix(data.pareto.mat)
+
 empirical.extcoef <- function(data){
     x = data[,1]
     y= data[,2]
