@@ -79,7 +79,7 @@ model.fit <- function(i){
     u = max(quantile(data.sum,0.98),nrow(coord)^(1-1/xi))
     data = data[data.sum>u,]
 
-    fit.result2 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),thres=0,model="truncT",FUN=cov.func,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,ncores=3)
+    fit.result2 <- fit.model(data=data,loc=diff.mat,init=init,fixed=c(F,F,T),model="truncT",FUN=cov.func,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,ncores=3)
     
     fit.result2$par = fit.result2$par[-3]
     return(list(fit.result1,fit.result2))
