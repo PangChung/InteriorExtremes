@@ -64,7 +64,7 @@ par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,
 simu <- function(i){
     par.skew.list <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
     par.skew.list$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
-    samples.skew.normal <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list),rFun,ncores=NULL)
+    samples.skew.normal <- simu_logskew(m=m,par=alpha2delta(par.skew.list),ncores=3)
     return(samples.skew.normal)
 }
 
@@ -76,9 +76,9 @@ model.fit <- function(i){
     u = max(quantile(data.sum,0.95),nrow(coord)^(1-1/xi))
     data = data[data.sum>u,]/u
 
-    fit.result <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,T,T),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,step2=FALSE,ncores=3)
+    fit.result <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,T,T),basis=basis,model="logskew",FUN=vario.func,alpha.func=alpha.func,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,step2=FALSE,ncores=3)
     
-    return(list(fit.result))
+    return(fit.result)
 }
 
 if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal}else{ 
