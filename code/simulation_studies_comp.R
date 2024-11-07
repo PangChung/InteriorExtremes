@@ -60,34 +60,35 @@ basis = matrix(0,nrow=nrow(coord),ncol=3)
 # par.skew.normal <- as.matrix(expand.grid(para.range,para.nu,para.shape,1:nrow(para.alpha)))
 par.skew.normal <- as.matrix(expand.grid(para.range,para.shape,1:nrow(para.alpha)))
 par.skew.normal <- cbind(par.skew.normal[,idx.para],para.alpha[par.skew.normal[,-idx.para],]);colnames(par.skew.normal) <- NULL
-if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal} else samples.skew.normal <- list()
-par.skew.list <- list()
-ec.logskew <- list()
-tc.logskew <- list()
-fit.logskew.vecchia <- list()
-fit.logskew.angular <- list()
-fit.logskew.comp <- list()
 
-for(i in 1:nrow(par.skew.normal)){
-    # par.skew.list[[i]] <- list(sigma=cov.func(diff.mat,par.skew.normal[i,idx.para]))
-    par.skew.list[[i]] <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para])) #semivarigoram
-    par.skew.list[[i]]$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
-    # true.ext.coef <- unlist(mclapply(all.pairs.list,true_extcoef,par=alpha2delta(par.skew.list[[i]]),model="logskew1",mc.cores=ncores,mc.set.seed = FALSE))
-    #print(range(true.ext.coef))#}
-    if(!file.exists(file.samples)){
-        samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores)
-    }
-    # system.time(samples.skew.normal[[i]] <- simu_logskew(m=m,par=alpha2delta(par.skew.list[[i]]),ncores=ncores))
-    # init = par.skew.normal[i,]
-    # fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,T,F,T,T),loc=diff.mat,FUN=cov.func,alpha.func=alpha.func,thres=50,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
-    fit.logskew.angular[[i]] <- fit.model(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,alpha.func=alpha.func,thres=50,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=FALSE,method="Nelder-Mead",opt=TRUE,hessian=FALSE,basis=basis,idx.para=idx.para,step2=FALSE)
-    # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,F,T,T),loc=diff.mat,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
-    print(fit.logskew.angular[[i]]$par-par.skew.normal[i,])
-    
-    # fit.logskew.comp[[i]] <- MCLE(data=samples.skew.normal[[i]],init=init,fixed=c(F,F,T,T,T),loc=coord,FUN=vario.func,index=all.pairs[,pairs.idx],alpha.func=alpha.func,model="BR",lb=lb,ub=ub,ncores=ncores,maxit=1000,trace=TRUE,basis=basis,idx.para=idx.para)
-
-    # print(fit.logskew.comp[[i]]$par - par.skew.normal[i,])
+simu <- function(i){
+    par.skew.list <- list(sigma=vario.func(coord,par.skew.normal[i,idx.para]))
+    par.skew.list$alpha <- alpha.func(par=par.skew.normal[i,-idx.para],b.mat=basis)
+    samples.skew.normal <- simu_Pareto_logskew(m=m,par=alpha2delta(par.skew.list),rFun,ncores=NULL)
+    return(samples.skew.normal)
 }
+
+model.fit <- function(i){
+    set.seed(init.seed)
+
+    data = samples.skew.normal[[i]]
+    data.sum = apply(data,1,sum)
+    u = max(quantile(data.sum,0.95),nrow(coord)^(1-1/xi))
+    data = data[data.sum>u,]/u
+
+    fit.result <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,T,T),basis=basis,thres=0,model="logskew",FUN=vario.func,alpha.func=alpha.func,maxit=1000,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,step2=FALSE,ncores=3)
+    
+    return(list(fit.result))
+}
+
+if(file.exists(file.samples)){load(file.samples,e<-new.env());samples.skew.normal<-e$samples.skew.normal}else{ 
+    samples.skew.normal <- mclapply(1:nrow(par.skew.normal),simu,mc.cores=ncores,mc.set.seed = TRUE)
+    save(samples.skew.normal,basis,par.skew.normal,xi,file=file.samples)
+}
+
+fit.logskew <- mclapply(1:nrow(par.skew.normal),model.fit,mc.cores=ncores,mc.set.seed = TRUE)
+
+save(fit.logskew,par.skew.normal,basis,xi,file=file2save)
 
 save(fit.logskew.comp,fit.logskew.angular,basis,par.skew.normal,init.seed,m,d,file=file2save)
 
