@@ -213,3 +213,51 @@ theme(axis.text = element_text(size = 14),
         plot.title = element_text(hjust = 0.5, size = 16),
         legend.title = element_text(size = 16)) 
 p
+
+## max-stable skewed BR ##
+files.logskew <- list.files(path="data/simulation_logskew/",pattern="simulation_comp2_2_logskew_\\d+_500_1.RData",full.names=TRUE,recursive=FALSE)
+
+collect_results <- function(files){
+    load(files,e<-new.env())
+    #if(is.null(e$fit.logskew)){fit.results <- e$fit.truncT;n<-ncol(e$par.truncT);n<-c(n-1,n)}else{fit.results <- e$fit.logskew;n<-ncol(e$par.skew.normal);n<-c(n,n)}
+    if(is.null(e$fit.logskew)){fit.results <- e$fit.truncT;n<-ncol(e$par.truncT);n<-c(n,n)}else{fit.results <- e$fit.logskew;n<-ncol(e$par.skew.normal);n<-c(n,n)}
+    est.1 <- do.call(rbind,lapply(fit.results,function(x){if(is.numeric(x[[1]][[1]])) x$par else rep(NA,n[1])}))
+    val.1 <- unlist(lapply(fit.results,function(x){if(is.numeric(x[[1]][[1]])) x$val else NA}))
+    time.1 <- unlist(lapply(fit.results,function(x){if(is.numeric(x[[1]][[1]])) x$time[[3]] else NA}))
+    result <- data.frame(case=1:length(time.1),time=time.1,val=val.1)
+    result <- cbind(result,est.1)
+    return(result)
+}
+fit.logskew <- do.call(rbind,lapply(files.logskew,collect_results))
+load(files.logskew[1],e<-new.env());par.logskew <- e$par.skew.normal
+names(fit.logskew) <- c("case","time","val","hat(lambda)","hat(vartheta)","hat(b)[0]","hat(b)[1]","hat(b)[2]")
+
+par.logskew <- as.data.frame(par.logskew)
+names(par.logskew) = names(fit.logskew)[-c(1:3)]
+par.logskew$case = 1:nrow(par.logskew)
+
+levels = c("hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
+data_true = par.logskew
+
+data_true <- pivot_longer(data_true, cols=levels, names_to = "Variable", values_to = "Value")
+data_true$facet = factor(paste0(data_true$Variable),levels=levels)
+data_true <- rbind(data_true,data_true)
+data_true <- subset(data_true,case==1)
+p.list.logskew <- list()
+
+data = subset(fit.logskew,case==1)
+data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
+data_long$facet = factor(paste0(data_long$Variable),level=levels)
+p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
+geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+geom_point(data=data_true,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
+labs(x = "Cases",
+        y = "Value") + 
+theme(axis.text = element_text(size = 14),
+        axis.title.x = element_text(size = 16),
+        strip.text = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16)) 
+p
