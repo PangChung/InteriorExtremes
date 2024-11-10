@@ -42,10 +42,10 @@ fit.pareto.truncT.3 <- do.call(rbind,lapply(files.pareto.truncT.3,collect_result
 
 load(files.pareto.logskew.1[1],e<-new.env());par.logskew <- e$par.skew.normal
 load(files.pareto.truncT.1[1],e<-new.env());par.truncT <- e$par.truncT
-names(fit.pareto.logskew.1) <- names(fit.pareto.logskew.3) <- c("case","method","time","val","log(hat(lambda))","hat(vartheta)","hat(b)[0]","hat(b)[1]","hat(b)[2]")
+names(fit.pareto.logskew.1) <- names(fit.pareto.logskew.3) <- c("case","method","time","val","hat(lambda)","hat(vartheta)","hat(b)[0]","hat(b)[1]","hat(b)[2]")
 
-fit.pareto.logskew.1[,5] = log(fit.pareto.logskew.1[,5])
-fit.pareto.logskew.3[,5] = log(fit.pareto.logskew.3[,5])
+# fit.pareto.logskew.1[,5] = log(fit.pareto.logskew.1[,5])
+# fit.pareto.logskew.3[,5] = log(fit.pareto.logskew.3[,5])
 fit.pareto.truncT.1[,5] = log(fit.pareto.truncT.1[,5])
 fit.pareto.truncT.3[,5] = log(fit.pareto.truncT.3[,5])
 
@@ -55,14 +55,20 @@ par.logskew <- as.data.frame(par.logskew);par.truncT <- as.data.frame(par.truncT
 names(par.logskew) = names(fit.pareto.logskew.1)[5:9];names(par.truncT) = names(fit.pareto.truncT.1)[5:7]
 par.logskew$case = 1:nrow(par.logskew);par.truncT$case = 1:nrow(par.truncT)
 
-levels = c("log(hat(lambda))","hat(vartheta)","hat(b)[1]","hat(b)[2]")
+levels = c("hat(lambda)","hat(vartheta)","hat(b)[1]","hat(b)[2]")
 data_true = par.logskew
-data_true[,1] = log(data_true[,1])
 
 data_true <- pivot_longer(data_true, cols=levels, names_to = "Variable", values_to = "Value")
 data_true$facet = factor(paste0(data_true$Variable),levels=levels)
 data_true <- rbind(data_true,data_true)
 data_true$method = rep(1:2,each=nrow(data_true)/2)
+
+custom_scales <- list(
+  `hat(lambda)` = scale_y_continuous(limits = c(4, 14)),
+  `hat(vartheta)` = scale_y_continuous(limits = c(0.8, 1.7)),
+  `hat(b)[1]` = scale_y_continuous(limits = c(-8, 3)),
+  `hat(b)[2]` = scale_y_continuous(limits = c(-8, 3))
+)
 
 p.list.logskew <- list()
 thres.b = Inf
@@ -83,7 +89,7 @@ for(i in 1:2){
             strip.text = element_text(size = 16),
             axis.title.y = element_text(size = 16),
             plot.title = element_text(hjust = 0.5, size = 16),
-            legend.title = element_text(size = 16)) 
+            legend.title = element_text(size = 16)) + facetted_pos_scales(y=custom_scales)
     p.list.logskew[[i]] <- p
 }
 
@@ -104,7 +110,7 @@ for(i in 1:2){
                 strip.text = element_text(size = 16),
                 axis.title.y = element_text(size = 16),
                 plot.title = element_text(hjust = 0.5, size = 16),
-                legend.title = element_text(size = 16)) 
+                legend.title = element_text(size = 16)) + facetted_pos_scales(y=custom_scales)
     p.list.logskew[[i+2]] <- p
 }
 

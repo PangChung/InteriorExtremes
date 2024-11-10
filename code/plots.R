@@ -491,6 +491,9 @@ fitted.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:n
 fitted.extcoef.BR.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list.BR[[1]][x,x],c(0,0),alpha.para=FALSE))},mc.cores=5,mc.set.seed = FALSE)),symmetric = TRUE,dimnames=NULL)
 
 diag(fitted.extcoef.mat) <- diag(fitted.extcoef.BR.mat) <- diag(empirical.extcoef.mat) <- 1
+
+
+
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.mat)^2))
 sqrt(mean((empirical.extcoef.mat - fitted.extcoef.BR.mat)^2))
 diff.mat = abs(empirical.extcoef.mat - fitted.extcoef.mat) - abs(empirical.extcoef.mat - fitted.extcoef.BR.mat) 
@@ -501,7 +504,49 @@ sum(diff.col.sums > 0.5)
 
 idx.centers = c(apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,function(x) which.min(x)),apply(maxima.frechet[which(rowmeans(maxima.frechet)>10),],1,function(x) which.max(x)))
 
-idx.centers = c(idx.centers,e$idx.centers)
+
+
+save(empirical.extcoef.mat,fitted.extcoef.mat,fitted.extcoef.BR.mat,idx.centers,file="data/extcoef_application_RedSea_MaxStable.RData")
+load("data/maps_RedSea.RData")
+
+p1 <- list()
+brks.emp <- c(1.2,1.5,1.7,1.75,1.8,1.85,1.9,1.95)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
+ewbreaks <- seq(34.4,41.6,2.4)
+nsbreaks <- seq(15.6,26.4,3.6)
+ewlabels <- unlist(lapply(ewbreaks, function(x) paste(" ",abs(x), "ºE")))
+nslabels <- unlist(lapply(nsbreaks, function(x) paste(" ",x, "ºN")))
+basis.centers.geo <- c(idx.centers,sample(1:1043,100))
+basis.centers.geo <- basis.centers.geo[order(loc.sub[basis.centers.geo,2])] 
+idx.centers = e$idx.centers
+loc.df = data.frame(x = loc.sub[idx.centers,1],y = loc.sub[idx.centers,2],label=rep(".",length(idx.centers)))
+for(i in 1:length(basis.centers.geo)){
+    idx.center <- basis.centers.geo[i]
+    data.df <- data.frame(lon=round(loc.sub[,1],5),lat=round(loc.sub[,2],5),
+                emp=empirical.extcoef.mat[,idx.center],br=fitted.extcoef.BR.mat[,idx.center],
+                sbr=fitted.extcoef.mat[,idx.center])
+    data.df[idx.center,-c(1:2)] = 1
+    p1[[i]]<-ggmap(map) +
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp),alpha=0.8) + 
+    colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
+    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp,colour = "black",linetype="dashed") +
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp,colour = "black") + labs(x="Longitude", y="Latitude") + 
+    # stat_contour(data=data.df,aes(x=lon,y=lat,z=emp),breaks = brks.emp,colour = "black",linetype="dotted") +
+    scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits = xlim) + 
+    scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = ylim) +
+    geom_point(data=loc.df,aes(x = x, y = y), size = 2, color = "black") +
+    theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14),
+                            axis.text.y = element_text(angle=90,vjust=0.5,hjust=1),
+                            legend.title = element_text(size=14),legend.position = "right",
+                            plot.margin=unit(c(0.2,0.2,0,0.5),"cm")) 
+}
+
+for(i in 1:length(p1)){
+    ggsave(paste0("figures/application/RedSea2/RedSea_extcoef_MS_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=5,height=6,dpi=300)
+}
+
 p1 <- p2 <- p3 <- p5 <- list()
 loc.sub = as.data.frame(loc.sub)
 #diff.extcoef = c()

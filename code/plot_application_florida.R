@@ -123,11 +123,10 @@ load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<
 
 emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
-
-
+basis.centers <- as.matrix(expand.grid(quantile(coord.geo[,1],c(0.2,0.8)),quantile(coord.geo[,2],c(0.2,0.8))))
+loc.df <- data.frame(lon=basis.centers[,1],lat=basis.centers[,2])
 p1 <- p2 <- list()
-brks.emp1 <- c(1.2,1.35,1.5,1.65,1.8,1.95)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
-brks.emp2 <- c(1.2,1.35,1.5,1.65,1.8,1.95)#round(quantile(2-emp.extcoef.mat2@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
+brks.emp <- c(1.2,1.5,1.7,1.75,1.8,1.85,1.9,1.95)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
 ewbreaks <- c(-82.9,-82.5,-82.1,-81.6)
 nsbreaks <- c(27.7, 28, 28.4, 28.8)
 ewlabels <- unlist(lapply(-ewbreaks, function(x) paste(" ",abs(x), "ºW")))
@@ -143,11 +142,12 @@ for(i in 1:length(basis.centers.geo)){
     p1[[i]]<-ggmap(map) +
     geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
-    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp1,colour = "black",linetype="dashed") +
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp1,colour = "black") + labs(x="Longitude", y="Latitude") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks.emp1,colour = "black",linetype="dotted") +
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp,colour = "black",linetype="dashed") +
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp,colour = "black") + labs(x="Longitude", y="Latitude") + 
+    #stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks.emp,colour = "black",linetype="dotted") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
-    scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
+    scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) + 
+    geom_point(data=loc.df,aes(x=lon,y=lat),size=2,fill="black") +
     theme(axis.text = element_text(size=10), 
                             strip.text = element_text(size = 14),
                             axis.title.x = element_text(size=14), 
@@ -159,11 +159,12 @@ for(i in 1:length(basis.centers.geo)){
     p2[[i]]<-ggmap(map) + 
     geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),alpha=0.8,mid=exp(1.6),name=expression(hat(theta)[2]),trans="exp") + 
-    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp2,colour = "black",linetype="dashed") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks.emp2,colour = "black") + labs(x="Longitude",y="Latitude") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks.emp2,colour = "black",linetype="dotted") +
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp,colour = "black",linetype="dashed") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks.emp,colour = "black") + labs(x="Longitude",y="Latitude") + 
+    #stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks.emp,colour = "black",linetype="dotted") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
+    geom_point(data=loc.df,aes(x=lon,y=lat),size=2,fill="black") +
     theme(axis.text = element_text(size=10), 
                             strip.text = element_text(size = 14),
                             axis.title.x = element_text(size=14), 
@@ -188,49 +189,33 @@ system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_2_*
 unit = 2/0.03128403
 x = as.matrix(dist(coord.grid))[t(pairs)]*unit
 
-png("figures/application/florida/florida_extcoef.png", width=4*3, height=4*2,units="in",res=300)
-par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
-
-plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
+png("figures/application/florida/florida_extcoef.png", width=4, height=3*2,units="in",res=300)
+par(mfrow=c(2,1), mar=c(4,4,2,1),mgp=c(2,1,0))
 
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
 points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
-
-plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
 points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
-
-
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
 
 plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
 points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
-
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
 points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
 dev.off()
 
 angles.pairs <- (apply(pairs,2,function(x){x1=coord.geo[x[1],1]-coord.geo[x[2],1];y1=coord.geo[x[1],2]-coord.geo[x[2],2];a=atan2(x1,y1)*180/pi}) + 180) %% 180
 
 
-png("figures/application/florida/florida_extcoef_angle/%02d.png", width=4*3, height=4*2,units="in",res=300)
+png("figures/application/florida/florida_extcoef_angle/%02d.png", width=4, height=3*2,units="in",res=300)
 for( angle in seq(0,180,10)){
-    par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
+    par(mfrow=c(2,1), mar=c(4,4,2,1),mgp=c(2,1,0))
     idx = angles.pairs < angle+2 & angles.pairs > angle-2
-    plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
 
     plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
     points(x[idx], e3$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
-
-    plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
     points(x[idx], e1$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(1, 0, 0, 0.5))  # Red with transparency
-
-
-    plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
+    
 
     plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
     points(x[idx], e4$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
-
-    plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
     points(x[idx], e2$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(1, 0, 0, 0.5))  # Red with transparency
 }
 dev.off()
@@ -238,6 +223,38 @@ dev.off()
 summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
 summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
 
+## collect jackknife results ## 
+est.list <- list()
+est.sd.list <- list()
+for(i in 1:4){
+    est.mat <- matrix(NA,nrow=70,ncol=8)
+    file = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B.RData")
+    load(file, e.tmp<-new.env())
+    est <- e.tmp$fit.result$par
+    est[3] = est[3] %% pi/4
+    for(j in 1:70){
+        file = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B_",j,".RData")
+        load(file, e.tmp<-new.env())
+        est.mat[j,] <- e.tmp$fit.result$par
+    }
+    est.jack = nrow(est.mat) * est.mat - (nrow(est.mat) - 1) * matrix(est,nrow=nrow(est.mat),ncol=ncol(est.mat),byrow=TRUE)
+    est.jack[,3] <- est.jack[,3] %% pi/4
+    est.sd = apply(est.jack,2,sd)/sqrt(nrow(est.jack))
+    est.list[[i]] <- est
+    est.sd.list[[i]] <- est.sd
+}
 
+est <- do.call(rbind,est.list)
+est.sd <- do.call(rbind,est.sd.list)
+est[,1] <- est[,1]*unit
+est.sd[,1] <- est.sd[,1]*unit
+round(est*100,2)
+round(est.sd*100,2)
 
-
+a = matrix(NA,nrow=4,ncol=8)
+for(i in 1:4){
+    for(j in 1:8){
+        a[i,j] = paste0(round(est[i,j]*100,2)," (",round(est.sd[i,j]*100,2),")")
+    }
+}
+xtable(a) 
