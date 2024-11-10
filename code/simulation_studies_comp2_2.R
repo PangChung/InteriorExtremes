@@ -86,7 +86,7 @@ model.fit <- function(i){
     u = 30*ncol(data)
     data = data[data.sum>u,]/u
 
-    fit.result <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,T,F,F),basis=basis,model="logskew",FUN=vario.func,alpha.func=alpha.func,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,step2=FALSE,ncores=3)
+    fit.result <- fit.model(data=data,loc=coord,init=init,fixed=c(F,F,F,F,F),basis=basis,model="logskew",FUN=vario.func,alpha.func=alpha.func,method="L-BFGS-B",lb=lb,ub=ub,hessian=FALSE,opt=TRUE,trace=FALSE,idx.para=idx.para,pareto=TRUE,step2=FALSE,ncores=3)
     
     return(fit.result)
 }
