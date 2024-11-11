@@ -190,7 +190,7 @@ unit = 2/0.03128403
 x = as.matrix(dist(coord.grid))[t(pairs)]*unit
 
 png("figures/application/florida/florida_extcoef.png", width=4, height=4.5*2,units="in",res=300)
-par(mfrow=c(2,1), mar=c(3,3,0,0),mgp=c(2,1,0))
+par(mfrow=c(2,1), mar=c(3,3.5,0,0),mgp=c(2,1,0))
 
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
 points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.02, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
@@ -206,7 +206,7 @@ angles.pairs <- (apply(pairs,2,function(x){x1=coord.geo[x[1],1]-coord.geo[x[2],1
 
 png("figures/application/florida/florida_extcoef_angle/%02d.png", width=4, height=4.5*2,units="in",res=300)
 for( angle in seq(0,180,10)){
-    par(mfrow=c(2,1), mar=c(3,3,0,0),mgp=c(2,1,0))
+    par(mfrow=c(2,1), mar=c(3,3.5,0,0),mgp=c(2,1,0))
     idx = angles.pairs < angle+2 & angles.pairs > angle-2
 
     plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
