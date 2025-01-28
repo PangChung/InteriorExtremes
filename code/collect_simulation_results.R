@@ -81,12 +81,12 @@ for(i in 1:4){
     p <- ggplot(subset(data_long,facet==levels[i]), aes(x = factor(case), y = Value,fill=factor(method,labels=c("Score","Spectral")))) +
     geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
     geom_point(data=subset(data.true.sub,facet==levels[i]),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-    labs(x = "Cases",y = "Value",fill="Method") + ggtitle(parse(text=levels[i])) + 
+    labs(x = "Cases",y = parse(text=levels[i]),fill="Method") + 
     theme(axis.text = element_text(size = 14),
         axis.title.x = element_text(size = 16),
         strip.text = element_text(size = 16),
         axis.title.y = element_text(size = 16),
-        plot.title = element_text(hjust = 0.5, size = 16),
+        plot.title =element_text(hjust = 0.5, size = 16),
         legend.title = element_text(size = 16),legend.position = "none") + coord_cartesian(ylim = custom_scales[[i]])
     p.list.logskew[[i]] <- p
 }
@@ -99,7 +99,7 @@ for(i in 1:4){
     p <- ggplot(subset(data_long,facet==levels[i]), aes(x = factor(case), y = Value,fill=factor(method,labels=c("Score","Spectral")))) +
     geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
     geom_point(data=subset(data.true.sub,facet==levels[i]),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-    labs(x = "Cases",y = "Value",fill="Method") + ggtitle(parse(text=levels[i])) + 
+    labs(x = "Cases",y = parse(text=levels[i]),fill="Method") +
     theme(axis.text = element_text(size = 14),
         axis.title.x = element_text(size = 16),
         strip.text = element_text(size = 16),
@@ -109,6 +109,7 @@ for(i in 1:4){
     p.list.logskew[[i+4]] <- p
 }
 
+# r-Pareto truncT
 levels = c("log(hat(lambda))","hat(vartheta)")
 data_true = par.truncT[,-3]
 data_true[,1] = log(data_true[,1])
@@ -127,7 +128,7 @@ for(i in 1:2){
     p <- ggplot(subset(data_long,facet==levels[i]), aes(x = factor(case), y = Value,fill=factor(method,labels=c("Score","Spectral")))) +
     geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
     geom_point(data=subset(data.true.sub,facet==levels[i]),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-    labs(x = "Cases",y = "Value",fill="Method") + ggtitle(parse(text=levels[i])) + 
+    labs(x = "Cases",y = parse(text=levels[i]),fill="Method") +
     theme(axis.text = element_text(size = 14),
         axis.title.x = element_text(size = 16),
         strip.text = element_text(size = 16),
@@ -146,13 +147,13 @@ for(i in 1:2){
     p <- ggplot(subset(data_long,facet==levels[i]), aes(x = factor(case), y = Value,fill=factor(method,labels=c("Score","Spectral")))) +
     geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
     geom_point(data=subset(data.true.sub,facet==levels[i]),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-    labs(x = "Cases",y = "Value",fill="Method") + ggtitle(parse(text=levels[i])) + 
+    labs(x = "Cases",y = parse(text=levels[i]),fill="Method") + 
     theme(axis.text = element_text(size = 14),
         axis.title.x = element_text(size = 16),
         strip.text = element_text(size = 16),
         axis.title.y = element_text(size = 16),
         plot.title = element_text(hjust = 0.5, size = 16),
-        legend.title = element_text(size = 16),legend.position = "none") 
+        legend.title = element_text(size = 16),legend.position = "none")
     p.list.truncT[[i+2]] <- p
 }
 
