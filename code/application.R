@@ -49,10 +49,10 @@ idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)
 basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distmat)*2);y=y-mean(y);y/sqrt(sum(y^2))})
 
 n.alpha = ncol(basis)
-init = c(100,1,rep(0,n.alpha))
-idx.para = 1:2
-ub = c(Inf,1.99,rep(Inf,n.alpha))
-lb = c(0.01,0.01,rep(-Inf,n.alpha))
+init = c(0.1,1,0,1,rep(0,n.alpha))
+idx.para = 1:4
+ub = c(Inf,1.99,pi/4,Inf,rep(Inf,n.alpha))
+lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,n.alpha))
 
 file.save = paste0(DataPath,"/data/application_RedSea_results_",id,"_",method,"_",idx.jack,".RData")
 file.origin = paste0(DataPath,"/data/application_RedSea_results_",id,"_",method,".RData")
@@ -68,18 +68,18 @@ if(file.exists(file.origin)){
 
 if(idx.jack!=0){
     switch(id,
-        {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)}
+        {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)}
     )
         save(fit.result,idx.centers,basis,file=file.save)
 }else{
      switch(id,
-        {fit.result <- fit.model(data=data.fit.sum,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.sum,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)}
+        {fit.result <- fit.model(data=data.fit.sum,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit.max,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit.sum,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit.max,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)}
     )
         save(fit.result,idx.centers,basis,file=file.origin)
 }
