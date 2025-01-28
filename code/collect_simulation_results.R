@@ -157,7 +157,6 @@ for(i in 1:2){
     p.list.truncT[[i+2]] <- p
 }
 
-
 pdf(file=paste0("figures/simulation_pareto_violin_logskew",idx.file,".pdf"),width=14,height = 5,onefile = TRUE)
 for(i in 1:length(p.list.logskew)) print(p.list.logskew[[i]])
 dev.off()
