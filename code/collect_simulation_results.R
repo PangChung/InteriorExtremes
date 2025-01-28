@@ -64,54 +64,49 @@ data_true <- rbind(data_true,data_true)
 data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 custom_scales <- list(
-  `hat(lambda)` = scale_y_continuous(limits = c(4, 14)),
-  `hat(vartheta)` = scale_y_continuous(limits = c(0.8, 1.7)),
-  `hat(b)[1]` = scale_y_continuous(limits = c(-8, 3)),
-  `hat(b)[2]` = scale_y_continuous(limits = c(-8, 3))
+  `hat(lambda)` =  c(4, 14),
+  `hat(vartheta)` = c(0.8, 1.7),
+  `hat(b)[1]` =  c(-8, 3),
+  `hat(b)[2]` = c(-8, 3)
 )
 
 p.list.logskew <- list()
 thres.b = Inf
-for(i in 1:2){
-    data = subset(fit.pareto.logskew.1,method==i & abs(`hat(b)[1]`) < thres.b & abs(`hat(b)[2]`) < thres.b) #& !(case %in% c(5,7,8,9,11,12)))
-    data.true.sub <- subset(data_true,method==i) #& !(case %in% c(5,7,8,9,11,12)))
-    print(dim(data));print(dim(subset(fit.pareto.logskew.1,method==i & !is.na(`hat(b)[1]`))))
-    data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
-    data_long$facet = factor(paste0(data_long$Variable),level=levels)
-    p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
+data = fit.pareto.logskew.1
+data.true.sub <- data_true 
+data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
+data_long$facet = factor(paste0(data_long$Variable),level=levels)
+
+for(i in 1:4){
+    p <- ggplot(subset(data_long,facet==levels[i]), aes(x = factor(case), y = Value,fill=factor(method,labels=c("Score","Spectral")))) +
     geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-    geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-    facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
-    labs(x = "Cases",
-            y = "Value",fill="Method") + 
+    geom_point(data=subset(data.true.sub,facet==levels[i]),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+    labs(x = "Cases",y = "Value",fill="Method") + ggtitle(parse(text=levels[i])) + 
     theme(axis.text = element_text(size = 14),
-            axis.title.x = element_text(size = 16),
-            strip.text = element_text(size = 16),
-            axis.title.y = element_text(size = 16),
-            plot.title = element_text(hjust = 0.5, size = 16),
-            legend.title = element_text(size = 16)) + facetted_pos_scales(y=custom_scales)
+        axis.title.x = element_text(size = 16),
+        strip.text = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16),legend.position = "none") + coord_cartesian(ylim = custom_scales[[i]])
     p.list.logskew[[i]] <- p
 }
 
-for(i in 1:2){
-        data = subset(fit.pareto.logskew.3,method==i & abs(`hat(b)[1]`) < thres.b) #& abs(`hat(b)[2]`) < thres.b & !(case %in% c(5,7,8,9,11,12)))
-        data.true.sub <- subset(data_true,method==i )#& !(case %in% c(5,7,8,9,11,12)))
-        print(dim(data));print(dim(subset(fit.pareto.logskew.3,method==i & !is.na(`hat(b)[1]`))))
-        data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
-        data_long$facet = factor(paste0(data_long$Variable),level=levels)
-        p <- ggplot(data_long, aes(x = factor(case), y = Value)) + #,fill=factor(method,labels=c("Score","Spectral")))) +
-        geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-        geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-        facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
-        labs(x = "Cases",
-                y = "Value",fill="Method") + 
-        theme(axis.text = element_text(size = 14),
-                axis.title.x = element_text(size = 16),
-                strip.text = element_text(size = 16),
-                axis.title.y = element_text(size = 16),
-                plot.title = element_text(hjust = 0.5, size = 16),
-                legend.title = element_text(size = 16)) + facetted_pos_scales(y=custom_scales)
-    p.list.logskew[[i+2]] <- p
+data = fit.pareto.logskew.3
+data.true.sub <- data_true 
+data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
+data_long$facet = factor(paste0(data_long$Variable),level=levels)
+for(i in 1:4){
+    p <- ggplot(subset(data_long,facet==levels[i]), aes(x = factor(case), y = Value,fill=factor(method,labels=c("Score","Spectral")))) +
+    geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+    geom_point(data=subset(data.true.sub,facet==levels[i]),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+    labs(x = "Cases",y = "Value",fill="Method") + ggtitle(parse(text=levels[i])) + 
+    theme(axis.text = element_text(size = 14),
+        axis.title.x = element_text(size = 16),
+        strip.text = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16),legend.position = "none") + coord_cartesian(ylim = custom_scales[[i]])
+    p.list.logskew[[i+4]] <- p
 }
 
 levels = c("log(hat(lambda))","hat(vartheta)")
@@ -124,53 +119,51 @@ data_true$method = rep(1:2,each=nrow(data_true)/2)
 
 p.list.truncT <- list()
 thres.lambda = Inf
+data = fit.pareto.truncT.1
+data.true.sub <- data_true
+data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
+data_long$facet = factor(paste0(data_long$Variable),level=levels)
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.1, method==i & `log(hat(lambda))` < thres.lambda) # & case %in% c(3,4,7,8))
-    data.true.sub <- subset(data_true,method==i) #& case %in% c(3,4,7,8))
-    data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
-    data_long$facet = factor(paste0(data_long$Variable),level=levels)
-    p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
-        geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-        geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-        facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
-        labs(x = "Cases",
-                y = "Value",fill="Method") + 
-        theme(axis.text = element_text(size = 14),
-                axis.title.x = element_text(size = 16),
-                strip.text = element_text(size = 16),
-                axis.title.y = element_text(size = 16),
-                plot.title = element_text(hjust = 0.5, size = 16),
-                legend.title = element_text(size = 16))
+    p <- ggplot(subset(data_long,facet==levels[i]), aes(x = factor(case), y = Value,fill=factor(method,labels=c("Score","Spectral")))) +
+    geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+    geom_point(data=subset(data.true.sub,facet==levels[i]),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+    labs(x = "Cases",y = "Value",fill="Method") + ggtitle(parse(text=levels[i])) + 
+    theme(axis.text = element_text(size = 14),
+        axis.title.x = element_text(size = 16),
+        strip.text = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16),legend.position = "none") 
     p.list.truncT[[i]] <- p
 }
 
+
+data = fit.pareto.truncT.3
+data.true.sub <- data_true
+data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
+data_long$facet = factor(paste0(data_long$Variable),level=levels)
 for(i in 1:2){
-    data = subset(fit.pareto.truncT.3, method==i & `log(hat(lambda))` < thres.lambda) #& case %in% c(3,4,7,8))
-    data.true.sub <- subset(data_true,method==i) #& case %in% c(3,4,7,8))
-    data_long <- pivot_longer(data, cols=levels, names_to = "Variable", values_to = "Value")
-    data_long$facet = factor(paste0(data_long$Variable),level=levels)
-    p <- ggplot(data_long, aes(x = factor(case), y = Value))+ #,fill=factor(method,labels=c("Score","Spectral")))) +
-        geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
-        geom_point(data=data.true.sub,aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
-        facet_wrap(~ facet, scales = "free",nrow=2,ncol=2,labeller = label_parsed) +
-        labs(x = "Cases",
-                y = "Value",fill="Method") + 
-        theme(axis.text = element_text(size = 14),
-                axis.title.x = element_text(size = 16),
-                strip.text = element_text(size = 16),
-                axis.title.y = element_text(size = 16),
-                plot.title = element_text(hjust = 0.5, size = 16),
-                legend.title = element_text(size = 16))
+    p <- ggplot(subset(data_long,facet==levels[i]), aes(x = factor(case), y = Value,fill=factor(method,labels=c("Score","Spectral")))) +
+    geom_violin(position = position_dodge(width=1),draw_quantiles = c(0.975,0.5,0.025),width=1.5) + 
+    geom_point(data=subset(data.true.sub,facet==levels[i]),aes(x=factor(case),y=Value),color="black",size=1,position=position_dodge(width = 1)) +
+    labs(x = "Cases",y = "Value",fill="Method") + ggtitle(parse(text=levels[i])) + 
+    theme(axis.text = element_text(size = 14),
+        axis.title.x = element_text(size = 16),
+        strip.text = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        plot.title = element_text(hjust = 0.5, size = 16),
+        legend.title = element_text(size = 16),legend.position = "none") 
     p.list.truncT[[i+2]] <- p
 }
 
-pdf(file=paste0("figures/simulation_pareto_violin_",idx.file,"_",thres.b,"_",thres.lambda,".pdf"),width=14,height = 5,onefile = TRUE)
-grid.arrange(grobs=p.list.logskew[1:2],ncol=2,nrow=1)
-grid.arrange(grobs=p.list.logskew[3:4],ncol=2,nrow=1)
-grid.arrange(grobs=p.list.truncT[1:2],ncol=2,nrow=1)
-grid.arrange(grobs=p.list.truncT[3:4],ncol=2,nrow=1)
+
+pdf(file=paste0("figures/simulation_pareto_violin_logskew",idx.file,".pdf"),width=14,height = 5,onefile = TRUE)
+for(i in 1:length(p.list.logskew)) print(p.list.logskew[[i]])
 dev.off()
 
+pdf(file=paste0("figures/simulation_pareto_violin_truncT",idx.file,".pdf"),width=14,height = 5,onefile = TRUE)
+for(i in 1:length(p.list.truncT)) print(p.list.truncT[[i]])
+dev.off()
 
 ## for max-stable ##
 files.logskew <- list.files(path="data/simulation_logskew/",pattern="simulation_study_comp_\\d+.RData",full.names=TRUE,recursive=FALSE)

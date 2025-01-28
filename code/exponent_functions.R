@@ -746,6 +746,7 @@ vario.func2 <- function(loc,par,ncores=1){
     if(!is.matrix(loc)){loc = matrix(loc,nrow=1)}
     Omega = matrix(c(cos(theta),a*sin(theta),-sin(theta),a*cos(theta)),nrow=2,ncol=2)
     n = nrow(loc)
+    Omega = t(Omega) %*% Omega
     if(n==1){
         val=(sqrt( c(loc[1,] %*% Omega %*% loc[1,]) )/lambda)^alpha
         return(val)
@@ -755,7 +756,8 @@ vario.func2 <- function(loc,par,ncores=1){
             val <- (sqrt( c(coord %*% Omega %*% coord) )/lambda)^alpha
         }else{
             coord = coord[1,] - coord[2,]
-            val <- (sqrt( c(coord %*% Omega %*% coord) )/lambda)^alpha}
+            val <- (sqrt( c(coord %*% Omega %*% coord) )/lambda)^alpha
+        }
         return(val)
     }
     all.pairs = Rfast::comb_n(1:n,2)
