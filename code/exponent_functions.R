@@ -339,7 +339,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,log=FALSE){
         val = intensity_logskew(x,par,alpha.para,log)
         return(val)
     }
-    sigma.inv    = chol2inv(chol(sigma))
+    sigma.inv = chol2inv(chol(sigma))
     omega2 = diag(sigma)
     if(alpha.para){
         alpha = par[[2]]
@@ -368,7 +368,7 @@ partialV_logskew <- function(x,idx,par,alpha.para=TRUE,log=FALSE){
     tau.tilde = alpha0.tilde * b0
     phi.tau.tilde = pnorm(tau.tilde)
     intensity.marginal = intensity_logskew(x[,idx,drop=FALSE],par=list(sigma=sigma[idx,idx],delta[idx]),alpha.para=FALSE,log=FALSE) # nrow(x)
-    b = alpha.tilde %*% sigma.tilde %*% b0
+    b = c(alpha.tilde %*% sigma.tilde * b0)
     sigma.val = unname(cbind(rbind(sigma.tilde, -b),c(-b,1)))
     val = unlist(lapply(1:nrow(x),function(i) mvtnorm::pmvnorm(lower=rep(-Inf,ncol(mu.tilde)+1),upper=c(x.circ[i,-idx]-mu.tilde[i,],tau.tilde[i]),sigma=sigma.val)[[1]]/phi.tau.tilde[i]*intensity.marginal[i]))
     assign(".Random.seed", oldSeed, envir=globalenv())

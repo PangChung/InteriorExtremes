@@ -338,17 +338,18 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
             if(model == "logskew"){par.index[[1]] = par[[1]][vecchia.seq[1]]}  
             contribution <- nloglik(par.index,data[,vecchia.seq[1],drop=FALSE],model) #density of 1st variable in the sequence (unit Fréchet)
         }else{
-        ind.i <- vecchia.seq[i] #index of ith-variable in the Vecchia sequence
-        ind.neighbours <- na.omit(neighbours[,i])
-        ind <- c(ind.i,ind.neighbours)
-        par.index[[1]] = par[[1]][ind,ind]
-        if(model == "logskew"){par.index[[2]] = par.index[[2]][ind]}  
-        num <- nloglik(par.index,data[,ind,drop=FALSE],model) #joint density of ith-variable and its conditioning set
-        par.index[[1]] = par[[1]][ind.neighbours,ind.neighbours]
-        if(model == "logskew"){par.index[[2]] = par[[2]][ind.neighbours]}  
-        denom <- nloglik(par.index,data[,ind.neighbours,drop=FALSE],model) #joint density of conditioning set only
-        contribution <- num-denom
-    }
+            ind.i <- vecchia.seq[i] #index of ith-variable in the Vecchia sequence
+            ind.neighbours <- na.omit(neighbours[,i])
+            ind <- c(ind.i,ind.neighbours)
+            par.index[[1]] = par[[1]][ind,ind]
+            if(model == "logskew"){par.index[[2]] = par.index[[2]][ind]}  
+            num <- nloglik(par.index,data[,ind,drop=FALSE],model) #joint density of ith-variable and its conditioning set
+            par.index[[1]] = par[[1]][ind.neighbours,ind.neighbours]
+            if(model == "logskew"){par.index[[2]] = par[[2]][ind.neighbours]}  
+            denom <- nloglik(par.index,data[,ind.neighbours,drop=FALSE],model) #joint density of conditioning set only
+            contribution <- num-denom
+        }
+    browser()
     return(contribution)
     }
     if(!is.null(ncores)){

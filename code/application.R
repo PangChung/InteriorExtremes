@@ -93,7 +93,7 @@ switch(id,
         {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
         {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
         {fit.result <- MCLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,index=all.index,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=TRUE,basis=basis,idx.para=idx.para)},
-        {fit.result <- MVLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=TRUE,basis=basis,idx.para=idx.para)}
+        {fit.result <- MVLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=NULL,maxit=10000,trace=TRUE,basis=basis,idx.para=idx.para)}
     )
 save(fit.result,idx.centers,basis,file=file.origin)
 
