@@ -22,6 +22,7 @@ library(evd)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
+source("code/pareto_inference")
 set.seed(12342)
 
 ## load the data##
