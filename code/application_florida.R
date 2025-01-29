@@ -11,6 +11,7 @@ switch(computer,
     "hpc" = {DataPath<-"/srv/scratch/z3536974/";.libPaths("../src")},
     "local" = {DataPath<-"~/Documents/Github/InteriorExtremes/"}
 )
+idx.jack=idx.jack-1
 library(parallel)
 library(mvtnorm)
 library(TruncatedNormal)
