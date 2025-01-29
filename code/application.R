@@ -21,7 +21,8 @@ library(evd)
 library(partitions)
 library(Rfast)
 library(matrixStats)
-set.seed(12342)
+init.seed = as.integer((as.integer(Sys.time()) + sample.int(10^5,1))%%10^5)
+set.seed(init.seed)
 ## load the data##
 load("data/data_application.RData")
 load("data/Trends_fits.RData")
@@ -45,8 +46,13 @@ load("data/Trends_fits.RData")
 #     data.fit.max = data[data.max>quantile(data.max,0.995)]
 
 data <- maxima.frechet
+
+if(idx.jack == 0){
+    boot.ind <- sample(1:nrow(data),nrow(data),replace = TRUE)
+    data <- data[boot.ind,]
+}
 data.sum = apply(data,1,sum)
-ind.data = which(data.sum>quantile(data.sum,0.90))
+ind.data = which(data.sum > quantile(data.sum,0.90))
 data.fit = data[ind.data,]
 
 D = nrow(loc.sub.trans)
@@ -82,20 +88,11 @@ all.index = all.index[,dist.ind]
 vecchia.seq <- order(distmat[which.min(apply(distmat,2,mean))[1],]) ## Vecchia sequence based on middle-out ordering
 neighbours.mat <- sapply(1:D,FUN=neighbours,vecchia.seq=vecchia.seq,q=4,loc=distmat)
 
-if(idx.jack!=0){
-    switch(id,
-        {fit.result <- fit.model(data=data.fit[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- MCLE(data=data.fit[-idx.jack],init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,index=all.index,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)},
-        {fit.result <- MVLE(data=data.fit[-idx.jack],init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)}
-    )
-        save(fit.result,idx.centers,basis,file=file.save)
-}else{
-     switch(id,
+switch(id,
         {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
         {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- MCLE(data=data.fit,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,index=all.index,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)},
-        {fit.result <- MVLE(data=data.fit,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)}
+        {fit.result <- MCLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,index=all.index,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)},
+        {fit.result <- MVLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)}
     )
-        save(fit.result,idx.centers,basis,file=file.origin)
-}
+save(fit.result,idx.centers,basis,file=file.origin)
+
