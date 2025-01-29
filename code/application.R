@@ -7,6 +7,7 @@ computer = "local"
 id = 1
 idx.jack = 1
 method = "Nelder-Mead"
+
 for (arg in args) eval(parse(text = arg))
 switch(computer,
     "ws" = {DataPath<-"~/Desktop/InteriorExtremes/"},
@@ -24,30 +25,29 @@ set.seed(12342)
 ## load the data##
 load("data/data_application.RData")
 load("data/Trends_fits.RData")
-if(isPareto){
-    data <- residuals
-    data[data<0] = 0
-    data <- apply(data,2,function(x) {ind = x>0;x[ind] = qgpd(rank(x[ind])/(sum(ind)+1),1,1,1); x })
-    data = apply(data,1,function(x){list(which(x>0),x[x>0])})
-    idx.data = which(sapply(data,function(x) length(x[[2]]))>0)
-    data = data[idx.data]
-    data.sum = sapply(data,function(x) mean(x[[2]]))
-    data.max = sapply(data,function(x) max(x[[2]]))
 
-    # thres <- quantile(data.sum, seq(0.9,0.9999,length.out=30))
-    # mev::tstab.gpd(data.sum,thres)
+#     data <- residuals
+#     data[data<0] = 0
+#     data <- apply(data,2,function(x) {ind = x>0;x[ind] = qgpd(rank(x[ind])/(sum(ind)+1),1,1,1); x })
+#     data = apply(data,1,function(x){list(which(x>0),x[x>0])})
+#     idx.data = which(sapply(data,function(x) length(x[[2]]))>0)
+#     data = data[idx.data]
+#     data.sum = sapply(data,function(x) mean(x[[2]]))
+#     data.max = sapply(data,function(x) max(x[[2]]))
 
-    # thres <- quantile(data.max, seq(0.9,0.9999,length.out=30))
-    # mev::tstab.gpd(data.max,thres)
+#     # thres <- quantile(data.sum, seq(0.9,0.9999,length.out=30))
+#     # mev::tstab.gpd(data.sum,thres)
 
-    data.fit.sum = data[data.sum>quantile(data.sum,0.995)]
-    data.fit.max = data[data.max>quantile(data.max,0.995)]
-}else{
-    data <- maxima.frechet
-    data.sum = apply(data,1,sum)
-    ind.data = which(data.sum>quantile(data.sum,0.90))
-    data.fit = data[ind.data,]
-}
+#     # thres <- quantile(data.max, seq(0.9,0.9999,length.out=30))
+#     # mev::tstab.gpd(data.max,thres)
+
+#     data.fit.sum = data[data.sum>quantile(data.sum,0.995)]
+#     data.fit.max = data[data.max>quantile(data.max,0.995)]
+
+data <- maxima.frechet
+data.sum = apply(data,1,sum)
+ind.data = which(data.sum>quantile(data.sum,0.90))
+data.fit = data[ind.data,]
 
 D = nrow(loc.sub.trans)
 ncores = detectCores()
@@ -65,7 +65,7 @@ lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,n.alpha))
 file.save = paste0(DataPath,"/data/application_RedSea_results_",id,"_",method,"_",idx.jack,".RData")
 file.origin = paste0(DataPath,"/data/application_RedSea_results_",id,"_",method,".RData")
 
-if(file.exists(file.save) | idx.jack > length(data.fit.max)){
+if(file.exists(file.save) | idx.jack > length(data.fit)){
     stop("job already done")
 }
 
