@@ -47,7 +47,7 @@ load("data/Trends_fits.RData")
 
 data <- maxima.frechet
 
-if(idx.jack == 0){
+if(idx.jack != 0){
     boot.ind <- sample(1:nrow(data),nrow(data),replace = TRUE)
     data <- data[boot.ind,]
 }
