@@ -29,8 +29,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     if (is.null(dWeightFun)) {
         stop("`dWeightFun` argument missing, with no default value.")
     }
-    if (!inherits(obs, "list") || length(obs) < 1 || !inherits(obs[[1]], 
-        c("numeric", "integer"))) {
+    if (!inherits(obs, "list") || length(obs) < 1) {
         stop("`obs` must be a list of vectors.")
     }
     if (!inherits(weightFun, "function")) {
