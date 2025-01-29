@@ -24,23 +24,30 @@ set.seed(12342)
 ## load the data##
 load("data/data_application.RData")
 load("data/Trends_fits.RData")
-data <- residuals2
-data[data<0] = 0
-data <- apply(data,2,function(x) {ind = x>0;x[ind] = qgpd(rank(x[ind])/(sum(ind)+1),1,1,1); x })
-data = apply(data,1,function(x){list(which(x>0),x[x>0])})
-idx.data = which(sapply(data,function(x) length(x[[2]]))>0)
-data = data[idx.data]
-data.sum = sapply(data,function(x) mean(x[[2]]))
-data.max = sapply(data,function(x) max(x[[2]]))
+if(isPareto){
+    data <- residuals
+    data[data<0] = 0
+    data <- apply(data,2,function(x) {ind = x>0;x[ind] = qgpd(rank(x[ind])/(sum(ind)+1),1,1,1); x })
+    data = apply(data,1,function(x){list(which(x>0),x[x>0])})
+    idx.data = which(sapply(data,function(x) length(x[[2]]))>0)
+    data = data[idx.data]
+    data.sum = sapply(data,function(x) mean(x[[2]]))
+    data.max = sapply(data,function(x) max(x[[2]]))
 
-# thres <- quantile(data.sum, seq(0.9,0.9999,length.out=30))
-# mev::tstab.gpd(data.sum,thres)
+    # thres <- quantile(data.sum, seq(0.9,0.9999,length.out=30))
+    # mev::tstab.gpd(data.sum,thres)
 
-# thres <- quantile(data.max, seq(0.9,0.9999,length.out=30))
-# mev::tstab.gpd(data.max,thres)
+    # thres <- quantile(data.max, seq(0.9,0.9999,length.out=30))
+    # mev::tstab.gpd(data.max,thres)
 
-data.fit.sum = data[data.sum>quantile(data.sum,0.995)]
-data.fit.max = data[data.max>quantile(data.max,0.995)]
+    data.fit.sum = data[data.sum>quantile(data.sum,0.995)]
+    data.fit.max = data[data.max>quantile(data.max,0.995)]
+}else{
+    data <- maxima.frechet
+    data.sum = apply(data,1,sum)
+    ind.data = which(data.sum>quantile(data.sum,0.90))
+    data.fit = data[ind.data,]
+}
 
 D = nrow(loc.sub.trans)
 ncores = detectCores()
@@ -67,20 +74,28 @@ if(file.exists(file.origin)){
     init = e$fit.result$par
 }
 
+all.index <- combn(x=D,m=2)
+dist.max = distmat[t(all.index)]
+dist.ind<-which(rank(dist.max,ties.method = "first") <= D*2)
+all.index = all.index[,dist.ind]
+
+vecchia.seq <- order(distmat[which.min(apply(distmat,2,mean))[1],]) ## Vecchia sequence based on middle-out ordering
+neighbours.mat <- sapply(1:D,FUN=neighbours,vecchia.seq=vecchia.seq,q=4,loc=distmat)
+
 if(idx.jack!=0){
     switch(id,
-        {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)}
+        {fit.result <- fit.model(data=data.fit[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit[-idx.jack],loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- MCLE(data=data.fit[-idx.jack],init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,index=all.index,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)},
+        {fit.result <- MVLE(data=data.fit[-idx.jack],init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)}
     )
         save(fit.result,idx.centers,basis,file=file.save)
 }else{
      switch(id,
-        {fit.result <- fit.model(data=data.fit.sum,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.sum,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max,loc=loc.sub.trans,init=init,fixed=c(F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)}
+        {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- MCLE(data=data.fit,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,index=all.index,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)},
+        {fit.result <- MVLE(data=data.fit,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)}
     )
         save(fit.result,idx.centers,basis,file=file.origin)
 }
