@@ -54,6 +54,7 @@ if(idx.jack != 0){
 data.sum = apply(data,1,sum)
 ind.data = which(data.sum > quantile(data.sum,0.90))
 data.fit = data[ind.data,]
+data.fit = apply(data.fit,1,function(x){list(which(x>0),x[x>0])})
 
 D = nrow(loc.sub.trans)
 ncores = detectCores()
@@ -62,7 +63,7 @@ idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)
 basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distmat)*2);y=y-mean(y);y/sqrt(sum(y^2))})
 
 n.alpha = ncol(basis)
-init = c(0.1,1,0,1,rep(0,n.alpha))
+init = c(100,1,0,1,rep(0,n.alpha))
 idx.para = 1:4
 
 ub = c(Inf,1.99,pi/4,Inf,rep(Inf,n.alpha))
@@ -91,8 +92,8 @@ neighbours.mat <- sapply(1:D,FUN=neighbours,vecchia.seq=vecchia.seq,q=4,loc=dist
 switch(id,
         {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
         {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- MCLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,index=all.index,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)},
-        {fit.result <- MVLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=FALSE,basis=basis,idx.para=idx.para)}
+        {fit.result <- MCLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,index=all.index,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=TRUE,basis=basis,idx.para=idx.para)},
+        {fit.result <- MVLE(data=data,init=init,fixed=c(F,F,F,F,rep(T,ncol(basis))),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,alpha.func=alpha.func,model="logskew",lb=lb,ub=ub,ncores=ncores,maxit=10000,trace=TRUE,basis=basis,idx.para=idx.para)}
     )
 save(fit.result,idx.centers,basis,file=file.origin)
 
