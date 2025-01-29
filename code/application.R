@@ -51,6 +51,7 @@ basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distm
 n.alpha = ncol(basis)
 init = c(0.1,1,0,1,rep(0,n.alpha))
 idx.para = 1:4
+
 ub = c(Inf,1.99,pi/4,Inf,rep(Inf,n.alpha))
 lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,n.alpha))
 
