@@ -92,8 +92,8 @@ neighbours.mat <- sapply(1:D,FUN=neighbours,vecchia.seq=vecchia.seq,q=4,loc=dist
 switch(id,
         {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init[1:4],fixed=c(F,F,F,F),model="BR",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
         {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- MCLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,index=all.index,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=10000,trace=TRUE)},
-        {fit.result <- MVLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=NULL,maxit=10000,trace=TRUE)}
+        {fit.result <- MCLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,index=all.index,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=10000,trace=TRUE,idx.para=idx.para)},
+        {fit.result <- MVLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=10000,trace=TRUE,idx.para=idx.para)}
     )
 save(fit.result,idx.centers,basis,file=file.origin)
 
