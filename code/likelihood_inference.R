@@ -349,7 +349,6 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
             denom <- nloglik(par.index,data[,ind.neighbours,drop=FALSE],model) #joint density of conditioning set only
             contribution <- num-denom
         }
-    browser()
     return(contribution)
     }
     if(!is.null(ncores)){
