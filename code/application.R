@@ -91,10 +91,10 @@ vecchia.seq <- order(distmat[which.min(apply(distmat,2,mean))[1],]) ## Vecchia s
 neighbours.mat <- sapply(1:D,FUN=neighbours,vecchia.seq=vecchia.seq,q=4,loc=distmat)
 
 switch(id,
-        {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init[1:4],fixed=c(F,F,F,F),model="BR",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1000,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- MCLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,index=all.index,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=10000,trace=TRUE,idx.para=idx.para)},
-        {fit.result <- MVLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=10000,trace=TRUE,idx.para=idx.para)}
+        {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init[1:4],fixed=c(F,F,F,F),model="BR",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit,loc=loc.sub.trans,init=init,fixed=c(F,F,F,F,rep(F,ncol(basis))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
+        {fit.result <- MCLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,index=all.index,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=1e6,trace=TRUE,idx.para=idx.para)},
+        {fit.result <- MVLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=1e6,trace=TRUE,idx.para=idx.para)}
     )
     
 if(idx.jack!=0){
