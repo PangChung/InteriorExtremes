@@ -150,6 +150,11 @@ if(idx.jack > length(data.fit.max)){
     stop("job doesnot exist")
 }
 
+if(file.exists(file.save)){
+    load(file.save,e<-new.env())
+    init = e$fit.result$par
+}
+
 if(file.exists(file.origin)){
     load(file.origin,e<-new.env())
     init = e$fit.result$par
