@@ -96,5 +96,9 @@ switch(id,
         {fit.result <- MCLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,index=all.index,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=10000,trace=TRUE,idx.para=idx.para)},
         {fit.result <- MVLE(data=data,init=init[1:4],fixed=c(F,F,F,F),loc=loc.sub.trans,FUN=vario.func2,vecchia.seq=vecchia.seq,neighbours=neighbours.mat,model="BR",lb=lb[1:4],ub=ub[1:4],ncores=ncores,maxit=10000,trace=TRUE,idx.para=idx.para)}
     )
-save(fit.result,idx.centers,basis,file=file.origin)
-
+    
+if(idx.jack!=0){
+    save(fit.result,idx.centers,basis,file=file.save)
+}else{
+    save(fit.result,idx.centers,basis,file=file.origin)
+}
