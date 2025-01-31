@@ -645,17 +645,6 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             return(-mean(val)) 
         }
     }
-    if(model == "BR"){
-    ## 3 parameters: 2 for the covariance function;
-        object.func <- function(par,opt=TRUE,ncore=NULL){
-            par2 = init; par2[!fixed] = par
-            par.1 = par2[idx.para]
-            cov.mat = FUN(loc,par.1)
-            if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
-            val = nVI(data,cov.mat,1:n,logval=TRUE)
-            return(-mean(val)) 
-        }
-    }
     if(opt){
         if(method=="L-BFGS-B"){
             opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian,ncore=ncores)
