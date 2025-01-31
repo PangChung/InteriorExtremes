@@ -40,7 +40,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
     }
     if(model=="logskew"){
         n <- nrow(loc)
-        SigmaS = vario.func(loc, par2[idx.para])
+        SigmaS = vario.func(loc, par2[idx.para],ncores=max(1,ncores))
         alpha = alpha.func(par2[-idx.para],b.mat=basis)
         delta = c(SigmaS %*% alpha)/sqrt(c(1+alpha %*% SigmaS %*% alpha))
         a = log(2) + pnorm(delta,log.p=TRUE)
