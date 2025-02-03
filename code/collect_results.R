@@ -260,3 +260,132 @@ theme(axis.text = element_text(size = 14),
         plot.title = element_text(hjust = 0.5, size = 16),
         legend.title = element_text(size = 16)) 
 p
+
+
+## collect results: applications ##
+# Red Sea #
+data.RedSea <- data.frame(
+    lambda = numeric(),
+    vartheta = numeric(),
+    theta = numeric(),
+    a = numeric(),
+    b1 = numeric(),
+    b2 = numeric(),
+    b3 = numeric(),
+    b4 = numeric(),
+    b5 = numeric(),
+    case = character(),
+    method = character(),
+    time = numeric(),
+    type = character(),
+    stringsAsFactors = FALSE
+)
+count = 1
+cases = c("BR","sBR","BR","BR")
+method = c("spectral","spectral","composite","vecchia")
+for(i.case in 1:4){
+    file.origin = paste0("data/application/application_RedSea_results_",i.case,"_Nelder-Mead",".RData")
+    load(file.origin,e <- new.env())
+    if(i.case %in% c(1,2)){ 
+        data.RedSea[count,1:9] = e$fit.result$par;data.RedSea$time[count] = e$fit.result$time[[3]]
+    }else{
+        data.RedSea[count,1:9] = c(e$fit.result$par[1:4],rep(0,5)); data.RedSea$time[count] = e$fit.result$time 
+    }
+    data.RedSea$case[count] = cases[i.case]
+    data.RedSea$method[count] = method[i.case]
+    data.RedSea$type[count] = "full"
+    count = count + 1 
+    for(j in 1:300){
+        file = paste0("data/application/application_RedSea_results_",i.case,"_Nelder-Mead_",j,".RData")
+        if(file.exists(file)){
+            load(file,e <- new.env())
+            if(i.case %in% c(1,2)){ 
+                data.RedSea[count,1:9] = e$fit.result$par;data.RedSea$time[count] = e$fit.result$time[[3]]
+            }else{
+                data.RedSea[count,1:9] = c(e$fit.result$par[1:4],rep(0,5)); data.RedSea$time[count] = e$fit.result$time 
+            }
+            data.RedSea$case[count] = cases[i.case]
+            data.RedSea$method[count] = method[i.case]
+            data.RedSea$type[count] = "partial"
+            count = count + 1
+        }
+    }
+}
+
+# Florida Tampa Bay #
+data.florida <- data.frame(
+    lambda = numeric(),
+    vartheta = numeric(),
+    theta = numeric(),
+    a = numeric(),
+    b1 = numeric(),
+    b2 = numeric(),
+    b3 = numeric(),
+    b4 = numeric(),
+    case = character(),
+    method = character(),
+    time = numeric(),
+    type = character(),
+    stringsAsFactors = FALSE
+)
+cases = c("BR-SUM","BR-MAX","sBR-SUM","sBR-MAX","BR-SUM","BR-MAX")
+method = c("spectral","spectral","spectral","spectral","scoreMatching","scoreMatching")
+count = 1
+for(i.case in 1:6){
+    file.origin = paste0("data/application/application_florida_results_",i.case,"_Nelder-Mead",".RData")
+    load(file.origin,e <- new.env())
+    data.florida[count,1:8] = e$fit.result$par;data.florida$time[count] = e$fit.result$time[[3]]
+    data.florida$case[count] = cases[i.case]
+    data.florida$method[count] = method[i.case]
+    data.florida$type[count] = "full"
+    count = count + 1 
+    for(j in 1:70){
+        file = paste0("data/application/application_Florida_results_",i.case,"_Nelder-Mead_",j,".RData")
+        if(file.exists(file)){
+            load(file,e <- new.env())
+            data.florida[count,1:8] = e$fit.result$par;data.florida$time[count] = e$fit.result$time[[3]]
+            data.florida$case[count] = cases[i.case]
+            data.florida$method[count] = method[i.case]
+            data.florida$type[count] = "partial"
+            count = count + 1
+        }
+    }
+}
+
+save(data.florida,data.RedSea,file="data/application_results.RData")
+
+## analysis ## 
+load("data/application_results.RData")
+
+# Red Sea #
+subset(data.RedSea,type=="full")
+median(subset(data.RedSea,type=="partial" & method=="spectral" & case=="BR")$time)
+median(subset(data.RedSea,type=="partial" & method=="spectral" & case=="sBR")$time)
+median(subset(data.RedSea,type=="partial" & method=="composite" & case=="BR")$time)
+median(subset(data.RedSea,type=="partial" & method=="vecchia" & case=="BR")$time)
+
+# CI for Red Sea #
+subset(data.RedSea,type=="full")
+apply(subset(data.RedSea,type=="partial" & method=="spectral" & case=="BR")[,1:9],2,quantile,probs=c(0.025,0.975))
+apply(subset(data.RedSea,type=="partial" & method=="spectral" & case=="sBR")[,1:9],2,quantile,probs=c(0.025,0.975))
+apply(subset(data.RedSea,type=="partial" & method=="composite" & case=="BR")[,1:9],2,quantile,probs=c(0.025,0.975))
+apply(subset(data.RedSea,type=="partial" & method=="vecchia" & case=="BR")[,1:9],2,quantile,probs=c(0.025,0.975))
+
+# Florida Tampa Bay #
+subset(data.florida,type=="full")
+median(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-SUM")$time)
+median(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-MAX")$time)
+median(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-SUM")$time)
+median(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-MAX")$time)
+median(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-SUM")$time)
+median(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-MAX")$time)
+
+# CI for Florida Tampa Bay #
+subset(data.florida,type=="full")
+apply(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-SUM")[,1:8],2,quantile,probs=c(0.025,0.975))
+apply(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-MAX")[,1:8],2,quantile,probs=c(0.025,0.975))
+apply(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-SUM")[,1:8],2,quantile,probs=c(0.025,0.975))
+apply(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-MAX")[,1:8],2,quantile,probs=c(0.025,0.975))
+apply(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-SUM")[,1:8],2,quantile,probs=c(0.025,0.975))
+apply(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-MAX")[,1:8],2,quantile,probs=c(0.025,0.975))
+
