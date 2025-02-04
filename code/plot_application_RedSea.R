@@ -36,20 +36,19 @@ basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distm
 
 pairs <- comb_n(1:nrow(loc.sub),2)
 
+load("data/application_results.RData")
+fit.results <- subset(data.RedSea,type=="full")
+fitted.extcoef.mat.list <- list()
 for(i in 1:4){
-    file.save = paste0("data/application_RedSea2/application_RedSea_results_",i,"_L-BFGS-B.RData")
-    load(file.save,e<-new.env())
-    alpha <- alpha.func(e$fit.result$par[-c(1:2)],basis)
-    cov.mat <- vario.func(loc.sub.trans,e$fit.result$par[1:2],ncores=5)
-    range(cov.mat)
+    alpha <- alpha.func(as.numeric(fit.results[i,5:9]),basis)
+    cov.mat <- vario.func2(loc.sub.trans,as.numeric(fit.results[i,1:4]),ncores=5)
     par.list <- alpha2delta(list(cov.mat,alpha))
     fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
-
-    e$fitted.extcoef.mat <- sparseMatrix(i=pairs[2,],j=pairs[1,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
-    e$par.list = par.list
-
-    save(list=ls(e),file=file.save,envir = e)
+    range(fitted.extcoef)
+    fitted.extcoef.mat.list[[i]] <- sparseMatrix(i=pairs[2,],j=pairs[1,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
 }
+save(fitted.extcoef.mat.list,file="data/fitted_extcoef_RedSea.RData")
+
 
 data <- residuals2
 data[data<0] = 0
@@ -83,13 +82,12 @@ emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef2,symmetric
 
 save(emp.extcoef1,emp.extcoef2,file="data/application_RedSea/application_RedSea_results_emp.RData")
 
-
 load("data/application_RedSea/application_RedSea_results_emp.RData",e<-new.env())
-load("data/application_RedSea2/application_RedSea_results_1_L-BFGS-B.RData",e1<-new.env())
-load("data/application_RedSea2/application_RedSea_results_2_L-BFGS-B.RData",e2<-new.env())
-load("data/application_RedSea2/application_RedSea_results_3_L-BFGS-B.RData",e3<-new.env())
-load("data/application_RedSea2/application_RedSea_results_4_L-BFGS-B.RData",e4<-new.env())
-
+# load("data/application_RedSea2/application_RedSea_results_1_L-BFGS-B.RData",e1<-new.env())
+# load("data/application_RedSea2/application_RedSea_results_2_L-BFGS-B.RData",e2<-new.env())
+# load("data/application_RedSea2/application_RedSea_results_3_L-BFGS-B.RData",e3<-new.env())
+# load("data/application_RedSea2/application_RedSea_results_4_L-BFGS-B.RData",e4<-new.env())
+load("data/fitted_extcoef_RedSea.RData")
 emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
 
@@ -106,15 +104,15 @@ basis.centers.geo <- basis.centers.geo[order(loc.sub[basis.centers.geo,2])]
 for(i in 1:length(basis.centers.geo)){
     idx.center <- basis.centers.geo[i]
     data.df <- data.frame(lon=round(loc.sub[,1],5),lat=round(loc.sub[,2],5),
-                emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=e1$fitted.extcoef.mat[,idx.center],
-                sbr=e3$fitted.extcoef.mat[,idx.center],br2=e2$fitted.extcoef.mat[,idx.center],sbr2=e4$fitted.extcoef.mat[,idx.center])
+                emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=fitted.extcoef.mat.list[[1]][,idx.center],
+                sbr=fitted.extcoef.mat.list[[2]][,idx.center],br2=fitted.extcoef.mat.list[[3]][,idx.center],br3=fitted.extcoef.mat.list[[4]][,idx.center])
     data.df[idx.center,-c(1:2)] = NA
     p1[[i]]<-ggmap(map) +
     geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
-    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp1,colour = "black",linetype="dashed") +
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp1,colour = "black") + labs(x="Longitude", y="Latitude") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks.emp1,colour = "black",linetype="dotted") +
+    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp1,colour = "black",linetype="dashed") +
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp1,colour = "black") + labs(x="Longitude", y="Latitude") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp1,colour = "black",linetype="dotted") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits = xlim) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = ylim) +
     theme(axis.text = element_text(size=10), 
@@ -126,11 +124,11 @@ for(i in 1:length(basis.centers.geo)){
                             plot.margin=unit(c(0.2,0.2,0,0.5),"cm")) 
     
     p2[[i]]<-ggmap(map) + 
-    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.8) + 
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1,2),alpha=0.8,mid=exp(1.6),name=expression(hat(theta)[2]),trans="exp") + 
-    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp2,colour = "black",linetype="dashed") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks.emp2,colour = "black") + labs(x="Longitude",y="Latitude") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks.emp2,colour = "black",linetype="dotted") +
+    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp2,colour = "black",linetype="dashed") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp2,colour = "black") + labs(x="Longitude",y="Latitude") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br3),breaks = brks.emp2,colour = "black",linetype="dotted") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=xlim) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = ylim) +
     theme(axis.text = element_text(size=10), 
@@ -142,16 +140,16 @@ for(i in 1:length(basis.centers.geo)){
 }
 
 for(i in 1:length(p1)){
-    ggsave(paste0("figures/application/RedSea2/RedSea_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=5,height=6,dpi=300)
+    ggsave(paste0("figures/application/RedSea2/RedSea_extcoef2_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=5,height=6,dpi=300)
 }
 
 for(i in 1:length(p2)){
-    ggsave(paste0("figures/application/RedSea2/RedSea_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=5,height=6,dpi=300)
+    ggsave(paste0("figures/application/RedSea2/RedSea_extcoef2_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=5,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/RedSea2/RedSea_extcoef_1_*.png figures/application/RedSea2/RedSea_combined1_1.gif")
+system("magick -delay 20 -loop 0 figures/application/RedSea2/RedSea_extcoef2_1_*.png figures/application/RedSea2/RedSea_combined1_1.gif")
 
-system("magick -delay 20 -loop 0 figures/application/RedSea2/RedSea_extcoef_2_*.png figures/application/RedSea2/RedSea_combined2_1.gif")
+system("magick -delay 20 -loop 0 figures/application/RedSea2/RedSea_extcoef2_2_*.png figures/application/RedSea2/RedSea_combined2_1.gif")
 
 x = distmat[t(pairs)]
 png("figures/application/RedSea2/RedSea_extcoef_scatter.png", width=4*3, height=4*2, units="in",res=300)
@@ -160,19 +158,19 @@ par(mfrow=c(2,3), mar=c(4,4,2,1),mgp=c(2,1,0))
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
 
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
-points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
+points(x, fitted.extcoef.mat.list[[1]][t(pairs)], pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
 
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
-points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
+points(x, fitted.extcoef.mat.list[[2]][t(pairs)], pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
 
 
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
 
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
-points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
+points(x, fitted.extcoef.mat.list[[3]][t(pairs)], pch=20, cex=0.01, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
 
-plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
-points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
+plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
+points(x, fitted.extcoef.mat.list[[4]][t(pairs)], pch=20, cex=0.01, col=rgb(1, 0, 0, 0.3))  # Red with transparency
 dev.off()
 
 angles.pairs <- (apply(pairs,2,function(x){x1=loc.sub[x[1],1]-loc.sub[x[2],1];y1=loc.sub[x[1],2]-loc.sub[x[2],2];a=atan2(x1,y1)*180/pi}) + 180) %% 180
@@ -184,19 +182,19 @@ for( angle in seq(0,180,10)){
     plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
 
     plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
-    points(x[idx], e3$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+    points(x[idx], fitted.extcoef.mat.list[[1]][t(pairs)][idx], pch=20, cex=1, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
 
     plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
-    points(x[idx], e1$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+    points(x[idx], fitted.extcoef.mat.list[[2]][t(pairs)][idx], pch=20, cex=1, col=rgb(1, 0, 0, 0.5))  # Red with transparency
 
 
-    plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
+    plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
 
-    plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
-    points(x[idx], e4$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+    plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
+    points(x[idx], fitted.extcoef.mat.list[[3]][t(pairs)][idx], pch=20, cex=1, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
 
-    plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
-    points(x[idx], e2$fitted.extcoef.mat@x[idx], pch=20, cex=1, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+    plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 2306)) # Black with transparency
+    points(x[idx], fitted.extcoef.mat.list[[4]][t(pairs)][idx], pch=20, cex=1, col=rgb(1, 0, 0, 0.5))  # Red with transparency
 }
 dev.off()
 

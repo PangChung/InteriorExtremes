@@ -351,7 +351,7 @@ for(i.case in 1:6){
         }
     }
 }
-
+data.florida$lambda = data.florida$lambda*2/0.03128403
 save(data.florida,data.RedSea,file="data/application_results.RData")
 
 ## analysis ## 

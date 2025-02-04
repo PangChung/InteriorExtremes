@@ -61,23 +61,24 @@ basis <- lapply(1:nrow(basis.centers),function(i){
 # })
 basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 
-for(i in 1:4){
-    file.save = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B.RData")
-    load(file.save,e<-new.env())
-    alpha <- alpha.func(e$fit.result$par[-c(1:4)],basis)
-    cov.mat <- vario.func2(coord.grid.new,e$fit.result$par[1:4],ncores=5)
-    range(cov.mat)
+## fitted extcoef ##
+load("data/application_results.RData")
+unit = 2/0.03128403
+fit.results <- subset(data.florida,type=="full")
+fit.results$lambda = fit.results$lambda/unit
+fitted.extcoef.mat.list <- list()
+
+for(i in 1:6){
+    alpha <- alpha.func(as.numeric(fit.results[i,5:8]),basis)
+    cov.mat <- vario.func2(coord.grid.new,as.numeric(fit.results[i,1:4]),ncores=5)
     par.list <- alpha2delta(list(cov.mat,alpha))
     fitted.extcoef <- unlist(mclapply(1:ncol(pairs),function(x){x=pairs[,x];V_bi_logskew(c(1,1),list(par.list[[1]][x,x],par.list[[2]][x]),alpha.para=FALSE)},mc.cores=5,mc.set.seed = FALSE))
-
     range(fitted.extcoef)
-
-    e$fitted.extcoef.mat <- sparseMatrix(i=pairs[2,],j=pairs[1,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
-    e$par.list = par.list
-
-    save(list=ls(e),file=file.save,envir = e)
+    fitted.extcoef.mat.list[[i]] <- sparseMatrix(i=pairs[2,],j=pairs[1,],x=fitted.extcoef,symmetric = TRUE,dimnames=NULL) 
 }
+save(fitted.extcoef.mat.list,file="data/fitted_extcoef_florida.RData")
 
+# empirical extcoef
 data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
 
 data.sum <- unlist(mclapply(data.pareto,function(x){mean(x[[2]])},mc.cores=4))
@@ -116,10 +117,11 @@ save(emp.extcoef1,emp.extcoef2,file="data/application_florida/application_florid
 
 
 load("data/application_florida/application_florida_results_emp.RData",e<-new.env())
-load("data/application_florida/application_florida_results_1_L-BFGS-B.RData",e1<-new.env())
-load("data/application_florida/application_florida_results_2_L-BFGS-B.RData",e2<-new.env())
-load("data/application_florida/application_florida_results_3_L-BFGS-B.RData",e3<-new.env())
-load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<-new.env())
+# load("data/application_florida/application_florida_results_1_L-BFGS-B.RData",e1<-new.env())
+# load("data/application_florida/application_florida_results_2_L-BFGS-B.RData",e2<-new.env())
+# load("data/application_florida/application_florida_results_3_L-BFGS-B.RData",e3<-new.env())
+# load("data/application_florida/application_florida_results_4_L-BFGS-B.RData",e4<-new.env())
+load("data/fitted_extcoef_florida.RData")
 
 emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
@@ -136,8 +138,8 @@ basis.centers.geo <- basis.centers.geo[order(coord.geo[basis.centers.geo,2])]
 for(i in 1:length(basis.centers.geo)){
     idx.center = basis.centers.geo[i]
     data.df <- data.frame(lon=round(coord.geo[,1],5),lat=round(coord.geo[,2],5),
-                emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=e1$fitted.extcoef.mat[,idx.center],
-                sbr=e3$fitted.extcoef.mat[,idx.center],br2=e2$fitted.extcoef.mat[,idx.center],sbr2=e4$fitted.extcoef.mat[,idx.center])
+                emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=fitted.extcoef.mat.list[[1]][,idx.center],
+                sbr=fitted.extcoef.mat.list[[3]][,idx.center],br2=fitted.extcoef.mat.list[[2]][,idx.center],sbr2=fitted.extcoef.mat.list[[4]][,idx.center])
     data.df[idx.center,-c(1:2)] = NA
     p1[[i]]<-ggmap(map) +
     geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
@@ -174,16 +176,16 @@ for(i in 1:length(basis.centers.geo)){
 }
 
 for(i in 1:length(p1)){
-    ggsave(paste0("figures/application/florida/florida_extcoef_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=6.4,height=6,dpi=300)
+    ggsave(paste0("figures/application/florida/florida_extcoef2_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=6.4,height=6,dpi=300)
 }
 
 for(i in 1:length(p2)){
-    ggsave(paste0("figures/application/florida/florida_extcoef_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
+    ggsave(paste0("figures/application/florida/florida_extcoef2_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
 }
 
-system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_1_*.png figures/application/florida/combined1_1.gif")
+system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef2_1_*.png figures/application/florida/combined1_1.gif")
 
-system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef_2_*.png figures/application/florida/combined2_1.gif")
+system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef2_2_*.png figures/application/florida/combined2_1.gif")
 
 
 unit = 2/0.03128403
@@ -193,12 +195,12 @@ png("figures/application/florida/florida_extcoef.png", width=4, height=4.5*2,uni
 par(mfrow=c(2,1), mar=c(3,3.5,0,0),mgp=c(2,1,0))
 
 plot(x, 2-e$emp.extcoef1, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
-points(x, e3$fitted.extcoef.mat@x, pch=20, cex=0.02, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
-points(x, e1$fitted.extcoef.mat@x, pch=20, cex=0.02, col=rgb(1, 0, 0, 0.3))  # Red with transparency
+points(x, fitted.extcoef.mat.list[[3]][t(pairs)], pch=20, cex=0.02, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
+points(x, fitted.extcoef.mat.list[[1]][t(pairs)], pch=20, cex=0.02, col=rgb(1, 0, 0, 0.3))  # Red with transparency
 
 plot(x, 2-e$emp.extcoef2, pch=20, cex=0.01, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
-points(x, e4$fitted.extcoef.mat@x, pch=20, cex=0.02, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
-points(x, e2$fitted.extcoef.mat@x, pch=20, cex=0.02, col=rgb(1, 0, 0, 0.3))  # Red with transparency
+points(x, fitted.extcoef.mat.list[[4]][t(pairs)], pch=20, cex=0.02, col=rgb(0, 0, 1, 0.3))  # Blue with transparency
+points(x, fitted.extcoef.mat.list[[2]][t(pairs)], pch=20, cex=0.02, col=rgb(1, 0, 0, 0.3))  # Red with transparency
 dev.off()
 
 angles.pairs <- (apply(pairs,2,function(x){x1=coord.geo[x[1],1]-coord.geo[x[2],1];y1=coord.geo[x[1],2]-coord.geo[x[2],2];a=atan2(x1,y1)*180/pi}) + 180) %% 180
@@ -210,46 +212,46 @@ for( angle in seq(0,180,10)){
     idx = angles.pairs < angle+2 & angles.pairs > angle-2
 
     plot(x[idx], 2-e$emp.extcoef1[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
-    points(x[idx], e3$fitted.extcoef.mat@x[idx], pch=20, cex=0.2, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
-    points(x[idx], e1$fitted.extcoef.mat@x[idx], pch=20, cex=0.2, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+    points(x[idx], fitted.extcoef.mat.list[[3]][t(pairs)][idx], pch=20, cex=0.2, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+    points(x[idx], fitted.extcoef.mat.list[[1]][t(pairs)][idx], pch=20, cex=0.2, col=rgb(1, 0, 0, 0.5))  # Red with transparency
     
 
     plot(x[idx], 2-e$emp.extcoef2[idx], pch=20, cex=0.1, xlab="Distance (km)", ylab=expression(hat(theta)[2]),col=rgb(0, 0, 0, 0.5),ylim=c(1,2), xlim=c(0, 196)) # Black with transparency
-    points(x[idx], e4$fitted.extcoef.mat@x[idx], pch=20, cex=0.2, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
-    points(x[idx], e2$fitted.extcoef.mat@x[idx], pch=20, cex=0.2, col=rgb(1, 0, 0, 0.5))  # Red with transparency
+    points(x[idx], fitted.extcoef.mat.list[[4]][t(pairs)][idx], pch=20, cex=0.2, col=rgb(0, 0, 1, 0.5))  # Blue with transparency
+    points(x[idx], fitted.extcoef.mat.list[[2]][t(pairs)][idx], pch=20, cex=0.2, col=rgb(1, 0, 0, 0.5))  # Red with transparency
 }
 dev.off()
 
-summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
-summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) - summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
+summary(abs(2-e$emp.extcoef1-fitted.extcoef.mat.list[[3]][t(pairs)])) - summary(abs(2-e$emp.extcoef1-fitted.extcoef.mat.list[[3]][t(pairs)]))
+summary(abs(2-e$emp.extcoef2-fitted.extcoef.mat.list[[4]][t(pairs)])) - summary(abs(2-e$emp.extcoef1-fitted.extcoef.mat.list[[4]][t(pairs)]))
 
 ## collect jackknife results ## 
-est.list <- list()
-est.sd.list <- list()
-for(i in 1:4){
-    est.mat <- matrix(NA,nrow=70,ncol=8)
-    file = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B.RData")
-    load(file, e.tmp<-new.env())
-    est <- e.tmp$fit.result$par
-    est[3] = est[3] %% pi/4
-    for(j in 1:70){
-        file = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B_",j,".RData")
-        load(file, e.tmp<-new.env())
-        est.mat[j,] <- e.tmp$fit.result$par
-    }
-    est.jack = nrow(est.mat) * est.mat - (nrow(est.mat) - 1) * matrix(est,nrow=nrow(est.mat),ncol=ncol(est.mat),byrow=TRUE)
-    est.jack[,3] <- est.jack[,3] %% pi/4
-    est.sd = apply(est.jack,2,sd)/sqrt(nrow(est.jack))
-    est.list[[i]] <- est
-    est.sd.list[[i]] <- est.sd
-}
+# est.list <- list()
+# est.sd.list <- list()
+# for(i in 1:4){
+#     est.mat <- matrix(NA,nrow=70,ncol=8)
+#     file = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B.RData")
+#     load(file, e.tmp<-new.env())
+#     est <- e.tmp$fit.result$par
+#     est[3] = est[3] %% pi/4
+#     for(j in 1:70){
+#         file = paste0("data/application_florida/application_florida_results_",i,"_L-BFGS-B_",j,".RData")
+#         load(file, e.tmp<-new.env())
+#         est.mat[j,] <- e.tmp$fit.result$par
+#     }
+#     est.jack = nrow(est.mat) * est.mat - (nrow(est.mat) - 1) * matrix(est,nrow=nrow(est.mat),ncol=ncol(est.mat),byrow=TRUE)
+#     est.jack[,3] <- est.jack[,3] %% pi/4
+#     est.sd = apply(est.jack,2,sd)/sqrt(nrow(est.jack))
+#     est.list[[i]] <- est
+#     est.sd.list[[i]] <- est.sd
+# }
 
-est <- do.call(rbind,est.list)
-est.sd <- do.call(rbind,est.sd.list)
-est[,1] <- est[,1]*unit
-est.sd[,1] <- est.sd[,1]*unit
-round(est*100,2)
-round(est.sd*100,2)
+# est <- do.call(rbind,est.list)
+# est.sd <- do.call(rbind,est.sd.list)
+# est[,1] <- est[,1]*unit
+# est.sd[,1] <- est.sd[,1]*unit
+# round(est*100,2)
+# round(est.sd*100,2)
 
 a = matrix(NA,nrow=4,ncol=8)
 for(i in 1:4){
