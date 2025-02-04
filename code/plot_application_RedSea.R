@@ -198,10 +198,7 @@ for( angle in seq(0,180,10)){
 }
 dev.off()
 
-summary(abs(2-e$emp.extcoef1-e1$fitted.extcoef.mat@x)) 
-summary(abs(2-e$emp.extcoef1-e3$fitted.extcoef.mat@x))
-summary(abs(2-e$emp.extcoef2-e2$fitted.extcoef.mat@x)) 
-summary(abs(2-e$emp.extcoef1-e4$fitted.extcoef.mat@x))
+
 
 
 
