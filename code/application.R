@@ -53,7 +53,9 @@ if(idx.jack != 0){
     data <- data[boot.ind,]
 }
 data.sum = apply(data,1,sum)
-ind.data = which(data.sum > quantile(data.sum,0.90))
+ind.data = which(data.sum > 10*1043)
+length(ind.data)
+
 data.fit = data[ind.data,]
 data.fit = apply(data.fit,1,function(x){list(which(x>0),x[x>0])})
 
