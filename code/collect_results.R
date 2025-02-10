@@ -278,6 +278,7 @@ data.RedSea <- data.frame(
     method = character(),
     time = numeric(),
     type = character(),
+    lik = numeric(),
     stringsAsFactors = FALSE
 )
 count = 1
@@ -294,6 +295,7 @@ for(i.case in 1:4){
     data.RedSea$case[count] = cases[i.case]
     data.RedSea$method[count] = method[i.case]
     data.RedSea$type[count] = "full"
+    data.RedSea$lik[count] = e$fit.result$value
     count = count + 1 
     for(j in 1:300){
         file = paste0("data/application/application_RedSea_results_",i.case,"_Nelder-Mead_",j,".RData")
@@ -307,6 +309,7 @@ for(i.case in 1:4){
             data.RedSea$case[count] = cases[i.case]
             data.RedSea$method[count] = method[i.case]
             data.RedSea$type[count] = "partial"
+            data.RedSea$lik[count] = e$fit.result$value
             count = count + 1
         }
     }
@@ -326,6 +329,7 @@ data.florida <- data.frame(
     method = character(),
     time = numeric(),
     type = character(),
+    lik = numeric(),
     stringsAsFactors = FALSE
 )
 cases = c("BR-SUM","BR-MAX","sBR-SUM","sBR-MAX","BR-SUM","BR-MAX")
@@ -338,6 +342,7 @@ for(i.case in 1:6){
     data.florida$case[count] = cases[i.case]
     data.florida$method[count] = method[i.case]
     data.florida$type[count] = "full"
+    data.florida$lik[count] = e$fit.result$value
     count = count + 1 
     for(j in 1:70){
         file = paste0("data/application/application_Florida_results_",i.case,"_Nelder-Mead_",j,".RData")
@@ -347,11 +352,14 @@ for(i.case in 1:6){
             data.florida$case[count] = cases[i.case]
             data.florida$method[count] = method[i.case]
             data.florida$type[count] = "partial"
+            data.florida$lik[count] = e$fit.result$value
             count = count + 1
         }
     }
 }
 data.florida$lambda = data.florida$lambda*2/0.03128403
+data.florida$theta = data.florida$theta
+data.RedSea$theta = data.RedSea$theta
 save(data.florida,data.RedSea,file="data/application_results.RData")
 
 ## analysis ## 
@@ -380,12 +388,20 @@ median(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-MA
 median(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-SUM")$time)
 median(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-MAX")$time)
 
-# CI for Florida Tampa Bay #
+# CI for Florida Tampa Bay # score matching
 subset(data.florida,type=="full")
-apply(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-SUM")[,1:8],2,quantile,probs=c(0.025,0.975))
-apply(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-MAX")[,1:8],2,quantile,probs=c(0.025,0.975))
-apply(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-SUM")[,1:8],2,quantile,probs=c(0.025,0.975))
-apply(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-MAX")[,1:8],2,quantile,probs=c(0.025,0.975))
-apply(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-SUM")[,1:8],2,quantile,probs=c(0.025,0.975))
-apply(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-MAX")[,1:8],2,quantile,probs=c(0.025,0.975))
+jack.knife(as.matrix(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-SUM")[,1:8]),unlist(subset(data.florida,type=="full" & method=="scoreMatching" & case == "BR-SUM")[1:8]))
+jack.knife(as.matrix(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-MAX")[,1:8]),unlist(subset(data.florida,type=="full" & method=="scoreMatching" & case == "BR-MAX")[1:8]))
+jack.knife(as.matrix(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-SUM")[,1:8]),unlist(subset(data.florida,type=="full" & method=="spectral" & case == "BR-SUM")[1:8]))
+jack.knife(as.matrix(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-MAX")[,1:8]),unlist(subset(data.florida,type=="full" & method=="spectral" & case == "BR-MAX")[1:8]))
+jack.knife(as.matrix(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-SUM")[,1:8]),unlist(subset(data.florida,type=="full" & method=="spectral" & case == "sBR-SUM")[1:8]))
+jack.knife(as.matrix(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-MAX")[,1:8]),unlist(subset(data.florida,type=="full" & method=="spectral" & case == "sBR-MAX")[1:8]))
 
+
+
+jack.knife <- function(jack,knife){
+    n = nrow(jack)
+    jack = n*jack - (n-1) * matrix(knife,nrow=n,ncol=ncol(jack),byrow=TRUE)
+    est.sd = apply(jack,2,sd)/sqrt(n)
+    return(paste0("(",round(knife - est.sd*1.96,2)," ",round(knife + est.sd*1.96,2),")"))
+}

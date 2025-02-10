@@ -21,6 +21,7 @@ load("data/data_application.RData")
 load("data/Trends_fits.RData")
 
 load("data/maps_RedSea.RData")
+pairs <- comb_n(1:nrow(loc.sub),2)
 
 register_google(key=system("echo $g_key",intern = TRUE))
 ylim = c(12,30)
@@ -82,19 +83,21 @@ emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=emp.extcoef2,symmetric
 
 save(emp.extcoef1,emp.extcoef2,file="data/application_RedSea/application_RedSea_results_emp.RData")
 
-load("data/application_RedSea/application_RedSea_results_emp.RData",e<-new.env())
+load("data/extcoef_application_RedSea_MaxStable.RData",e<-new.env())
 # load("data/application_RedSea2/application_RedSea_results_1_L-BFGS-B.RData",e1<-new.env())
 # load("data/application_RedSea2/application_RedSea_results_2_L-BFGS-B.RData",e2<-new.env())
 # load("data/application_RedSea2/application_RedSea_results_3_L-BFGS-B.RData",e3<-new.env())
 # load("data/application_RedSea2/application_RedSea_results_4_L-BFGS-B.RData",e4<-new.env())
 load("data/fitted_extcoef_RedSea.RData")
-emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
-emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
+# emp.extcoef.mat <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=apply(pairs,2,empirical_extcoef,data=maxima.frechet),symmetric = TRUE,dimnames=NULL)
+emp.extcoef.mat <- e$empirical.extcoef.mat #sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmetric = TRUE,dimnames=NULL)
+# emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
 
 
 p1 <- p2 <- list()
-brks.emp1 <- c(1.2,1.35,1.5,1.65,1.8,1.9)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
-brks.emp2 <- c(1.2,1.35,1.5,1.65,1.8,1.9)#round(quantile(2-emp.extcoef.mat2@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
+brks.emp1 <- c(1.35,1.5,1.65,1.8,1.9,1.95)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
+brks.emp2 <- c(1.35,1.5,1.65,1.8,1.9,1.95)#round(quantile(2-emp.extcoef.mat2@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
+brks.emp <- c(1.2,1.5,1.7,1.75,1.8,1.85,1.9,1.95)
 ewbreaks <- seq(34.4,41.6,2.4)
 nsbreaks <- seq(15.6,26.4,3.6)
 ewlabels <- unlist(lapply(ewbreaks, function(x) paste(" ",abs(x), "ºE")))
@@ -104,15 +107,15 @@ basis.centers.geo <- basis.centers.geo[order(loc.sub[basis.centers.geo,2])]
 for(i in 1:length(basis.centers.geo)){
     idx.center <- basis.centers.geo[i]
     data.df <- data.frame(lon=round(loc.sub[,1],5),lat=round(loc.sub[,2],5),
-                emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=fitted.extcoef.mat.list[[1]][,idx.center],
+                emp=emp.extcoef.mat[,idx.center],br=fitted.extcoef.mat.list[[1]][,idx.center],
                 sbr=fitted.extcoef.mat.list[[2]][,idx.center],br2=fitted.extcoef.mat.list[[3]][,idx.center],br3=fitted.extcoef.mat.list[[4]][,idx.center])
     data.df[idx.center,-c(1:2)] = NA
     p1[[i]]<-ggmap(map) +
-    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
-    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp1,colour = "black",linetype="dashed") +
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp1,colour = "black") + labs(x="Longitude", y="Latitude") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp1,colour = "black",linetype="dotted") +
+    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp,colour = "black",linetype="dashed") +
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp,colour = "black",linetype="solid") + labs(x="Longitude", y="Latitude") + 
+    #stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp1,colour = "black",linetype="dotted") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits = xlim) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = ylim) +
     theme(axis.text = element_text(size=10), 
@@ -124,11 +127,11 @@ for(i in 1:length(basis.centers.geo)){
                             plot.margin=unit(c(0.2,0.2,0,0.5),"cm")) 
     
     p2[[i]]<-ggmap(map) + 
-    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1,2),alpha=0.8,mid=exp(1.6),name=expression(hat(theta)[2]),trans="exp") + 
-    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp2,colour = "black",linetype="dashed") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp2,colour = "black") + labs(x="Longitude",y="Latitude") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=br3),breaks = brks.emp2,colour = "black",linetype="dotted") +
+    coord_fixed() + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp,colour = "black",linetype="solid") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp,colour = "black",linetype="dotted") + labs(x="Longitude",y="Latitude") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br3),breaks = brks.emp,colour = "black",linetype="dashed") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=xlim) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = ylim) +
     theme(axis.text = element_text(size=10), 
