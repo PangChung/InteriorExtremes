@@ -366,7 +366,7 @@ save(data.florida,data.RedSea,file="data/application_results.RData")
 load("data/application_results.RData")
 
 # Red Sea #
-subset(data.RedSea,type=="full")
+data= subset(data.RedSea,type=="full")
 median(subset(data.RedSea,type=="partial" & method=="spectral" & case=="BR")$time)
 median(subset(data.RedSea,type=="partial" & method=="spectral" & case=="sBR")$time)
 median(subset(data.RedSea,type=="partial" & method=="composite" & case=="BR")$time)
@@ -374,20 +374,24 @@ median(subset(data.RedSea,type=="partial" & method=="vecchia" & case=="BR")$time
 
 # CI for Red Sea #
 subset(data.RedSea,type=="full")
-apply(subset(data.RedSea,type=="partial" & method=="spectral" & case=="BR")[,1:9],2,quantile,probs=c(0.025,0.975))
-apply(subset(data.RedSea,type=="partial" & method=="spectral" & case=="sBR")[,1:9],2,quantile,probs=c(0.025,0.975))
-apply(subset(data.RedSea,type=="partial" & method=="composite" & case=="BR")[,1:9],2,quantile,probs=c(0.025,0.975))
-apply(subset(data.RedSea,type=="partial" & method=="vecchia" & case=="BR")[,1:9],2,quantile,probs=c(0.025,0.975))
+round(apply(subset(data.RedSea,type=="partial" & method=="spectral" & case=="BR")[,1:9],2,sd),2)
+round(apply(subset(data.RedSea,type=="partial" & method=="spectral" & case=="sBR")[,1:9],2,sd),2)
+round(apply(subset(data.RedSea,type=="partial" & method=="composite" & case=="BR")[,1:9],2,sd),2)
+round(apply(subset(data.RedSea,type=="partial" & method=="vecchia" & case=="BR")[,1:9],2,sd),2)
+
+RedSea_latex = cbind(paste(data$case,data$method),round(data[,1:9],2),data$lik*2+c(4,9,4,4)*2,round(data$time,2))
+xtable::xtable(RedSea_latex)
 
 # Florida Tampa Bay #
-subset(data.florida,type=="full")
+data= subset(data.florida,type=="full")
 median(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-SUM")$time)
 median(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-MAX")$time)
 median(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-SUM")$time)
 median(subset(data.florida,type=="partial" & method=="spectral" & case == "BR-MAX")$time)
 median(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-SUM")$time)
 median(subset(data.florida,type=="partial" & method=="spectral" & case == "sBR-MAX")$time)
-
+Florida_latex = cbind(paste(data$case,data$method),round(data[,1:8],2),data$lik*2+2*c(4,4,8,8,4,4),round(data$time,2))
+xtable::xtable(Florida_latex)
 # CI for Florida Tampa Bay # score matching
 subset(data.florida,type=="full")
 jack.knife(as.matrix(subset(data.florida,type=="partial" & method=="scoreMatching" & case == "BR-SUM")[,1:8]),unlist(subset(data.florida,type=="full" & method=="scoreMatching" & case == "BR-SUM")[1:8]))
@@ -403,5 +407,6 @@ jack.knife <- function(jack,knife){
     n = nrow(jack)
     jack = n*jack - (n-1) * matrix(knife,nrow=n,ncol=ncol(jack),byrow=TRUE)
     est.sd = apply(jack,2,sd)/sqrt(n)
-    return(paste0("(",round(knife - est.sd*1.96,2)," ",round(knife + est.sd*1.96,2),")"))
+    return(est.sd)
 }
+

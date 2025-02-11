@@ -127,7 +127,7 @@ emp.extcoef.mat1 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef1,symmet
 emp.extcoef.mat2 <- sparseMatrix(i=pairs[1,],j=pairs[2,],x=e$emp.extcoef2,symmetric = TRUE,dimnames=NULL)
 basis.centers <- as.matrix(expand.grid(quantile(coord.geo[,1],c(0.2,0.8)),quantile(coord.geo[,2],c(0.2,0.8))))
 loc.df <- data.frame(lon=basis.centers[,1],lat=basis.centers[,2])
-p1 <- p2 <- list()
+p1 <- p2 <- p3 <- p4 <- list()
 brks.emp <- c(1.2,1.5,1.7,1.75,1.8,1.85,1.9,1.95)#round(quantile(2-emp.extcoef.mat1@x,probs=c(0.005,0.05,0.1,0.3,0.5,0.8,0.9),na.rm=TRUE),4)
 ewbreaks <- c(-82.9,-82.5,-82.1,-81.6)
 nsbreaks <- c(27.7, 28, 28.4, 28.8)
@@ -139,14 +139,13 @@ for(i in 1:length(basis.centers.geo)){
     idx.center = basis.centers.geo[i]
     data.df <- data.frame(lon=round(coord.geo[,1],5),lat=round(coord.geo[,2],5),
                 emp1=2-emp.extcoef.mat1[,idx.center],emp2=2-emp.extcoef.mat2[,idx.center],br=fitted.extcoef.mat.list[[1]][,idx.center],
-                sbr=fitted.extcoef.mat.list[[3]][,idx.center],br2=fitted.extcoef.mat.list[[2]][,idx.center],sbr2=fitted.extcoef.mat.list[[4]][,idx.center])
+                sbr=fitted.extcoef.mat.list[[3]][,idx.center],br2=fitted.extcoef.mat.list[[2]][,idx.center],sbr2=fitted.extcoef.mat.list[[4]][,idx.center],br2.1 = fitted.extcoef.mat.list[[5]][,idx.center],br2.2=fitted.extcoef.mat.list[[6]][,idx.center])
     data.df[idx.center,-c(1:2)] = NA
     p1[[i]]<-ggmap(map) +
     geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
     coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp,colour = "black",linetype="dashed") +
     stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp,colour = "black") + labs(x="Longitude", y="Latitude") + 
-    #stat_contour(data=data.df,aes(x=lon,y=lat,z=emp1),breaks = brks.emp,colour = "black",linetype="dotted") +
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) + 
     geom_point(data=loc.df,aes(x=lon,y=lat),size=2,fill="black") +
@@ -161,9 +160,8 @@ for(i in 1:length(basis.centers.geo)){
     p2[[i]]<-ggmap(map) + 
     geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),alpha=0.8,mid=exp(1.6),name=expression(hat(theta)[2]),trans="exp") + 
-    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp,colour = "black",linetype="dashed") + 
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks.emp,colour = "black") + labs(x="Longitude",y="Latitude") + 
-    #stat_contour(data=data.df,aes(x=lon,y=lat,z=emp2),breaks = brks.emp,colour = "black",linetype="dotted") +
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp,colour = "black",linetype="solid") + 
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr2),breaks = brks.emp,colour = "black",linetype="dashed") + labs(x="Longitude",y="Latitude") + 
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) +
     geom_point(data=loc.df,aes(x=lon,y=lat),size=2,fill="black") +
@@ -173,14 +171,45 @@ for(i in 1:length(basis.centers.geo)){
                             axis.text.y = element_text(angle=90,vjust=0.5,hjust=1),
                             axis.title.y = element_text(size=14), 
                             legend.title = element_text(size=14),legend.position = "right",plot.margin=unit(c(0.2,0.2,0,0.5),"cm"))
+
+    p3[[i]]<-ggmap(map) +
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
+    colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp,colour = "black",linetype="solid") +
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br2.1),breaks = brks.emp,colour = "black",linetype="dashed") + labs(x="Longitude", y="Latitude") + 
+    scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
+    scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) + 
+    # geom_point(data=loc.df,aes(x=lon,y=lat),size=2,fill="black") +
+    theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14),
+                            axis.text.y = element_text(angle=90,vjust=0.5,hjust=1),
+                            legend.title = element_text(size=14),legend.position = "right",
+                            plot.margin=unit(c(0.2,0.2,0,0.5),"cm")) 
+                            
+    p4[[i]]<-ggmap(map) +
+    geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp2),alpha=0.8) + 
+    colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br2),breaks = brks.emp,colour = "black",linetype="solid") +
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=br2.2),breaks = brks.emp,colour = "black",linetype="dashed") + labs(x="Longitude", y="Latitude") + 
+    scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
+    scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) + 
+    # geom_point(data=loc.df,aes(x=lon,y=lat),size=2,fill="black") +
+    theme(axis.text = element_text(size=10), 
+                            strip.text = element_text(size = 14),
+                            axis.title.x = element_text(size=14), 
+                            axis.title.y = element_text(size=14),
+                            axis.text.y = element_text(angle=90,vjust=0.5,hjust=1),
+                            legend.title = element_text(size=14),legend.position = "right",
+                            plot.margin=unit(c(0.2,0.2,0,0.5),"cm")) 
 }
 
 for(i in 1:length(p1)){
     ggsave(paste0("figures/application/florida/florida_extcoef2_1_",sprintf(i,fmt="%.3d"),".png"),p1[[i]],width=6.4,height=6,dpi=300)
-}
-
-for(i in 1:length(p2)){
     ggsave(paste0("figures/application/florida/florida_extcoef2_2_",sprintf(i,fmt="%.3d"),".png"),p2[[i]],width=6.4,height=6,dpi=300)
+    ggsave(paste0("figures/application/florida/florida_extcoef2_3_",sprintf(i,fmt="%.3d"),".png"),p3[[i]],width=6.4,height=6,dpi=300)
+    ggsave(paste0("figures/application/florida/florida_extcoef2_4_",sprintf(i,fmt="%.3d"),".png"),p4[[i]],width=6.4,height=6,dpi=300)
 }
 
 system("magick -delay 20 -loop 0 figures/application/florida/florida_extcoef2_1_*.png figures/application/florida/combined1_1.gif")
