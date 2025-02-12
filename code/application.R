@@ -106,3 +106,5 @@ if(idx.jack!=0){
 }else{
     save(fit.result,idx.centers,basis,file=file.origin)
 }
+
+
