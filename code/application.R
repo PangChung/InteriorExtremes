@@ -76,6 +76,7 @@ file.save = paste0(DataPath,"/data/application_RedSea_results_",id,"_",method,"_
 file.origin = paste0(DataPath,"/data/application_RedSea_results_",id,"_",method,".RData")
 
 if(file.exists(file.save)){
+    load(file.save,e<-new.env())
     init = e$fit.result$par
     # stop("job already done")
 }
