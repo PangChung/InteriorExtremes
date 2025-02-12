@@ -139,7 +139,7 @@ basis <- lapply(1:nrow(basis.centers),function(i){
 unit = 2/0.03128403
 basis <- matrix(unlist(basis),nrow=nrow(coord.grid),byrow=FALSE)
 idx.para = c(1:4)
-ncores = detectCores()
+ncores = 8
 init = c(0.1,1,0,1,rep(0,nrow(basis.centers)))
 ub = c(Inf,1.99,pi/4,Inf,rep(Inf,nrow(basis.centers)))
 lb = c(0.01,0.01,-pi/4,0.01,rep(-Inf,nrow(basis.centers)))
@@ -169,20 +169,20 @@ if(idx.jack!=0){
     switch(id,
         {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
         {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ceiling(ncores/2),method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=TRUE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ceiling(ncores/2),method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=TRUE,trace=TRUE)},
-        {fit.result <- fit.scoreMatching(init=init, obs=data.fit.sum[-idx.jack], loc=coord.grid, fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),lb=lb,ub=ub, model="logskew", vario.func=vario.func2, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method=method, maxit=1e6,step2=FALSE,ncores=ceiling(ncores/2),partial=TRUE)},
-        {fit.result <- fit.scoreMatching(init=init, obs=data.fit.max[-idx.jack], loc=coord.grid, fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),lb=lb,ub=ub, model="logskew", vario.func=vario.func2, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method=method, maxit=1e6,step2=FALSE,ncores=ceiling(ncores/2),partial=TRUE)}
+        {fit.result <- fit.model(data=data.fit.sum[-idx.jack],loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=TRUE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit.max[-idx.jack],loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=TRUE,trace=TRUE)},
+        {fit.result <- fit.scoreMatching(init=init, obs=data.fit.sum[-idx.jack], loc=coord.grid, fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),lb=lb,ub=ub, model="logskew", vario.func=vario.func2, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method=method, maxit=1e6,step2=FALSE,ncores=ncores,partial=TRUE)},
+        {fit.result <- fit.scoreMatching(init=init, obs=data.fit.max[-idx.jack], loc=coord.grid, fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),lb=lb,ub=ub, model="logskew", vario.func=vario.func2, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method=method, maxit=1e6,step2=FALSE,ncores=ncores,partial=TRUE)}
     )
     save(fit.result,basis.centers,file=file.save)
 }else{
      switch(id,
         {fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
         {fit.result <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=FALSE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ceiling(ncores/2),method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=TRUE,trace=TRUE)},
-        {fit.result <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ceiling(ncores/2),method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=TRUE,trace=TRUE)},
-        {fit.result <- fit.scoreMatching(init=init, obs=data.fit.sum, loc=coord.grid, fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),lb=lb,ub=ub, model="logskew", vario.func=vario.func2, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method=method, maxit=1e6,step2=FALSE,ncores=ceiling(ncores/2),partial=TRUE)},
-        {fit.result <- fit.scoreMatching(init=init, obs=data.fit.max, loc=coord.grid, fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),lb=lb,ub=ub, model="logskew", vario.func=vario.func2, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method=method, maxit=1e6,step2=FALSE,ncores=ceiling(ncores/2),partial=TRUE)}
+        {fit.result <- fit.model(data=data.fit.sum,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=TRUE,trace=TRUE)},
+        {fit.result <- fit.model(data=data.fit.max,loc=coord.grid,init=init,fixed=c(F,F,F,F,rep(F,nrow(basis.centers))),model="logskew",maxit=1e6,FUN=vario.func2,basis=basis,alpha.func=alpha.func,ncores=ncores,method=method,lb=lb,ub=ub,opt=TRUE,idx.para=idx.para,pareto=TRUE,partial=TRUE,step2=TRUE,trace=TRUE)},
+        {fit.result <- fit.scoreMatching(init=init, obs=data.fit.sum, loc=coord.grid, fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),lb=lb,ub=ub, model="logskew", vario.func=vario.func2, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method=method, maxit=1e6,step2=FALSE,ncores=ncores,partial=TRUE)},
+        {fit.result <- fit.scoreMatching(init=init, obs=data.fit.max, loc=coord.grid, fixed=c(F,F,F,F,rep(T,nrow(basis.centers))),lb=lb,ub=ub, model="logskew", vario.func=vario.func2, idx.para=idx.para, alpha.func=alpha.func, basis=basis, weightFun = weightFun, dWeightFun = dWeightFun, method=method, maxit=1e6,step2=FALSE,ncores=ncores,partial=TRUE)}
     )
     save(fit.result,basis.centers,file=file.origin)
 }
