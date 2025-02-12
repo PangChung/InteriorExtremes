@@ -589,7 +589,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             if(any(par < lb[!fixed2]) | any(par > ub[!fixed2])){return(Inf)}
             par2 = init; par2[!fixed2] = par
             par.1 = par2[idx.para];par.2 = par2[-idx.para]
-            sigma = FUN(loc,par.1,ncores)
+            sigma = FUN(loc,par.1,ncore)
             alpha = alpha.func(par=par.2,b.mat= basis)
             if(!partial){
                 val = intensity_logskew_constraint(data,par=list(sigma,alpha),log=TRUE) 
@@ -622,8 +622,8 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
                     val = val - x.log - 1/2 * (c(x.circ %*% A %*% x.circ) + sum(x.circ * (2*q/sum.q + c(A %*% omega2.i)))) + pnorm(tau.tilde,log.p=TRUE) 
                     return(val)
                 }
-                if(!is.null(ncores)){
-                    val = unlist(parallel::mclapply(1:length(data),computeScores,mc.cores = ncores))
+                if(!is.null(ncore)){
+                    val = unlist(parallel::mclapply(1:length(data),computeScores,mc.cores = ncore))
                 }
                 else{
                     val = unlist(lapply(1:length(data),computeScores))
