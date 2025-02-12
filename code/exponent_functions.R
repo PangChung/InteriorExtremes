@@ -641,7 +641,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             if(any(par < lb[!fixed]) | any(par > ub[!fixed])){return(Inf)}
             cov.mat = cov.func(loc,par.1)
             para.temp = list(sigma=cov.mat,nu=nu)
-            val = intensity_truncT(data,par=para.temp,T_j=a_fun(para.temp,ncores=ncores),log=TRUE,ncores=ncore) 
+            val = intensity_truncT(data,par=para.temp,T_j=a_fun(para.temp,ncores=ncore),log=TRUE,ncores=ncore) 
             return(-mean(val)) 
         }
     }
