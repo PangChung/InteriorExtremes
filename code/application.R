@@ -60,7 +60,7 @@ data.fit = data[ind.data,]
 data.fit = apply(data.fit,1,function(x){list(which(x>0),x[x>0])})
 
 D = nrow(loc.sub.trans)
-ncores = 8
+ncores = detectCores()
 idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
 
 basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distmat)*2);y=y-mean(y);y/sqrt(sum(y^2))})
