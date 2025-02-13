@@ -653,8 +653,9 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
         }
         if(model=="logskew" & any(!fixed[-idx.para]) & step2 & !is.null(ncores)){
             n.alpha = sum(!fixed[-idx.para])
+            ncores.2 = ceiling(ncores/4)
             if(n.alpha==2){
-                a = seq(0,2*pi,length.out=ncores)
+                a = seq(0,2*pi,length.out=ncores.2)
                 a = cbind(cos(a),sin(a))
             } else {
                 a = matrix(rnorm(ncores*n.alpha),ncol=n.alpha)
@@ -666,18 +667,18 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             fixed2[idx.para] = TRUE;
             init.list = split(a,row(a)) 
             if(method=="L-BFGS-B"){
-                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE,ncore=4),mc.cores=ncores.2,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }else{
-                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-8),hessian=FALSE),mc.cores=ncores,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-8),hessian=FALSE,ncore=4),mc.cores=ncores.2,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }
             opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$value,error=function(e){return(Inf)})}))
             opt.result = opt.result2[[which.min(opt.values)]]
             init[!fixed2] = opt.result$par
             fixed2 = fixed;fixed2[-idx.para]=TRUE
             if(method=="L-BFGS-B"){
-                opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian)
+                opt.result = optim(init[!fixed2],lower=lb[!fixed2],upper=ub[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace),hessian=hessian,ncore=ncores)
             }else{
-                opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-8),hessian=hessian)
+                opt.result = optim(init[!fixed2],object.func,method=method,control=list(maxit=maxit,trace=trace,reltol=1e-8),hessian=hessian,ncore=ncores)
             }
             opt.result$others = opt.result2
         }
