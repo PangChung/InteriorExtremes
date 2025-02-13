@@ -52,7 +52,7 @@ if(idx.jack != 0){
     boot.ind <- sample(1:nrow(data),nrow(data),replace = TRUE)
     data <- data[boot.ind,]
 }
-data.rank = nrow(data.sum)+1 - rank(apply(data,1,sum),ties.method = "first")
+data.rank = nrow(data)+1 - rank(apply(data,1,sum),ties.method = "first")
 ind.data = which(data.rank <= 3)
 length(ind.data)
 
