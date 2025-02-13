@@ -52,8 +52,8 @@ if(idx.jack != 0){
     boot.ind <- sample(1:nrow(data),nrow(data),replace = TRUE)
     data <- data[boot.ind,]
 }
-data.sum = apply(data,1,sum)
-ind.data = which(data.sum >= quantile(data.sum,0.9))
+data.rank = nrow(data.sum)+1 - rank(apply(data,1,sum),ties.method = "first")
+ind.data = which(data.rank <= 3)
 length(ind.data)
 
 data.fit = data[ind.data,]
