@@ -100,7 +100,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         }
         set.seed(747380)
         logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=SigmaS)[[1]])
-        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE,mc.preschedule = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
+        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE,mc.preschedule = TRUE)) else T_j = unlist(lapply(1:n,a_fun))
         a = T_j - logphi+ (dof-2)/2 * log(2) + log(gamma((dof+1)/2)) - 1/2*log(pi)
         # a = par2[-idx.para]
         dim = nrow(SigmaS)
@@ -126,7 +126,7 @@ scoreMatching <- function (par2, obs, loc, model="logskew", vario.func=NULL,cov.
         }
     }
     if (!is.null(ncores)) {
-        scores <- parallel::mclapply(1:length(obs), computeScores, mc.cores = ncores,mc.set.seed = TRUE,mc.preschedule = FALSE)
+        scores <- parallel::mclapply(1:length(obs), computeScores, mc.cores = ncores,mc.set.seed = TRUE,mc.preschedule = TRUE)
     }
     else {
         scores <- lapply(1:length(obs), computeScores)
