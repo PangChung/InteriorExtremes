@@ -265,7 +265,7 @@ nlogcomplik <- function(par,data,index,ncores,model){
       if(model == "logskew"){par.index[[1]] = par[[1]][ind,ind];par.index[[2]] = par.index[[2]][ind]} 
       val <- nloglik(par=par.index,data[,ind],model)
     }
-    if(!is.null(ncores)) res <- mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F)
+    if(!is.null(ncores)) res <- mclapply(as.list(as.data.frame(index)),nlogcomplik.contribution,mc.cores = ncores,mc.set.seed = F,mc.preschedule = FALSE)
     else res = lapply(as.list(as.data.frame(index)),nlogcomplik.contribution)
     res <- mean(unlist(res))
     return(res)
@@ -353,7 +353,7 @@ nlogVecchialik <- function(par,data,vecchia.seq,neighbours,ncores,model="BR"){
     return(contribution)
     }
     if(!is.null(ncores)){
-        res <- rowSums(matrix(unlist(mclapply(1:length(vecchia.seq),FUN=logVecchialik.contribution,mc.cores=ncores,mc.set.seed = F)),ncol=length(vecchia.seq),byrow=FALSE),na.rm=TRUE)
+        res <- rowSums(matrix(unlist(mclapply(1:length(vecchia.seq),FUN=logVecchialik.contribution,mc.cores=ncores,mc.set.seed = F,mc.preschedule = FALSE)),ncol=length(vecchia.seq),byrow=FALSE),na.rm=TRUE)
     }else{
         res <- rowSums(matrix(unlist(lapply(1:length(vecchia.seq),FUN=logVecchialik.contribution)),ncol=length(vecchia.seq),byrow=FALSE),na.rm=TRUE)
     }

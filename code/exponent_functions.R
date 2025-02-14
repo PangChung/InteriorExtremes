@@ -46,7 +46,7 @@ intensity_truncT <- function(x,par,T_j=NULL,ncores=NULL,log=TRUE){
 
     if(is.null(T_j)){
         logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
-        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
+        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE,mc.preschedule = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
     }else{
         T_j = T_j[[1]];logphi = T_j[[2]]
     }
@@ -62,7 +62,7 @@ intensity_truncT <- function(x,par,T_j=NULL,ncores=NULL,log=TRUE){
         return(val)
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores,mc.preschedule = FALSE))
 
     }else{
         val = unlist(lapply(1:nrow(x),func))
@@ -114,7 +114,7 @@ V_truncT <- function(x,par,T_j=NULL,ncores=NULL){
         tryCatch({val <- sum(V_j/T_j[idx.finite.j]/x[idx,idx.finite.j])},error=function(e) browser())
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores,mc.preschedule = FALSE))
     }else{
         val = unlist(lapply(1:nrow(x),func))
     }
@@ -153,7 +153,7 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
     }
     if(is.null(T_j)){
         logphi = log(mvtnorm::pmvnorm(lower=rep(0,n),upper=rep(Inf,n),sigma=sigma)[[1]])
-        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
+        if(!is.null(ncores)) T_j = unlist(mclapply(1:n,a_fun,mc.cores=ncores,mc.set.seed = FALSE,mc.preschedule = FALSE)) else T_j = unlist(lapply(1:n,a_fun))
         
     }else{
         logphi = T_j[[2]]
@@ -173,7 +173,7 @@ partialV_truncT <- function(x,idx,par,T_j=NULL,ncores=NULL,log=TRUE){
         return(val)
     }
     if(!is.null(ncores)){
-        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores))
+        val = unlist(parallel::mclapply(1:nrow(x),func,mc.cores = ncores,mc.preschedule = FALSE))
     }
     else{
         val = unlist(lapply(1:nrow(x),func))
@@ -401,8 +401,8 @@ vario.func.i <- function(loc,par,i){ ##return a covariance matrix
         return(val)
     }
     all.pairs = Rfast::comb_n(1:n,2)
-    gamma.vec=unlist(mclapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])} ,mc.cores=ncores))
-    gamma.origin = unlist(mclapply(1:n,function(i) vario(loc[i,]),mc.cores=ncores))
+    gamma.vec=unlist(mclapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])} ,mc.cores=ncores,mc.preschedule = FALSE))
+    gamma.origin = unlist(mclapply(1:n,function(i) vario(loc[i,]),mc.cores=ncores,mc.preschedule = FALSE))
     cov.mat = matrix(0,n,n);
     cov.mat[t(all.pairs)] <- gamma.vec
     cov.mat[t(all.pairs[2:1,])] <- gamma.vec
@@ -623,7 +623,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
                     return(val)
                 }
                 if(!is.null(ncore)){
-                    val = unlist(parallel::mclapply(1:length(data),computeScores,mc.cores = ncore))
+                    val = unlist(parallel::mclapply(1:length(data),computeScores,mc.cores = ncore,mc.preschedule = FALSE))
                 }
                 else{
                     val = unlist(lapply(1:length(data),computeScores))
@@ -726,8 +726,8 @@ vario.func <- function(loc,par,ncores=NULL){ ##return a covariance matrix
         gamma.vec=unlist(lapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])}))
         gamma.origin = unlist(lapply(1:n,function(i) vario(loc[i,])))
     }else{
-        gamma.vec=unlist(mclapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])} ,mc.cores=ncores))
-        gamma.origin = unlist(mclapply(1:n,function(i) vario(loc[i,]),mc.cores=ncores))
+        gamma.vec=unlist(mclapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])} ,mc.cores=ncores,mc.preschedule = FALSE))
+        gamma.origin = unlist(mclapply(1:n,function(i) vario(loc[i,]),mc.cores=ncores,mc.preschedule = FALSE))
     }
     cov.mat = matrix(0,n,n);
     cov.mat[t(all.pairs)] <- gamma.vec
@@ -760,8 +760,8 @@ vario.func2 <- function(loc,par,ncores=NULL){
         gamma.vec = unlist(lapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])}))
         gamma.origin = unlist(lapply(1:n,function(i) vario(loc[i,])))
     }else{
-        gamma.vec=unlist(mclapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])} ,mc.cores=ncores))
-        gamma.origin = unlist(mclapply(1:n,function(i) vario(loc[i,]),mc.cores=ncores))
+        gamma.vec=unlist(mclapply(1:ncol(all.pairs),function(i) {idx = all.pairs[,i];vario(loc[idx,])} ,mc.cores=ncores,mc.preschedule = FALSE))
+        gamma.origin = unlist(mclapply(1:n,function(i) vario(loc[i,]),mc.cores=ncores,mc.preschedule = FALSE))
     }
     cov.mat = matrix(0,n,n);
     cov.mat[t(all.pairs)] <- gamma.vec
