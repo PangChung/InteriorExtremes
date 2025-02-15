@@ -655,7 +655,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             n.alpha = sum(!fixed[-idx.para])
             ncores.2 = ceiling(ncores/4)
             if(n.alpha==2){
-                a = seq(0,2*pi,length.out=ncores.2)
+                a = seq(0,2*pi,length.out=4)
                 a = cbind(cos(a),sin(a))
             } else {
                 a = matrix(rnorm(ncores*n.alpha),ncol=n.alpha)
@@ -667,9 +667,9 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
             fixed2[idx.para] = TRUE;
             init.list = split(a,row(a)) 
             if(method=="L-BFGS-B"){
-                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE,ncore=4),mc.cores=ncores.2,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,lower=lb[!fixed2],upper=ub[!fixed2],method=method,control=list(maxit=maxit,trace=FALSE),hessian=FALSE,ncore=ncores.2),mc.cores=4,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }else{
-                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-8),hessian=FALSE,ncore=4),mc.cores=ncores.2,mc.set.seed=FALSE,SIMPLIFY=FALSE)
+                opt.result2 = mcmapply(optim,par=init.list,MoreArgs = list(fn=object.func,method=method,control=list(maxit=maxit,trace=FALSE,reltol=1e-8),hessian=FALSE,ncore=ncores.2),mc.cores=4,mc.set.seed=FALSE,SIMPLIFY=FALSE)
             }
             opt.values <- unlist(lapply(opt.result2,function(x){tryCatch(x$value,error=function(e){return(Inf)})}))
             opt.result = opt.result2[[which.min(opt.values)]]
