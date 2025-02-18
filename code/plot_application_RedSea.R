@@ -23,14 +23,14 @@ load("data/Trends_fits.RData")
 load("data/maps_RedSea.RData")
 pairs <- comb_n(1:nrow(loc.sub),2)
 
-register_google(key=system("echo $g_key",intern = TRUE))
-ylim = c(12,30)
-xlim = c(32,44)
-xy.center = c(mean(xlim),mean(ylim))
-map <- get_googlemap(xy.center,zoom=5,maptype = "terrain",style = "feature:all|element:all|saturation:-100|lightness:50")
-ggmap(map) + theme(plot.title = element_text(hjust=0.5)) + ggtitle("Red Sea") + xlim(xlim) + ylim(ylim) 
+# register_google(key=system("echo $g_key",intern = TRUE))
+# ylim = c(12,30)
+# xlim = c(32,44)
+# xy.center = c(mean(xlim),mean(ylim))
+# map <- get_googlemap(xy.center,zoom=5,maptype = "terrain",style = "feature:all|element:all|saturation:-100|lightness:50")
+# ggmap(map) + theme(plot.title = element_text(hjust=0.5)) + ggtitle("Red Sea") + xlim(xlim) + ylim(ylim) 
 
-save(map,loc.sub,loc.sub.trans,xy.center,xlim,ylim,file="data/maps_RedSea.RData")
+# save(map,loc.sub,loc.sub.trans,xy.center,xlim,ylim,file="data/maps_RedSea.RData")
 
 idx.centers = unlist(lapply(quantile(loc.sub.trans[,1],seq(0.1,0.9,length.out=5)),function(x){ idx = abs(loc.sub.trans[,1] - x) < 5; which(idx)[which.min(abs(loc.sub.trans[idx,2] - median(loc.sub.trans[idx,2])))]}))
 basis <- sapply(idx.centers,function(x){y=dnorm(distmat[x,],mean=0,sd=ncol(distmat)*2);y=y-mean(y);y/sqrt(sum(y^2))})
@@ -102,7 +102,7 @@ ewbreaks <- seq(34.4,41.6,2.4)
 nsbreaks <- seq(15.6,26.4,3.6)
 ewlabels <- unlist(lapply(ewbreaks, function(x) paste(" ",abs(x), "ºE")))
 nslabels <- unlist(lapply(nsbreaks, function(x) paste(" ",x, "ºN")))
-basis.centers.geo <- sample(1:1043,50)
+basis.centers.geo <- sample(1:1043,100)
 basis.centers.geo <- basis.centers.geo[order(loc.sub[basis.centers.geo,2])] 
 loc.df = data.frame(lon = loc.sub[idx.centers,1],lat = loc.sub[idx.centers,2])
 for(i in 1:length(basis.centers.geo)){
@@ -205,7 +205,7 @@ dev.off()
 
 
 
-
+system("cp figures/application/RedSea2/RedSea_extcoef2_[1-2]_0{35,82}.png figures/application/png")
 
 
 

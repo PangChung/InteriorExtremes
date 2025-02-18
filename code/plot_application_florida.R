@@ -282,10 +282,12 @@ summary(abs(2-e$emp.extcoef2-fitted.extcoef.mat.list[[4]][t(pairs)])) - summary(
 # round(est*100,2)
 # round(est.sd*100,2)
 
-a = matrix(NA,nrow=4,ncol=8)
-for(i in 1:4){
-    for(j in 1:8){
-        a[i,j] = paste0(round(est[i,j]*100,2)," (",round(est.sd[i,j]*100,2),")")
-    }
-}
-xtable(a) 
+# a = matrix(NA,nrow=4,ncol=8)
+# for(i in 1:4){
+#     for(j in 1:8){
+#         a[i,j] = paste0(round(est[i,j]*100,2)," (",round(est.sd[i,j]*100,2),")")
+#     }
+# }
+# xtable(a) 
+
+system("cp figures/application/florida/florida_extcoef2_[1-4]_0{34,05}.png figures/application/png")
