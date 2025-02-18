@@ -144,8 +144,8 @@ for(i in 1:length(basis.centers.geo)){
     p1[[i]]<-ggmap(map) +
     geom_tile(data=data.df,aes(x=lon,y=lat,fill=emp1),alpha=0.8) + 
     colorspace::scale_fill_continuous_divergingx("RdYlBu",limits=c(1.2,2),mid=exp(1.6),alpha=0.8,name=expression(hat(theta)[2]),trans="exp") +
-    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp,colour = "black",linetype="dashed") +
-    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp,colour = "black") + labs(x="Longitude", y="Latitude") + 
+    coord_fixed(ratio=1/coord.ratio) + stat_contour(data=data.df,aes(x=lon,y=lat,z=br),breaks = brks.emp,colour = "black",linetype="solid") +
+    stat_contour(data=data.df,aes(x=lon,y=lat,z=sbr),breaks = brks.emp,colour = "black",linetype="dashed") + labs(x="Longitude", y="Latitude") + 
     scale_x_continuous(breaks = ewbreaks, labels = ewlabels,expand=c(0,0),limits=c(-82.9,-81.6)) + 
     scale_y_continuous(breaks = nsbreaks, labels = nslabels, expand = c(0, 0), limits = c(27.5,28.9)) + 
     geom_point(data=loc.df,aes(x=lon,y=lat),size=2,fill="black") +
@@ -290,4 +290,4 @@ summary(abs(2-e$emp.extcoef2-fitted.extcoef.mat.list[[4]][t(pairs)])) - summary(
 # }
 # xtable(a) 
 
-system("cp figures/application/florida/florida_extcoef2_[1-4]_0{34,05}.png figures/application/png")
+system("cp figures/application/florida/florida_extcoef2_[1-4]_0{38,05}.png figures/application/png")
