@@ -18,7 +18,7 @@ module load r/4.3.1
 # Rscript code/application_florida.R "computer=\"hpc\";idx.jack=${PBS_ARRAY_INDEX};method=\"Nelder-Mead\";id=${id}" 
 # Rscript code/application_florida.R "computer=\"hpc\";idx.jack=0;method=\"Nelder-Mead\";id=${PBS_ARRAY_INDEX}" 
 # Rscript $script "computer=\"hpc\";idx.jack=0;method=\"L-BFGS-B\";id=${PBS_ARRAY_INDEX}" 
-Rscript $script "computer=\"hpc\";idx.jack=${PBS_ARRAY_INDEX};method=\"Nelder-Mead\";id=${id}" 
+Rscript $script "computer=\"hpc\";idx.jack=${PBS_ARRAY_INDEX};method=\"L-BFGS-B\";id=${id}" 
 # Rscript code/application.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\""
 # Rscript code/application.R "computer=\"hpc\""
 # Rscript code/simulation_studies_comp.R "id=${PBS_ARRAY_INDEX};computer=\"hpc\";d=15;m=100"
