@@ -290,4 +290,4 @@ summary(abs(2-e$emp.extcoef2-fitted.extcoef.mat.list[[4]][t(pairs)])) - summary(
 # }
 # xtable(a) 
 
-system("cp figures/application/florida/florida_extcoef2_[1-4]_0{38,05}.png figures/application/png")
+system("cp figures/application/florida/florida_extcoef2_[1-4]_0{38,08}.png figures/application/png")
