@@ -284,8 +284,9 @@ data.RedSea <- data.frame(
 count = 1
 cases = c("BR","sBR","BR","BR")
 method = c("spectral","spectral","composite","vecchia")
+methods = c("Nelder-Mead","L-BFGS-B","Nelder-Mead","Nelder-Mead")
 for(i.case in 1:4){
-    file.origin = paste0("data/application/application_RedSea_results_",i.case,"_Nelder-Mead",".RData")
+    file.origin = paste0("data/application2/application_RedSea_results_",i.case,"_",methods[i.case],".RData")
     load(file.origin,e <- new.env())
     if(i.case %in% c(1,2)){ 
         data.RedSea[count,1:9] = e$fit.result$par;data.RedSea$time[count] = e$fit.result$time[[3]]
@@ -298,7 +299,7 @@ for(i.case in 1:4){
     data.RedSea$lik[count] = e$fit.result$value
     count = count + 1 
     for(j in 1:300){
-        file = paste0("data/application/application_RedSea_results_",i.case,"_Nelder-Mead_",j,".RData")
+        file = paste0("data/application2/application_RedSea_results_",i.case,"_",methods[i.case],"_",j,".RData")
         if(file.exists(file)){
             load(file,e <- new.env())
             if(i.case %in% c(1,2)){ 
@@ -335,8 +336,9 @@ data.florida <- data.frame(
 cases = c("BR-SUM","BR-MAX","sBR-SUM","sBR-MAX","BR-SUM","BR-MAX")
 method = c("spectral","spectral","spectral","spectral","scoreMatching","scoreMatching")
 count = 1
+methods = c("Nelder-Mead","Nelder-Mead","L-BFGS-B","L-BFGS-B","Nelder-Mead","Nelder-Mead")
 for(i.case in 1:6){
-    file.origin = paste0("data/application/application_florida_results_",i.case,"_Nelder-Mead",".RData")
+    file.origin = paste0("data/application2/application_florida_results_",i.case,"_",methods[i.case],".RData")
     load(file.origin,e <- new.env())
     data.florida[count,1:8] = e$fit.result$par;data.florida$time[count] = e$fit.result$time[[3]]
     data.florida$case[count] = cases[i.case]
@@ -345,7 +347,7 @@ for(i.case in 1:6){
     data.florida$lik[count] = e$fit.result$value
     count = count + 1 
     for(j in 1:70){
-        file = paste0("data/application/application_Florida_results_",i.case,"_Nelder-Mead_",j,".RData")
+        file = paste0("data/application2/application_Florida_results_",i.case,"_",methods[i.case],"_",j,".RData")
         if(file.exists(file)){
             load(file,e <- new.env())
             data.florida[count,1:8] = e$fit.result$par;data.florida$time[count] = e$fit.result$time[[3]]
