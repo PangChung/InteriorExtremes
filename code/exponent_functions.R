@@ -292,7 +292,7 @@ V_logskew <- function(x,par,alpha.para=TRUE){
     mu.j = lapply(1:n, function(j) c(A.j[[j]] %*% sigma[,j]))    
     sigma.j = lapply(1:n,function(j) A.j[[j]] %*% sigma %*% t(A.j[[j]]))
     x.circ = log(x) + matrix(a,nrow=nrow(x),ncol=n,byrow=TRUE)
-    mu.val.j = lapply(1:n,function(j) cbind(x.circ[,-j]- x.circ[,j] + matrix(mu.j[[j]],ncol=n-1,nrow=nrow(x),byrow=TRUE),delta[j]))
+    mu.val.j = lapply(1:n,function(j) cbind(x.circ[,-j]- x.circ[,j] - matrix(mu.j[[j]],ncol=n-1,nrow=nrow(x),byrow=FALSE),delta[j]))
     sigma.val.j = lapply(1:n,function(j) {b = c(A.j[[j]] %*% delta); unname(cbind(rbind(sigma.j[[j]],-b),c(-b,1)))})
     val = unlist(lapply(1:nrow(x),function(i) sum(unlist(lapply(1:n,function(j) mvtnorm::pmvnorm(lower=rep(-Inf,n),upper=mu.val.j[[j]][i,],sigma=sigma.val.j[[j]])[[1]]/exp(phi.delta[j])/x[i,j])))))
     assign(".Random.seed", oldSeed, envir=globalenv())

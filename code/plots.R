@@ -64,7 +64,7 @@ dev.off()
 data = NULL
 coord.center = matrix(NA,2,2)
 for(idx in 1:2){
-    idx.center = rep(ifelse(idx==1,16,8),2)
+    idx.center = rbind(c(11,11),c(25,16))[idx,]
     idx.center = which.min(abs(coord[,1] - idx.center[1]) + abs(coord[,2] - idx.center[2]))
     ind.idx.center = all.pairs[1,] == idx.center |  all.pairs[2,] == idx.center
     idx2 = apply(all.pairs[,ind.idx.center],2,function(x){x[x!=idx.center]})
@@ -85,6 +85,7 @@ for(idx in 1:2){
     }
 }
 
+loc.df = data.frame(x = coord[idx.centers,][-1,1], y = coord[idx.centers,][-1,2],z=NA)
 brks = round(quantile(data$z,probs=seq(0.001,0.999,length.out=5)),4)
 data1 = subset(data,idx.center==1)
 labels = unique(data$idx.case)[c(2,1,3,4)]
@@ -96,6 +97,7 @@ p1 <- ggplot(data1, aes(x = x, y = y, z = z))  +
         scale_fill_distiller(palette = "RdBu") +
         geom_contour(colour = "black", breaks = brks) + 
         geom_dl(aes(label = sprintf("%.2f",..level..)), method = "bottom.pieces", breaks = brks, stat = "contour") + 
+        geom_point(data=loc.df,aes(x=x,y=y),size=2,fill="black") +
         theme(axis.text = element_text(size = 12), 
               strip.text = element_text(size = 16),
               axis.title.x = element_text(size = 16), 
@@ -116,6 +118,7 @@ p2 <- ggplot(data2, aes(x = x, y = y,z=z))  +
         geom_contour(colour="black",breaks=brks) + 
         geom_dl(aes(label=sprintf("%.2f",..level..)),method="bottom.pieces",breaks=brks, 
                 stat="contour") + 
+        geom_point(data=loc.df,aes(x=x,y=y),size=2,fill="black") +
         theme(axis.text = element_text(size=12), 
                             strip.text = element_text(size = 16),
                             axis.title.x = element_text(size=16), 
