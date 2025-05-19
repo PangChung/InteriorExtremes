@@ -235,7 +235,7 @@ nloglik <- function(par,data,model="BR"){
     }else{
         if(model == "BR"){
             sigma = par[[1]]
-            res <- log(nVI(data,1:2)+nVI(data,1)*nVI(data,2)) - V(data,sigma)
+            res <- log(nVI.biv(data,sigma,1:2)+nVI.biv(data,sigma,1)*nVI(data,sigma,2)) - V(data,sigma)
         }
         if(model == "logskew"){
             res <- log(partialV_logskew(data,1:2,par,alpha.para=FALSE)+partialV_logskew(data,1,par,alpha.para=FALSE)*partialV_logskew(data,2,par,alpha.para=FALSE)) - V_bi_logskew(data,par)
