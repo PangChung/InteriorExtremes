@@ -347,7 +347,7 @@ for(i.case in 1:6){
     data.florida$lik[count] = e$fit.result$value
     count = count + 1 
     for(j in 1:70){
-        file = paste0("data/application2/application_Florida_results_",i.case,"_",methods[i.case],"_",j,".RData")
+        file = paste0("data/application2/application_florida_results_",i.case,"_",methods[i.case],"_",j,".RData")
         if(file.exists(file)){
             load(file,e <- new.env())
             data.florida[count,1:8] = e$fit.result$par;data.florida$time[count] = e$fit.result$time[[3]]

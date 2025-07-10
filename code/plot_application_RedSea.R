@@ -51,6 +51,7 @@ for(i in 1:4){
 save(fitted.extcoef.mat.list,file="data/fitted_extcoef_RedSea.RData")
 
 
+
 data <- residuals2
 data[data<0] = 0
 data <- apply(data,2,function(x) {ind = x>0;x[ind] = qgpd(rank(x[ind])/(sum(ind)+1),1,1,1); x })
