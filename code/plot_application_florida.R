@@ -27,7 +27,6 @@ all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE,
 all_IDs_num <- as.numeric(stringi::stri_extract_first(all_IDs, regex = "[0-9]+"))
 fill_grid = grid.sf$PIXEL %in% all_IDs_num
 
-
 # register_google(key=system("echo $g_key",intern = TRUE))
 # map <- get_googlemap(center=c(-82.273528,28.209394),zoom=9,maptype = "terrain",style = "feature:all|element:all|saturation:-100|lightness:50")
 # intb.transform <- st_transform(intb.sf, crs = 4326)
@@ -46,6 +45,7 @@ coord.grid = coord.grid/60000
 coord.grid.new <- apply(coord.grid,2,function(x){x-median(x)})
 pairs <- comb_n(1:nrow(coord.grid),2)
 coord.ratio <- 0.01796407/0.01912047
+
 basis.centers <- as.matrix(expand.grid(quantile(coord.grid[,1],c(0.2,0.8)),quantile(coord.grid[,2],c(0.2,0.8))))
 # basis.centers <- rbind(basis.centers,apply(basis.centers,2,function(x){median(x)}))
 basis <- lapply(1:nrow(basis.centers),function(i){
