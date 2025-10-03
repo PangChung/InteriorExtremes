@@ -289,7 +289,7 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
     return(Z)
 }
 
-simu_Pareto_HR_log <- function(m,Sigma,riskr=mean,return.R = FALSE){
+simu_Pareto_HR_log <- function(m,Sigma,riskr=mean){
     n = nrow(Sigma)
     Z = matrix(NA,ncol=n,nrow=m)
     R = rep(NA,m)
@@ -311,7 +311,6 @@ simu_Pareto_HR_log <- function(m,Sigma,riskr=mean,return.R = FALSE){
     z = func(m)
     idx.finish <- apply(z[,-1],1,riskr) > 0
     Z[idx.finish,] = z[idx.finish,-1]
-    R[idx.finish] = z[idx.finish,1]
     while(any(!idx.finish)){
         m.temp = sum(!idx.finish)
         z.temp = func(m.temp)
@@ -319,15 +318,10 @@ simu_Pareto_HR_log <- function(m,Sigma,riskr=mean,return.R = FALSE){
         if(any(idx.finish.temp)){
             idx.temp = which(!idx.finish)[idx.finish.temp]
             Z[idx.temp,] <- z.temp[idx.finish.temp,-1]
-            R[idx.temp] <- z.temp[idx.finish.temp,1]
             idx.finish[idx.temp] <- TRUE 
         }
     }
-    if(return.R){
-        return(cbind(R,Z))
-    }else{
-        return(Z)
-    }
+    return(Z)
 }
 
 ## simulate the r-Pareto process associated with the truncated process ##
