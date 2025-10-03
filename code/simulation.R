@@ -293,9 +293,9 @@ simu_Pareto_HR_log <- function(m,Sigma,riskr=mean){
     n = nrow(Sigma)
     Z = matrix(NA,ncol=n,nrow=m)
     R = rep(NA,m)
-    Sigma.inv = cho2inv(chol(Sigma))
+    Sigma.inv = chol2inv(chol(Sigma))
     q = rowSums(Sigma.inv)
-    Q = Sigma.inv - t(q) %*% q/sum(q) 
+    Q = Sigma.inv - q %*% t(q)/sum(q) 
     Q.eigen = eigen(Q)
     lambda = Q.eigen$values[-n]; V = Q.eigen$vectors[,-n,drop=FALSE]
     cov.mat = V %*% diag(1/lambda) %*% t(V)
