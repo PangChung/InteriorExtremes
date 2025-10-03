@@ -289,10 +289,13 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
     return(Z)
 }
 
-simu_Pareto_HR_log <- function(m,Q,riskr=mean,return.R = FALSE){
-    n = nrow(Q)
+simu_Pareto_HR_log <- function(m,Sigma,riskr=mean,return.R = FALSE){
+    n = nrow(Sigma)
     Z = matrix(NA,ncol=n,nrow=m)
     R = rep(NA,m)
+    Sigma.inv = cho2inv(chol(Sigma))
+    q = rowSums(Sigma.inv)
+    Q = Sigma.inv - t(q) %*% q/sum(q) 
     Q.eigen = eigen(Q)
     lambda = Q.eigen$values[-n]; V = Q.eigen$vectors[,-n,drop=FALSE]
     cov.mat = V %*% diag(1/lambda) %*% t(V)
