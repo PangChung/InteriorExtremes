@@ -289,6 +289,44 @@ simu_Pareto_logskew <- function(m,par,riskr,ncores=NULL){
     return(Z)
 }
 
+simu_Pareto_HR_log <- function(m,Q,riskr=mean,return.R = FALSE){
+    n = nrow(Q)
+    Z = matrix(NA,ncol=n,nrow=m)
+    R = rep(NA,m)
+    Q.eigen = eigen(Q)
+    lambda = Q.eigen$values[-n]; V = Q.eigen$vectors[,-n,drop=FALSE]
+    cov.mat = V %*% diag(1/lambda) %*% t(V)
+    a = diag(cov.mat)/2 
+    func <- function(m.i){
+        X = matrix(rnorm((n-1)*m.i),nrow=m.i,ncol=n-1)
+        X = X %*% diag(1/sqrt(lambda)) %*% t(V)
+        X = X - matrix(a,nrow=m.i,ncol=n,byrow=TRUE)
+        r = rexp(m.i) - apply(X,1,riskr) - 0.1
+        X = X + matrix(r,nrow=m.i,ncol=n,byrow=FALSE)
+        return(cbind(r,X))
+    }
+    z = func(m)
+    idx.finish <- apply(z[,-1],1,riskr) > 0
+    Z[idx.finish,] = z[idx.finish,-1]
+    R[idx.finish] = z[idx.finish,1]
+    while(any(!idx.finish)){
+        m.temp = sum(!idx.finish)
+        z.temp = func(m.temp)
+        idx.finish.temp = apply(z.temp[,-1,drop=FALSE],1,riskr) > 0
+        if(any(idx.finish.temp)){
+            idx.temp = which(!idx.finish)[idx.finish.temp]
+            Z[idx.temp,] <- z.temp[idx.finish.temp,-1]
+            R[idx.temp] <- z.temp[idx.finish.temp,1]
+            idx.finish[idx.temp] <- TRUE 
+        }
+    }
+    if(return.R){
+        return(cbind(R,Z))
+    }else{
+        return(Z)
+    }
+}
+
 ## simulate the r-Pareto process associated with the truncated process ##
 simu_Pareto_truncT <- function(m,par,riskr,ncores=NULL){
     nu = par[[2]];sigma = par[[1]]
