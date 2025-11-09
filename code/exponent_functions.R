@@ -619,7 +619,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
                     tau.tilde =  beta * sum((alpha.i - sum.alpha*q/sum.q) * (x.circ + omega2.i/2))+ beta*sum.alpha/sum.q
                     A = inv.sigma - q %*% t(q)/sum.q
                     val = -(n-3)/2 * log(2) - (n-1)/2*log(pi)-1/2*logdet.sigma - 1/2*log(sum.q) - 1/2 * (sum(q*omega2.i)-1)/sum.q - 1/8*c(omega2.i %*% A %*% omega2.i) 
-                    val = val - x.log - 1/2 * (c(x.circ %*% A %*% x.circ) + sum(x.circ * (2*q/sum.q + c(A %*% omega2.i)))) + pnorm(tau.tilde,log.p=TRUE) 
+                    val = val - sum(x.log) - 1/2 * (c(x.circ %*% A %*% x.circ) + sum(x.circ * (2*q/sum.q + c(A %*% omega2.i)))) + pnorm(tau.tilde,log.p=TRUE) 
                     return(val)
                 }
                 if(!is.null(ncore)){
