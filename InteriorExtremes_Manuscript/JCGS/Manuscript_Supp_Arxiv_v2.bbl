@@ -1,0 +1,39 @@
+\begin{thebibliography}{7}
+
+\bibitem[Azzalini(2013)]{Azzalini:2013}
+Azzalini, A. (2013) \emph{The skew-normal and related families}. Volume~3.
+\newblock Cambridge University Press.
+
+\bibitem[Dombry \emph{et~al.}(2016)Dombry, Engelke and
+  Oesting]{Dombry.Engelke.Oesting:2016}
+Dombry, C., Engelke, S. and Oesting, M. (2016) {Exact simulation of max-stable
+  processes}.
+\newblock \emph{Biometrika} \textbf{103}, 303--317.
+
+\bibitem[Engelke \emph{et~al.}(2015)Engelke, Malinowski, Kabluchko and
+  Schlather]{Engelke.etal:2015}
+Engelke, S., Malinowski, A., Kabluchko, Z. and Schlather, M. (2015) {Estimation
+  of Huesler--Reiss distributions and Brown--Resnick processes}.
+\newblock \emph{{J.~Roy.~Statist.~Soc.~B}} \textbf{77}, 239--265.
+
+\bibitem[Horrace(2005)]{Horrace:2005}
+Horrace, W.~C. (2005) Some results on the multivariate truncated normal
+  distribution.
+\newblock \emph{Journal of Multivariate Analysis} \textbf{94}, 209--221.
+
+\bibitem[Huser \emph{et~al.}(2016)Huser, Davison and Genton]{Huser.etal:2016}
+Huser, R., Davison, A.~C. and Genton, M.~G. (2016) {Likelihood estimators for
+  multivariate extremes}.
+\newblock \emph{Extremes} \textbf{19}, 79--103.
+
+\bibitem[Wadsworth and Tawn(2013)]{Wadsworth.Tawn:2013}
+Wadsworth, J.~L. and Tawn, J.~A. (2013) {A new representation for multivariate
+  tail probabilities}.
+\newblock \emph{{Bernoulli}} \textbf{19}, 2689--2714.
+
+\bibitem[Wadsworth and Tawn(2014)]{Wadsworth.Tawn:2014}
+Wadsworth, J.~L. and Tawn, J.~A. (2014) {Efficient inference for spatial
+  extreme value processes associated to log-Gaussian random functions}.
+\newblock \emph{{Biometrika}} \textbf{101}, 1--15.
+
+\end{thebibliography}

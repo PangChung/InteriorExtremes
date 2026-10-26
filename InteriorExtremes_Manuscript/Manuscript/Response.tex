@@ -1,0 +1,117 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[12pt
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\usepackage{color}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{environ}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{\vspace{-2.5em}}
+
+\input{macros.tex}
+\usepackage{natbib}
+\title{Response to Reviewers on ``Flexible Max-Stable Processes for Fast and Efficient Inference''}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% AE %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Response to the Associated Editor}
+
+\medskip
+
+\begin{Comments}
+The manuscript involves inference for max-stable processes, construction of some new max-stable families, and conditions for when a (finite-dimensional) version of a max-stable process will place all mass of the spectral measure in the interior of the simplex. The proposed inference technique for max-stable processes via the spectral density h is claimed, to the best of the authors' knowledge, to be new. Yet the authors cite the paper of Engelke et al (2015), in which they do precisely that for a Brown-Resnick process [see equations (22), (23), (24) and (26) of that paper here: https://arxiv.org/pdf/1207.6886]. This fact is unfortunately not the only place where existing literature could be better dealt with.
+\end{Comments}
+
+\begin{Res}
+We have added the references \citep{Engelke.etal:2015} and remove the claim that the method is new in spatial extreme context. Instead, we say we further explore the methodology and provide a new family of max-stable processes to take full advantage of this spectral density estimation method.  
+\end{Res} 
+
+\begin{Comments}
+The limit in equation (6) is quite a fundamental result and originates from Coles \& Tawn (1991). In Section 3, about inference methods, some discussion is given of full and pairwise likelihoods, and an alternative based on the Stephenson \& Tawn (2005) likelihood (implemented in Wadsworth \& Tawn, 2014) is given. Why do you not mention this further or use it in comparisons, when it has been show to lead to good gains in efficiency? In Wadsworth \& Tawn (2014), this is also given a Poisson process approximation interpretation and therefore has analogues with methods based on the spectral density. There is also a discussion in that paper of censoring to reduce bias, which is a well-known issue and surprisingly absent from this paper.
+\end{Comments}
+
+\begin{Res}
+We have added the reference \citep{Wadsworth.Tawn:2014} and discuss the Stephenson \& Tawn (2005) likelihood in the revised manuscript.However, as we see, the Stephenson \& Tawn (2005) likelihood does not scale well with the increasing dimensions, as the hitting scenarios can often involves the scenarios that a single extreme event contributes to the maxima at a large number of locations, e.g., more than 10 locations when the dimension is 225, which means the computation of the Stephenson \& Tawn likelihood is infeasible. 
+\end{Res}
+
+\begin{Comments}
+There is also a slight strangeness in the rigid way the methods are presented. It seems to be assumed that we only ever have data which arise as maxima (and are assumed max-stable). In reality this is rarely the case and we usually derive maxima from all data. So, given the Poisson process viewpoint, why can you not make something of this? In the application, the well-known Red Sea data are not available only as maxima, so there is no need to stick rigidly to this assumption. The field of spatial extremes has moved on a long way since max-stable processes were considered the main/only important models, and this paper would be richer for acknowledging this.
+\end{Comments}
+
+\begin{Res}
+This issue is closely related to the previous one. We will discuss the block maxima approach and the Poisson process viewpoint in the revised manuscript.
+\end{Res}
+
+\dashline
+\bibliographystyle{CUP}
+\bibliography{Total.bib}
+\end{document}
+
+

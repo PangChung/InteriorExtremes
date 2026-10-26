@@ -1,0 +1,395 @@
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[12pt
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\usepackage{color}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{environ}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{\vspace{-2.5em}}
+
+\input{macros.tex}
+\usepackage{natbib}
+\title{Response to Reviewers on ``Fast and Flexible Inference for Spatial Extremes''}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+% \noindent We thank the Associate Editor and the three referees for their careful reading of our manuscript and their constructive comments. We have revised the manuscript accordingly. Below we provide detailed responses to each comment.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% AE %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \section*{Response to the Associated Editor}
+
+% \medskip
+
+% \begin{Comments}
+% The manuscript involves inference for max-stable processes, construction of some new max-stable families, and conditions for when a (finite-dimensional) version of a max-stable process will place all mass of the spectral measure in the interior of the simplex. The proposed inference technique for max-stable processes via the spectral density h is claimed, to the best of the authors' knowledge, to be new. Yet the authors cite the paper of Engelke et al (2015), in which they do precisely that for a Brown-Resnick process [see equations (22), (23), (24) and (26) of that paper here: https://arxiv.org/pdf/1207.6886]. This fact is unfortunately not the only place where existing literature could be better dealt with.
+% \end{Comments}
+
+% \begin{Res}
+% We have added the references \citep{Engelke.etal:2015} and removed the claim that the method is new in the spatial extremes context. Instead, we say we further explore the methodology and provide a new family of max-stable processes to take full advantage of this spectral density estimation method.
+% \end{Res}
+
+% \begin{Comments}
+% The limit in equation (6) is quite a fundamental result and originates from Coles \& Tawn (1991). In Section 3, about inference methods, some discussion is given of full and pairwise likelihoods, and an alternative based on the Stephenson \& Tawn (2005) likelihood (implemented in Wadsworth \& Tawn, 2014) is given. Why do you not mention this further or use it in comparisons, when it has been show to lead to good gains in efficiency? In Wadsworth \& Tawn (2014), this is also given a Poisson process approximation interpretation and therefore has analogues with methods based on the spectral density. There is also a discussion in that paper of censoring to reduce bias, which is a well-known issue and surprisingly absent from this paper.
+% \end{Comments}
+
+% \begin{Res}
+% We have added the reference \citep{Wadsworth.Tawn:2014} and discuss the Stephenson \& Tawn (2005) likelihood in the revised manuscript. However, as we see, the Stephenson \& Tawn (2005) likelihood does not scale well with increasing dimensions, as the hitting scenarios can often involve the case that a single extreme event contributes to the maxima at a large number of locations, e.g., more than 10 locations when the dimension is 225, which means the computation of the Stephenson \& Tawn likelihood is infeasible.
+% \end{Res}
+
+% \begin{Comments}
+% There is also a slight strangeness in the rigid way the methods are presented. It seems to be assumed that we only ever have data which arise as maxima (and are assumed max-stable). In reality this is rarely the case and we usually derive maxima from all data. So, given the Poisson process viewpoint, why can you not make something of this? In the application, the well-known Red Sea data are not available only as maxima, so there is no need to stick rigidly to this assumption. The field of spatial extremes has moved on a long way since max-stable processes were considered the main/only important models, and this paper would be richer for acknowledging this.
+% \end{Comments}
+
+% \begin{Res}
+% This issue is closely related to the previous one. We will discuss the block maxima approach and the Poisson process viewpoint in the revised manuscript.
+% \end{Res}
+
+% \dashline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% REFEREE 1 %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Response to Referee 1}
+
+\medskip
+
+\begin{Comments}
+The paper under view studies statistical max-stable and $r$-Pareto models for spatial extremes that allow for efficient inference via the so-called spectral likelihood. As already stated in the literature, the applicability of this method relies on the fact that the exponent measure of any vector $(Z(s_1),\ldots,Z(s_D))$ has all its mass in the interior of $[0,\infty)^D$. Thus, the authors provide an equivalent criterion for this, based on conditional distributions of the spectral process. Furthermore, they propose two new classes of models extending/adapting the well-known Brown--Resnick and extremal-$t$ processes to this setting leading to the skewed Brown--Resnick and truncated extremal-$t$ models, respectively. The paper addresses an important and methodologically challenging question -- efficient inference for high-dimensional extremes. It contains a number of novel contributions. My feeling, however, is that these novel elements are too limited to target a journal like JASA. More precisely:
+\begin{itemize}
+  \item Even though the equivalent criterion in terms of conditional probabilities is new, the fact that the exponent measure (and angular measure) does not put any mass on the boundary if the spectral process is strictly positive seems to be a direct consequence from other results in the literature, e.g., in the cited work by Dombry and co-authors such as \citet{Dombry.Ribatet:2015}.
+  \item The skewed Brown--Resnick process model is a straightforward extension of the multivariate H\"{u}sler--Reiss model by Padoan (2011) and Beranger et al.\ (2019). Furthermore, to become a truly spatial model, the scale matrix $\Sigma$ should be replaced by a (positive definite) scale function already in its definition.
+  \item The definition of the truncation looks a bit strange. I guess that you mean
+  \[
+    (\tilde{Y}(s_1),\ldots,\tilde{Y}(s_D)) \stackrel{d}{=} (Y(s_1),\ldots,Y(s_D)) \mid \min_{i=1}^{D} Y(s_i) > 0.
+  \]
+  However, this is not a truly spatial model in the sense that it does not directly extend to a continuous spatial domain $\mathcal{S}$. In this case, an appropriate condition would be that $\inf_{s\in\mathcal{S}} Y(s)>0$; however, this does not appear to lead to tractable finite-dimensional likelihoods.
+\end{itemize}
+Considering these reservations regarding the manuscript's primary methodological contributions, I believe that the results, as well as the model once it is fully spatial, merit publication; however, JASA T\&M may not be the most suitable outlet.
+\end{Comments}
+
+\begin{Res}
+% We appreciate the referee's careful evaluation. We respond to each sub-point in turn.
+
+% \begin{itemize}
+% %   \item Regarding the relationship to Dombry and Ribatet (2015): while the general intuition may follow from existing results, our Theorem is the first to provide a rigorous and explicit \emph{equivalent} characterisation of interior-mass in terms of conditional distributions of the spectral process, which is directly actionable for model construction. We have clarified the novelty more carefully in the revision.
+
+% %   \item Regarding the spatial extension of the skewed Brown--Resnick process: we agree that replacing $\Sigma$ by a positive-definite covariance function would yield a fully spatial model. We have extended the definition accordingly and discuss the construction in the revised manuscript.
+
+% %   \item Regarding the truncated extremal-$t$: we agree that the finite-dimensional truncation does not trivially extend to a continuous domain. We have clarified the definition and the intended interpretation in the revised manuscript, and explicitly noted the limitation.
+% \end{itemize}
+\end{Res}
+
+\dashline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% REFEREE 2 %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Response to Referee 2}
+
+\medskip
+
+\noindent\textbf{Major Comments}
+
+\medskip
+
+\begin{Comments}
+(i) \emph{Scope and title.} Recent work in spatial extremes has moved beyond asymptotic classes toward sub-asymptotic constructions such as random scale mixtures (e.g., Huser et al., 2017; Huser and Wadsworth, 2019) and max-infinitely-divisible models (e.g., Reich and Shaby, 2012; Bopp et al., 2021); see Huser and Wadsworth (2022) and Huser et al.\ (2024) for comprehensive reviews and comments. In fact, Huser et al.\ (2024) cautioned the community to move away from max-stable processes (or their corresponding $r$-Pareto processes) for modelling environmental data due to their stringent dependence properties. Given this context, the present title overstates generality. Please consider a more precise title such as ``Fast spectral inference for max-stable and $r$-Pareto models''.
+\end{Comments}
+
+\begin{Res}
+% We agree that the title should be more precise and have revised it accordingly. We have also added a more thorough discussion of sub-asymptotic alternatives in the introduction.
+\end{Res}
+
+\begin{Comments}
+(ii) \emph{The max-stability assumption.} The reason that the sub-asymptotic models are preferred over max-stable processes is not only because we want to get the dependence class right, but also because we want to use a model that can accommodate weakening dependence structure as the level of extremity increases so that the extreme clusters in the model will appear more localised as they become more intense. For any max-stable process with unit Fr\'{e}chet margins, the extremal coefficient of two locations with distance $h$ becomes almost constant after a certain level of extremity:
+\[
+  \theta_h(z) - \theta_h = O(1/z), \quad z\to\infty,
+\]
+in which $\theta_h = 2 - \lim_{z\to\infty}\Pr\{Z(s_1)>z \mid Z(s_2)>z\}$. The corresponding $r$-Pareto also has this stability property. Although anisotropy in the proposed skewed Brown--Resnick may improve realism, this stability property remains and imposes a potentially unrealistic assumption on storm sizes for extreme rainfall or heatwave extents for extreme temperature. Both Huser and Wadsworth (2019) and Hazra et al.\ (2025) can exhibit weakening dependence strength as the quantile level increases. Furthermore, the skewed Brown--Resnick process and the truncated extremal-$t$ process are asymptotically dependent everywhere over the large spatial domains considered in the applications of this paper; $\theta_h \to 2$ only if $h\to\infty$. This will inflate the risks associated with the simultaneous occurrence of extremes over space.
+\end{Comments}
+
+\begin{Res}
+% We thank the referee for this important point. We have added a discussion of the limitations of asymptotic dependence models on large spatial domains, and we acknowledge that sub-asymptotic alternatives may be more appropriate in settings where asymptotic independence is plausible. We have restricted the applications to the subregions where max-stability is empirically defensible and explicitly noted this limitation in the paper.
+\end{Res}
+
+\begin{Comments}
+(iii) \emph{Model validity on large domains (need for testing).} Both proposed models are asymptotically dependent for any finite $h$ on the large geographic domains analysed. Before fitting, the manuscript should test max-stability/max-domain suitability, e.g., via the space-time max-stability test of Koh et al.\ (2025) (or comparable diagnostics). In experience with SST fields (Hazra and Huser, 2021), max-stability is rejected even on subregions of 100\,km, with rapid transition to asymptotic independence beyond modest lags. If a max-stable/$r$-Pareto model is used, restrict to subregions where the assumption is empirically defensible and say so explicitly. It might be justifiable to use a max-stable or $r$-Pareto process to model the precipitation in a smaller spatial domain such as central Florida, but the authors need to specifically show that.
+\end{Comments}
+
+\begin{Res}
+% We have added formal tests of max-stability (following Koh et al., 2025) to both applications, and restrict our analysis to subregions where these tests do not reject the assumption. The results and caveats are now reported explicitly in the applications section.
+\end{Res}
+
+\begin{Comments}
+(iv) \emph{Careless notations.} The authors use notations very frivolously, which causes immense confusion and makes the paper very difficult to read. For example, in Theorem 2, the inline notation is very dense and hard to parse. Specific issues include:
+\begin{itemize}
+  \item The bold (for vectors) and roman (for scalars) fonts are inconsistently used.
+  \item In $\bar{\Sigma} = \omega^{-1}\Sigma\omega$, it is unclear whether $\omega$ is a scalar or a matrix.
+  \item The matrix $A_k = (e_1,\ldots,e_{k-1},-\mathbf{1},e_k,\ldots,e_{D-1})$: the role of $e_k$ is not defined clearly.
+  \item The subscript in $\Sigma_{\cdot k}$ is not defined.
+  \item The superscripts in $x_{-k}^{\circ\circ}$ are unnecessarily clumsy.
+  \item The notations $w_k$ and $I$ in Equation (15) are not defined.
+  \item The function $\Phi^\circ$ in Equation (17) is never defined in the main text.
+  \item Under Equation (11), $\Pr(W \in [0, xr])$ makes no sense.
+\end{itemize}
+There are many more notations that are not consistent throughout the text. The authors must carefully correct all the mistakes.
+\end{Comments}
+
+\begin{Res}
+We sincerely apologise for the notational inconsistencies. We have thoroughly revised the notation throughout the paper, ensuring consistent use of bold fonts for vectors and matrices, clearly defining all symbols at first use, and moving supplementary definitions into the main text where necessary. A full notation table has been added.
+\end{Res}
+
+\begin{Comments}
+(v) \emph{Computational evidence and baselines.} ``More efficient than state-of-the-art'' (Line 14 of Page 30) needs quantification. Please report wall-clock times and memory for simulation and both data sets, with/without anisotropy, knots, etc.\ and comparisons to contemporary baselines such as neural Bayes estimators (Sainsbury-Dale et al., 2025). Moreover, the applications analyse 3,600 (Florida rainfall) and 1,043 (Red Sea SST) locations, whereas the simulation study uses only $D\in\{100,225\}$; thus the simulation results do not demonstrate inferential performance at application scale.
+\end{Comments}
+
+\begin{Res}
+
+\end{Res}
+
+\begin{Comments}
+(vi) Are 4--5 knots for $\eta$ adequate on large, heterogeneous domains (Florida; Red Sea)? Related work uses richer local bases (e.g., 36 in Hazra et al., 2025 for a much smaller region). Please justify knot counts and provide sensitivity checks.
+\end{Comments}
+
+\begin{Res}
+% We have added a sensitivity analysis with respect to the number of knots and provide justification based on cross-validation criteria. The results suggest that 4--5 knots are adequate for the specific spatial scale of the applications considered, though we acknowledge that richer bases may be beneficial for more heterogeneous domains.
+\end{Res}
+
+\medskip
+\noindent\textbf{Minor Comments}
+
+\medskip
+
+\begin{Comments}
+(i) Page 5 --- If $C^+(S)$ is a function space and $B\subset C^+(S)$, how do you evaluate $\Pr(X/u\in B)$ if $X$ is a real-valued spatial process?
+\end{Comments}
+
+\begin{Res}
+We have simplified the notation, and it should be clear now.
+\end{Res}
+
+\begin{Comments}
+(ii) Page 6 --- You wrote ``$\frac{(\tilde{W}(s))^{\nu+}}{a(s)}$, where $\tilde{W}_+(s)=\max\{\tilde{W}(s),0\}$''. Please be consistent.
+\end{Comments}
+
+\begin{Res}
+We have corrected the notation to be consistent throughout.
+\end{Res}
+
+\begin{Comments}
+(iii) Equation (7) --- Should ``$A$'' be ``$A_u$''?
+\end{Comments}
+
+\begin{Res}
+Yes, this was a typo. We have corrected it.
+\end{Res}
+
+\begin{Comments}
+(iv) Page 8 --- Should ``$r(x)=\|x\|_1$'' be ``$r_0(x)=\|x\|_1$''?
+\end{Comments}
+
+\begin{Res}
+No, this is correct as written. 
+\end{Res}
+
+\begin{Comments}
+(v) Page 15 --- The constraint ``$\eta 1 = 0$'' came out of nowhere. Why do you need it?
+\end{Comments}
+
+\begin{Res}
+Commented.
+\end{Res}
+
+\dashline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% REFEREE 3 %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Response to Referee 3}
+
+\medskip
+
+\begin{Comments}
+I worry that the title is too general and may miss the specificities of the paper. In particular, the restriction of the new models developed to the asymptotic dependent case does rule out a substantial fraction of spatial extremes.
+\end{Comments}
+
+\begin{Res}
+We agree and have revised the title to better reflect the scope of the paper (see also our response to Referee 2, Major Comment (i)).
+\end{Res}
+
+\begin{Comments}
+Pg 2, l51: `do not provide any statistical guarantees'. R\"{o}dder et al.\ (2025) seem to suggest there is some justification for these neural Bayes estimators.
+\end{Comments}
+
+\begin{Res}
+\end{Res}
+
+\begin{Comments}
+Pg 2, l7: `Vecchia approximation'. More related to your paper on $r$-Pareto processes and non-stationarity, Koh et al.\ (2025) fit an $r$-Pareto model using the gradient score and the Vecchia approximation in an ML algorithm.
+\end{Comments}
+
+\begin{Res}
+% We have added the reference to Koh et al.\ (2025) and briefly discussed the connection to gradient-score methods with Vecchia approximations in the introduction.
+\end{Res}
+
+\begin{Comments}
+Pg 5, l44: `The fact that $\kappa$ can put mass on $\partial\Omega$ hinders the convergence of $X$, introducing large bias in estimation'. I find this interesting, and I am not currently aware of an obvious reference for this. In any case, I think it would be nice to show a simulation study showing this bias.
+\end{Comments}
+
+\begin{Res}
+% We have added a simulation study illustrating the bias that arises when the spectral measure has mass on the boundary, and we have provided a brief theoretical explanation for this phenomenon.
+\end{Res}
+
+\begin{Comments}
+Some typos: pg 18, l41: `the method'. pg 24, l52: `is is'.
+\end{Comments}
+
+\begin{Res}
+We have corrected these typos throughout the manuscript.
+\end{Res}
+
+\begin{Comments}
+Section 4.3: I found your notation of $\eta$ a little confusing, because it is not always clear if it is a vector or a scalar. For example in pg.\ 14, l52: $\eta=0$, but above in l31: $\xi$ has a one-to-one relationship with $\eta$, but then $\xi=0$, which is a scalar?
+\end{Comments}
+
+\begin{Res}
+We agree the notation was confusing. We have revised Section 4.3 to consistently use $\boldsymbol{\eta}$ for the vector and $\eta_k$ for its components, and clarified the relationship between $\xi$ and $\eta_k$.
+\end{Res}
+
+\begin{Comments}
+Section 5.2: How robust is your estimation procedure to not knowing the true centre of the kernels? In practice I can imagine that knowing the true centres is difficult. Is the $\eta$ parameter vector difficult to estimate?
+\end{Comments}
+
+\begin{Res}
+\end{Res}
+
+\begin{Comments}
+Pg 19, l27: What is the intuition for choosing this value of $u=30\times D$? I understand this should be large but this feels rather arbitrary.
+\end{Comments}
+
+\begin{Res}
+% We have provided a more principled justification for the choice of $u$, based on the requirement that $u > D^{1-1/p}$ ensures the equivalence between the $L_1$ and $L_p$ $r$-Pareto likelihoods. We have also added a sensitivity analysis over different values of $u$.
+\end{Res}
+
+\begin{Comments}
+Fig 3: Isn't the bias you see from the spectral likelihood concerning? Also shouldn't the existing theory say that the pairwise likelihood approach would give unbiased estimates for all the parameters (including $b_1$ and $b_2$)?
+\end{Comments}
+
+\begin{Res}
+% The bias observed in the spectral likelihood estimates is indeed noteworthy. It arises because the spectral likelihood is not a proper likelihood but an approximation based on the intensity function, and small-sample bias is expected. We have added a more thorough discussion of this, including a comparison with the theoretical guarantees of the pairwise likelihood.
+\end{Res}
+
+\begin{Comments}
+Pg 22, l44: `There is no bias (or approximation) for $r$-Pareto processes'. Isn't there the approximation when you use the likelihood of the $r$-Pareto process with $L_1$ norm as risk functional to make inference for a different risk functional?
+\end{Comments}
+
+\begin{Res}
+% The referee is correct. We have clarified this statement: there is no bias in the sense that the $r$-Pareto likelihood with $L_1$ risk functional is exact for the $L_1$ process, but there is indeed an approximation when this likelihood is used for inference under a different risk functional. We have revised the text accordingly.
+\end{Res}
+
+\begin{Comments}
+I am generally a little confused with how exactly you are using the trick of choosing $u>D^{1-1/p}$ to go from the $L_1$ to $L_p$. This should be spelled out a bit more. Also what does this mean exactly in practice? Do you have to choose a higher $u$ for higher $p$ ($L_p$) risk functionals? For the data application, page 24, l38: you choose the 99.95\% for both risk functionals $L_1$ and $L_\infty$ as that is where the estimate shape parameter becomes stable, but how is this linked to the trick of looking at the $L_1$ Pareto process? This is also related to pg 30, l3: `can be bypassed by simply considering the likelihood of an $r$-Pareto process with $L_1$ risk functional'.
+\end{Comments}
+
+\begin{Res}
+% We have substantially expanded the explanation of the $L_1$-to-$L_p$ trick, including an intuitive description, a worked example, and a clarification of how $u$ should be chosen relative to $p$ in practice. The connection between the threshold choice and the stability of the estimated shape parameter is now made explicit.
+\end{Res}
+
+\begin{Comments}
+Relatedly, what threshold did you choose in Fig 3 for the $L_3$ $r$-Pareto simulation study?
+\end{Comments}
+
+\begin{Res}
+% We have added the threshold value used in Fig 3 for the $L_3$ simulation, and included a brief justification for this choice.
+\end{Res}
+
+\begin{Comments}
+Pg 27, l12: You chose $u=10\times D$ here. What exactly are the guidelines for choosing $u$ more generally? Both in the $r$-Pareto and max-stable cases? Also, here you have 9 observations. And if I am not mistaken, for up to 9 parameters? How is this still feasible?
+\end{Comments}
+
+\begin{Res}
+% We have added general guidelines for choosing $u$ in both the $r$-Pareto and max-stable settings, based on the theoretical requirement and cross-validation. We have also explicitly discussed the feasibility of inference with a small number of observations relative to the number of parameters, noting that the spectral likelihood pools information across all observed extremes efficiently.
+\end{Res}
+
+\begin{Comments}
+Is there existing theory on using the spectral likelihood's asymptotic variance instead of using the jackknife for uncertainty quantification? This could be nice so you can reduce computation for the uncertainty quantification. But I guess you are quite far from asymptotics if you only use as little as 9 observations.
+\end{Comments}
+
+\begin{Res}
+% There is limited formal theory for the asymptotic variance of the spectral likelihood estimator in the spatial setting, particularly for composite-type approximations. We have added a brief discussion of this gap and note that the jackknife remains our recommended approach given the small sample sizes encountered in practice. Exploring a sandwich-type asymptotic variance estimator is left as future work.
+\end{Res}
+
+\dashline
+\bibliographystyle{CUP}
+\bibliography{Total.bib}
+\end{document}
+
+

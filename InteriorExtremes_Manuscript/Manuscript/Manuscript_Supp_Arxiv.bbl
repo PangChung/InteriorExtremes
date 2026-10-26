@@ -1,0 +1,19 @@
+\begin{thebibliography}{4}
+
+\bibitem[Azzalini(2013)]{Azzalini:2013}
+Azzalini, A. (2013) \emph{The skew-normal and related families}. Volume~3.
+\newblock Cambridge University Press.
+
+\bibitem[Dombry \emph{et~al.}(2016)Dombry, Engelke and Oesting]{Dombry.Engelke.Oesting:2016}
+Dombry, C., Engelke, S. and Oesting, M. (2016) {Exact simulation of max-stable processes}.
+\newblock \emph{Biometrika} \textbf{103}, 303--317.
+
+\bibitem[Wadsworth and Tawn(2013)]{Wadsworth.Tawn:2013}
+Wadsworth, J.~L. and Tawn, J.~A. (2013) {A new representation for multivariate tail probabilities}.
+\newblock \emph{{Bernoulli}} \textbf{19}, 2689--2714.
+
+\bibitem[Wadsworth and Tawn(2014)]{Wadsworth.Tawn:2014}
+Wadsworth, J.~L. and Tawn, J.~A. (2014) {Efficient inference for spatial extreme value processes associated to log-Gaussian random functions}.
+\newblock \emph{{Biometrika}} \textbf{101}, 1--15.
+
+\end{thebibliography}

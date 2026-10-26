@@ -30,7 +30,7 @@ intensity_truncT <- function(x,par,T_j=NULL,ncores=NULL,log=TRUE){
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     sigma = par[[1]];nu = par[[2]]
     n = ncol(x)
-    if(n==1) return(1/(x^2))
+    if(n==1){assign(".Random.seed", oldSeed, envir=globalenv()); val = -2*log(c(x)); return(if(log) val else exp(val))}
     tryCatch(chol.sigma <- chol(sigma),error=function(e) browser())
     inv.sigma = chol2inv(chol.sigma)
     logdet.sigma = sum(log(diag(chol.sigma)))*2
@@ -197,7 +197,7 @@ intensity_logskew <- function(x,par,alpha.para=TRUE,log=TRUE){
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
-    if(n==1) return(1/(x^2))
+    if(n==1){val = -2*log(c(x)); return(if(log) val else exp(val))}
     omega2 = diag(sigma)
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
@@ -235,7 +235,7 @@ intensity_logskew_constraint <- function(x,par,alpha.para=TRUE,log=TRUE){
     sigma = par[[1]]
     if(!is.matrix(x)){x <- matrix(x,nrow=1)}
     n = ncol(x)
-    if(n==1) return(1/(x^2))
+    if(n==1){assign(".Random.seed", oldSeed, envir=globalenv()); val = -2*log(c(x)); return(if(log) val else exp(val))}
     omega2 = diag(sigma)
     chol.sigma = chol(sigma)
     inv.sigma = chol2inv(chol.sigma)
@@ -412,11 +412,14 @@ vario.func.i <- function(loc,par,i){ ##return a covariance matrix
 
 # intensity function for HR model with Frechet margins
 intensity_HR <- function(data,par,i){
-     cov.mat <- cov.transform.i(par[[1]],i)
-     gamma.origin <- diag(cov.mat)/2
-     if(length(gamma.origin)==1){val1 = dnorm(log(data[-i])-log(data[i]),mean=-gamma.origin,sd=sqrt(cov.mat),log=TRUE)
-     }else{val1 = mvtnorm::dmvnorm(x=log(data[-i])-log(data[i]),mean=-gamma.origin,sigma=cov.mat,log=TRUE)}
-     val = val1-sum(log(data))-log(data[i])
+    cov.mat <- cov.transform.i(par[[1]],i)
+    gamma.origin <- diag(cov.mat)/2
+    if(length(gamma.origin)==1){
+        val1 = dnorm(log(data[-i])-log(data[i]),mean=-gamma.origin,sd=sqrt(cov.mat),log=TRUE)
+    }else{
+        val1 = mvtnorm::dmvnorm(x=log(data[-i])-log(data[i]),mean=-gamma.origin,sigma=cov.mat,log=TRUE)
+    }
+    val = val1-sum(log(data))-log(data[i])
      return(exp(val))
 }
 
@@ -601,7 +604,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
                     ind = data[[i]][[1]]
                     x = data[[i]][[2]]
                     n = length(x)
-                    if(n==1) return(1/(x^2))
+                    if(n==1) return(-2*log(x))
                     sigma.i = sigma[ind,ind]
                     chol.sigma = chol(sigma.i)
                     inv.sigma = chol2inv(chol.sigma)
@@ -611,7 +614,7 @@ fit.model <- function(data,loc,init,fixed=NULL,model="truncT",maxit=100,FUN=NULL
                     alpha.i = c(1 - delta.i %*% inv.sigma %*% delta.i)^(-1/2) * c(inv.sigma %*% delta.i)
                     a.i = a[ind]
                     q = rowSums(inv.sigma)
-                    sum.q = sum(q);sum.alpha = sum(alpha)
+                    sum.q = sum(q);sum.alpha = sum(alpha.i)
                     q.mat = matrix(q,n,n,byrow=TRUE)
                     x.log = log(x)
                     x.circ = x.log + a.i

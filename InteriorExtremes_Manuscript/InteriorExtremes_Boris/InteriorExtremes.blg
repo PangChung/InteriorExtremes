@@ -1,0 +1,48 @@
+This is BibTeX, Version 0.99d (TeX Live 2023)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: InteriorExtremes.aux
+The style file: CUP.bst
+Database file #1: Total.bib
+Warning--there's a number but no volume in Hentschel.Engelke.Segers:2024
+You've used 51 entries,
+            2744 wiz_defined-function locations,
+            957 strings with 13680 characters,
+and the built_in function-call counts, 21578 in all, are:
+= -- 2113
+> -- 1038
+< -- 35
++ -- 403
+- -- 351
+* -- 2049
+:= -- 3710
+add.period$ -- 106
+call.type$ -- 51
+change.case$ -- 270
+chr.to.int$ -- 50
+cite$ -- 154
+duplicate$ -- 891
+empty$ -- 1552
+format.name$ -- 446
+if$ -- 4241
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 51
+newline$ -- 209
+num.names$ -- 204
+pop$ -- 251
+preamble$ -- 1
+purify$ -- 219
+quote$ -- 0
+skip$ -- 538
+stack$ -- 0
+substring$ -- 1157
+swap$ -- 182
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 450
+warning$ -- 1
+while$ -- 235
+width$ -- 0
+write$ -- 613
+(There was 1 warning)

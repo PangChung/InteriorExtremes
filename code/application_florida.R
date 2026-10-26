@@ -19,19 +19,20 @@ library(evd)
 library(partitions)
 library(Rfast)
 library(evd)
+library(lubridate)
 source("code/simulation.R")
 source("code/exponent_functions.R")
 source("code/likelihood_inference.R")
 source("code/pareto_inference.R")
 set.seed(12342)
 
-## load the data##
-# library(matrixStats)
-# library(Matrix)
-# library(sf)
-# library(ggplot2)
-# grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
-# intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
+# load the data##
+library(matrixStats)
+library(Matrix)
+library(sf)
+library(ggplot2)
+grid.sf <- read_sf("data/Florida/DOPGrid/DOPGrid.shp")
+intb.sf <- read_sf("data/Florida/INTB_Basins/INTB_Basins.shp")
 
 # fill_basin <- as.factor(rep(1:8,length.out=172))
 # all_IDs <- names(read.csv("data/Florida/PixelRain15min_1995.csv", header = TRUE, nrows = 1))[-1]
@@ -40,7 +41,7 @@ set.seed(12342)
 
 # p <- ggplot() + geom_sf(data=intb.sf, aes(fill=fill_basin)) + scale_fill_brewer(palette = "RdBu",name="Basins")  + geom_sf(data=grid.sf, aes(colour=as.factor(fill_grid)),alpha=0.1) + scale_color_brewer(palette = "Set1",name="Grid") + xlim(c(317734,433386)) + ylim(3047561,3191794)
 
-## extract the data for the year 1995--2019 ##
+# extract the data for the year 1995--2019 ##
 # format_string <- "%d-%b-%Y %H:%M:%S"
 # column_classes <- rep("NULL", length(all_IDs));column_classes[1] <- "character"
 # for(y in 1995:2019){
@@ -67,63 +68,77 @@ set.seed(12342)
 # tmp <- read.csv("data/Florida/PixelRain15min_1995_2019.csv", header = TRUE,sep=",")
 # save(tmp,file="data/application_florida.RData")
 
-# load("data/application_florida.RData")
-# num.nonzeros=rep(NA,length(fill_grid))
-# num.nonzeros[fill_grid] <- apply(tmp[,-1],2,function(x) sum(x>0))
+load("data/application_florida.RData")
+date = dmy_hms(tmp[,1],locale = "C")
 
-# p <- ggplot() + geom_sf(data=intb.sf,color="black") + geom_sf(data=grid.sf, color="grey50",aes(fill=num.nonzeros),alpha=0.75) +
-# scale_fill_distiller(type="seq",name="Intensity",na.value="grey50",trans="reverse") + xlim(c(317734,433386)) + ylim(3047561,3191794) 
-# p
+num.nonzeros=rep(NA,length(fill_grid))
+num.nonzeros[fill_grid] <- apply(tmp[,-1],2,function(x) sum(x>0))
 
-# func <- function(i){
-#     x = tmp[,i]
-#     ind.x = x>0
-#     x[ind.x] = rank(x[ind.x])/(sum(ind.x)+1)
-#     return(x)
-# }
+p <- ggplot() + geom_sf(data=intb.sf,color="black") + geom_sf(data=grid.sf, color="grey50",aes(fill=num.nonzeros),alpha=0.75) +
+scale_fill_distiller(type="seq",name="Intensity",na.value="grey50",trans="reverse") + xlim(c(317734,433386)) + ylim(3047561,3191794) 
+p
 
-# data.uniform <- matrix(unlist(mclapply(2:ncol(tmp),func,mc.cores=4)),nrow=nrow(tmp),byrow=FALSE)
+func <- function(i){
+    x = tmp[,i]
+    idx.0 = x>0
+    idx.5 = x>0.5
+    q = sum(idx.5)/(sum(idx.0)+1)
+
+    # Use empirical probabilities for the distribution body and a fitted GPD
+    # for exceedances over 0.5.  Scaling the GPD survival probability by q
+    # joins the tail to the empirical distribution of the positive values.
+    fit.gpd = evd::fpot(x[idx.0], threshold=0.5, model="gpd",
+        std.err=FALSE)
+    x.uniform = x
+    x.uniform[idx.0] = rank(x[idx.0])/(sum(idx.0)+1)
+    x.uniform[idx.5] = 1 - q * (1 - evd::pgpd(x[idx.5], loc=0.5,
+        scale=fit.gpd$estimate["scale"],
+        shape=fit.gpd$estimate["shape"]))
+    return(x.uniform)
+}
+
+data.uniform <- matrix(unlist(mclapply(2:ncol(tmp),func,mc.cores=4)),nrow=nrow(tmp),byrow=FALSE)
 # rm(tmp);gc()
 
-# func <- function(i){
-#     x = data.uniform[i,]
-#     ind.x = which(x>0)
-#     return(list(ind.x,x[ind.x]))
-# }
+func <- function(i){
+    x = data.uniform[i,]
+    ind.x = which(x>0)
+    return(list(ind.x,x[ind.x]))
+}
 
-# nonzeros_row <- apply(data.uniform,1,function(x) any(x>0))
+nonzeros_row <- apply(data.uniform,1,function(x) any(x>0))
 
-# num.nonzeros_row <- apply(data.uniform,1,function(x){sum(x>0)})
+num.nonzeros_row <- apply(data.uniform,1,function(x){sum(x>0)})
 
-# system.time({data <- mclapply(which(nonzeros_row),func,mc.cores=4)})
+system.time({data <- mclapply(which(nonzeros_row),func,mc.cores=4)})
 
-# save(data, num.nonzeros_row, nonzeros_row, file="data/application_florida_list.RData")
+save(data, num.nonzeros_row, nonzeros_row, file="data/application_florida_list_new.RData")
 
-# data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
+data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
 
-# data.sum <- unlist(mclapply(data.pareto,function(x){mean(x[[2]])},mc.cores=4))
+data.sum <- unlist(mclapply(data.pareto,function(x){mean(x[[2]])},mc.cores=4))
 
-# data.max <- unlist(mclapply(data.pareto,function(x){max(x[[2]])},mc.cores=4))
+data.max <- unlist(mclapply(data.pareto,function(x){max(x[[2]])},mc.cores=4))
 
-# thres <- quantile(data.sum, seq(0.999,0.9999,length.out=30))
-# tstab.gpd(data.sum,thresh=thres,plot=TRUE)
+thres <- quantile(data.sum, seq(0.999,0.9999,length.out=30))
+tstab.gpd(data.sum,thresh=thres,plot=TRUE)
 
-# thres <- quantile(data.max, seq(0.999,0.9999,length.out=30))
-# tstab.gpd(data.max,thresh=thres,plot=TRUE)
+thres <- quantile(data.max, seq(0.999,0.9999,length.out=30))
+tstab.gpd(data.max,thresh=thres,plot=TRUE)
 
-# data.fit.sum <- data.pareto[data.sum>quantile(data.sum,0.9995)]
-# data.fit.max <- data.pareto[data.max>quantile(data.max,0.9995)]
+data.fit.sum <- data.pareto[data.sum>quantile(data.sum,0.9995)]
+data.fit.max <- data.pareto[data.max>quantile(data.max,0.9995)]
 
-# coord <- as.data.frame(st_coordinates(grid.sf))
-# idx.pixel <- unlist(lapply(all_IDs_num,function(x){which(grid.sf$PIXEL==x)}))
-# coord.grid <- matrix(unlist(lapply(idx.pixel, function(i){apply(coord[coord$L2==i,1:2][1:4,],2,mean)})),ncol=2,byrow=TRUE)
+coord <- as.data.frame(st_coordinates(grid.sf))
+idx.pixel <- unlist(lapply(all_IDs_num,function(x){which(grid.sf$PIXEL==x)}))
+coord.grid <- matrix(unlist(lapply(idx.pixel, function(i){apply(coord[coord$L2==i,1:2][1:4,],2,mean)})),ncol=2,byrow=TRUE)
 
-# ggplot() + geom_point(data=coord,aes(X,Y),color="black") + 
-# geom_point(data=subset(coord,L2 %in% idx.pixel),aes(x=X,y=Y),color="red") + geom_point(data=as.data.frame(coord.grid),aes(V1,V2),color="yellow")
+ggplot() + geom_point(data=coord,aes(X,Y),color="black") + 
+geom_point(data=subset(coord,L2 %in% idx.pixel),aes(x=X,y=Y),color="red") + geom_point(data=as.data.frame(coord.grid),aes(V1,V2),color="yellow")
 
 
-# system.time({cov.mat <- vario.func2(coord.grid,c(60000,1,1,1))})
-# a = as.matrix(dist(coord.grid))
+system.time({cov.mat <- vario.func2(coord.grid,c(60000,1,1,1))})
+a = as.matrix(dist(coord.grid))
 
 ### fit the model ###
 load("data/application_florida_list.RData")
@@ -162,7 +177,7 @@ if(file.exists(file.origin)){
 }
 
 rFun <- function(x){
-    val = sum((x)^xi)^{1/xi}
+    val = sum((x)^xi)^(1/xi)
     return(val)
 }
 
@@ -187,3 +202,37 @@ if(idx.jack!=0){
     )
     save(fit.result,basis.centers,file=file.origin)
 }
+
+x.max = unlist(lapply(data.fit.max,function(x){max(x[[2]])}))
+x.max.sum = unlist(lapply(data.fit.max,function(x){mean(x[[2]])}))
+
+x.sum = unlist(lapply(data.fit.sum,function(x){mean(x[[2]])}))
+x.sum.max = unlist(lapply(data.fit.sum,function(x){max(x[[2]])}))
+
+data.pareto <- mclapply(data,function(x){list(x[[1]],qgpd(x[[2]],1,1,1))},mc.cores=4)
+data.sum <- unlist(mclapply(data.pareto,function(x){mean(x[[2]])},mc.cores=4))
+data.max <- unlist(mclapply(data.pareto,function(x){max(x[[2]])},mc.cores=4))
+
+p=1
+data.pnorm <- unlist(mclapply(data.pareto,function(x){sum(x[[2]]^p)^(1/p)},mc.cores=4))
+quantile(data.pnorm, seq(0.9,0.9999,length.out=20))
+hist(log(data.pnorm),50)
+
+data.pnorm = data.pnorm[data.pnorm > 400]/400
+
+lambda = 1/mean(log(data.pnorm))
+x = seq(0.01,10,by=0.01)
+y = lambda*exp(-lambda*x)
+hist(log(data.pnorm),freq=FALSE,breaks=50)
+lines(x,y,col="red")
+
+lambda  = 1/mean(log(data.sum))
+x = seq(0.01,10,by=0.01)
+y = lambda*exp(-lambda*x)
+hist(log(data.sum),freq=FALSE,breaks=50)
+lines(x,y,col="red")
+
+lambda = 1/mean(log(data.max))
+y = lambda*exp(-lambda*x)
+hist(log(data.max),freq=FALSE,breaks=50)
+lines(x,y,col="red")

@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2023)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: InteriorExtremes_Manuscript.aux
+The style file: biometrika.bst
+Database file #1: Total.bib
+You've used 27 entries,
+            2826 wiz_defined-function locations,
+            823 strings with 9681 characters,
+and the built_in function-call counts, 13080 in all, are:
+= -- 1308
+> -- 534
+< -- 18
++ -- 211
+- -- 180
+* -- 1138
+:= -- 2322
+add.period$ -- 82
+call.type$ -- 27
+change.case$ -- 196
+chr.to.int$ -- 27
+cite$ -- 27
+duplicate$ -- 615
+empty$ -- 938
+format.name$ -- 265
+if$ -- 2539
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 27
+newline$ -- 139
+num.names$ -- 108
+pop$ -- 173
+preamble$ -- 1
+purify$ -- 168
+quote$ -- 0
+skip$ -- 327
+stack$ -- 0
+substring$ -- 848
+swap$ -- 145
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 237
+warning$ -- 0
+while$ -- 125
+width$ -- 0
+write$ -- 351

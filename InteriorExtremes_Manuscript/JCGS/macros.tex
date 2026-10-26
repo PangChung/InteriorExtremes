@@ -1,0 +1,316 @@
+% LaTeX macros
+
+% Last modified: 24/2/2008
+
+
+%----------------------------------------------
+%  A. C. Davison, Institute of Mathematics,
+%  EPFL, 1015 Lausanne, Switzerland
+%  00 41 21 693 5502
+%----------------------------------------------
+
+% mathematical symbols, etc.
+\usepackage{environ}
+\usepackage{xcolor}
+
+\definecolor{myorange}{HTML}{E24100}
+\def\Rev#1{{\textcolor{myorange}{#1}}}
+\def\Rem#1{{\iffalse #1 \fi}}
+\def\Rep#1#2{{\textcolor{myorange} {#2}}}
+\def\r{\color {red}}
+\def\rr{\bf\color {red}}
+\def\b{\color {blue}}
+
+\NewEnviron{Res}{%
+\noindent\textbf{Response: }\textcolor{myorange}{\BODY}
+}
+
+\NewEnviron{Comments}{%
+\noindent\textsl{\BODY}
+}
+
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{definition}{Definition}
+
+\def\dashfill{\cleaders\hbox{-}\hfill}
+\def\dashline{\noindent\makebox[\linewidth]{\dashfill}}
+\def\r{\color {red}}
+\def\rr{\bf\color {red}}
+\def\b{\color {blue}}
+
+\def\half{{\textstyle{1\over 2}}}
+\def\third{{\textstyle{1\over 3}}}
+\def\quarter{{\textstyle{1\over 4}}}
+\def\sixth{{\textstyle{1\over 6}}}
+\def\frac#1#2{{\textstyle{#1\over#2}}}
+\def\Beta{{\rm B}}
+
+\def\argmin{{\rm argmin}}  
+\def\diag{{\rm diag}}  
+\def\mod{{\rm mod}}  
+\def\tr{{\rm tr}}
+\def\sign{{\rm sign}}
+\def\ow{{\rm otherwise}}  
+\def\obs{{\rm obs}}  
+\def\endex{{\hfill{\color{red}$\bullet$}\medskip}}
+\def\Endex{{\hfill{$\bullet$}\medskip}}
+\def\redbf#1{{\color{red}\bf #1}}%
+\def\red#1{{\color{red} #1}}%
+\def\white#1{{\color{black} #1}}%
+
+\DeclareSymbolFont{AMSb}{U}{msb}{m}{n}
+\DeclareMathSymbol{\Natural}{\mathbin}{AMSb}{"4E}
+\DeclareMathSymbol{\Integer}{\mathbin}{AMSb}{"5A}
+\DeclareMathSymbol{\Real}{\mathbin}{AMSb}{"52}
+\DeclareMathSymbol{\Rational}{\mathbin}{AMSb}{"51}
+\DeclareMathSymbol{\Imaginary}{\mathbin}{AMSb}{"49}
+\DeclareMathSymbol{\Complex}{\mathbin}{AMSb}{"43} 
+\DeclareMathSymbol{\Disk}{\mathbin}{AMSb}{"44} 
+\def\bi{\begin{itemize}}
+\def\ei{\end{itemize}}
+\def\bd{\begin{description}}
+\def\ed{\end{description}}
+\def\ben{\begin{enumerate}}
+\def\een{\end{enumerate}}
+\def\bv{\begin{verbatim}}
+\def\ev{\end{verbatim}}
+
+\def\bth{{$b{\rm th}$ }}
+\def\cth{{$c{\rm th}$ }}
+\def\dth{{$d{\rm th}$ }}
+\def\fth{{$f{\rm th}$ }}
+\def\gth{{$g{\rm th}$ }}
+\def\hth{{$h{\rm th}$ }}
+\def\ith{{$i{\rm th}$ }}
+\def\jth{{$j{\rm th}$ }}
+\def\kth{{$k{\rm th}$ }}
+\def\lth{{$l{\rm th}$ }}
+\def\mth{{$m{\rm th}$ }}
+\def\nth{{$n{\rm th}$ }}
+\def\pth{{$p{\rm th}$ }}
+\def\rth{{$r{\rm th}$ }}
+\def\sth{{$s{\rm th}$ }}
+\def\tth{{$t{\rm th}$ }}
+\def\uth{{$u{\rm th}$ }}
+\def\vth{{$v{\rm th}$ }}
+\def\wth{{$w{\rm th}$ }}
+
+\def\calA{{\mathcal A}}
+\def\calB{{\mathcal B}}
+\def\calC{{\mathcal C}}
+\def\calD{{\mathcal D}}
+\def\calE{{\mathcal E}}
+\def\F{{\mathcal F}}
+\def\G{{\mathcal G}}
+\def\H{{\mathcal H}}
+\def\calH{{\mathcal H}}
+\def\IG{{\mathcal IG}}
+\def\cI{{\mathcal I}}
+\def\cP{{\mathcal P}}
+\def\calJ{{\mathcal J}}
+\def\calL{{\mathcal L}}
+\def\calK{{\mathcal K}}
+\def\calM{{\mathcal M}}
+\def\calN{{\mathcal N}}
+\def\N{{\calN}}
+\def\calP{{\mathcal{P}}}
+\def\calQ{{\mathcal{Q}}}
+\def\calO{{\mathcal{O}}}
+\def\calS{{\mathcal{S}}}
+\def\calI{{\mathcal{I}}}
+\def\calR{{\mathcal R}}
+\def\calT{{\mathcal T}}
+\def\calU{{\mathcal U}}
+\def\calV{{\mathcal V}}
+\def\calW{{\mathcal W}}
+\def\calX{{\mathcal X}}
+\def\calY{{\mathcal Y}}
+\def\calZ{{\mathcal Z}}
+\def\W{{\mathcal W}}
+\def\U{{\Upsilon}}
+\def\f{\frac}
+\def\l{{\lambda}}
+\def\d{{\delta}}
+\def\bX{{\bar X}}
+\def\s{{\sigma}}
+\def\p{{\partial}}
+\def\p{{d}}
+\def\v{{\varepsilon}}
+\def\dis{{\displaystyle}}
+\def\a{{\alpha}}
+\def\b{{\beta}}
+\def\hash{{\#}}
+\def\bar#1{{\overline{#1}}}
+\def\hat#1{{\widehat{#1}}}
+\def\barY{{\overline{Y}}}
+\def\barX{{\overline{X}}}
+\def\barZ{{\overline{Z}}}
+\def\barx{{\overline{x}}}
+\def\bary{{\overline{y}}}
+\def\barz{{\overline{z}}}
+\def\T{{ \mathrm{\scriptscriptstyle T} }}
+\def\mT{{ -\mathrm{\scriptscriptstyle T} }}
+\newcommand{\indep}{\perp\!\!\!\perp}
+\newcommand{\nindep}{\perp\!\!\!\perp\!\!\!\!\!\!/\;\;}
+
+\newcommand{\med}{{\rm med}}
+\newcommand{\card}{{\rm card}}
+\newcommand{\bs}{\boldsymbol}
+% \newcommand{\do}{{\rm do}}
+\newcommand{\Splus}{\textsc{S-Plus}\ }
+%\newcommand{\R}{\texttt{R} }
+
+% Bold notation
+\def\bR{{\boldsymbol{R}}}
+\def\bS{{\boldsymbol{S}}}
+\def\bZ{{\boldsymbol{Z}}}
+\def\bQ{{\boldsymbol{Q}}}
+\def\bN{{\boldsymbol{N}}}
+\def\bP{{\boldsymbol{P}}}
+\def\bX{{\boldsymbol{X}}}
+\def\ba{{\boldsymbol{a}}}
+\def\bb{{\boldsymbol{b}}}
+\def\bx{{\boldsymbol{x}}}
+\def\by{{\boldsymbol{y}}}
+\def\bw{{\boldsymbol{w}}}
+\def\bs{{\boldsymbol{s}}}
+\def\bt{{\boldsymbol{t}}}
+\def\bv{{\boldsymbol{v}}}
+\def\bu{{\boldsymbol{u}}}
+\def\bz{{\boldsymbol{z}}}
+
+\def\real{{\mathbb R}}
+%\def\reald{{\mathbb R}^d}
+
+% statistical notation
+
+\def\rmi{{\rm i}}
+\def\pr{{\rm Pr}}
+\def\Pr{\pr}
+\def\E{{\rm E}}
+\def\Ev{{\rm Ev}}
+\def\var{{\rm var}}
+\def\avar{{\rm avar}}
+\def\cov{{\rm cov}}  
+\def\corr{{\rm corr}}  
+\def\Estar{{\rm E^*\thinspace}}
+\def\varstar{{\rm var^*\thinspace}}
+\def\covstar{{\rm cov^*\thinspace}}  
+\def\median{{\rm median}}  
+\def\cum{{\rm cum}}
+\def\IMSE{{\rm IMSE}}  
+\def\AIC{{\rm AIC}}  
+\def\BIC{{\rm BIC}}  
+\def\NIC{{\rm NIC}}  
+\def\AICc{{\rm AIC_c}}  
+\def\CV{{\rm CV}}  
+\def\GCV{{\rm GCV}}  
+\def\IQR{{\rm IQR}}  
+\def\MAD{{\rm MAD}}  
+\def\Lik{{L}}
+\def\logL{{\ell}}
+\def\RLik{{RL}}
+\def\logLp{{\ell_{\rm p}}}
+\def\eqd{{\stackrel{\mathrm{d}}{=}}}
+\def\Dto{{\ {\buildrel D\over \longrightarrow}\ }}
+\def\dto{{\ {\buildrel d\over \longrightarrow}\ }}
+\def\Pto{{\ {\buildrel P\over \longrightarrow}\ }}
+\def\rto{{\ {\buildrel r\over \longrightarrow}\ }}
+\def\2to{{\ {\buildrel 2\over \longrightarrow}\ }}
+\def\Wto{{\ {\buildrel W\over \longrightarrow}\ }}
+\def\psto{{\ {\buildrel \rm{p.s.}\over \longrightarrow}\ }}
+\def\asto{{\ {\buildrel \rm{a.s.}\over \longrightarrow}\ }}
+\def\iid{{\ {\buildrel \rm{iid}\over \sim}\ }}
+\def\ind{{\ {\buildrel \rm{ind}\over \sim}\ }}
+\def\dotsim{{\ {\buildrel \cdot\over \sim}\ }}
+%\def\sim{{\ {\sim}\ }}
+%\def\to{{\longrightarrow}}
+\def\Deq{{\ {\buildrel D\over =}\ }}
+\def\Eoneton{{$E_1,\ldots,E_n$}}
+%\def\T1ton{{$T_1,\ldots,T_n$}}
+\def\I1ton{{$I_1,\ldots,I_n$}}
+%\def\U1ton{{$U_1,\ldots,U_n$}}
+\def\X1ton{{$X_1,\ldots,X_n$}}
+\def\Y1ton{{$Y_1,\ldots,Y_n$}}
+\def\Z1ton{{$Z_1,\ldots,Z_n$}}
+\def\R1ton{{$R_1,\ldots,R_n$}}
+\def\e1ton{{$e_1,\ldots,e_n$}}
+\def\t1ton{{$t_1,\ldots,t_n$}}
+\def\x1ton{{$x_1,\ldots,x_n$}}
+\def\y1ton{{$y_1,\ldots,y_n$}}
+\def\z1ton{{$z_1,\ldots,z_n$}}
+%\def\r1ton{{$r_1,\ldots,r_n$}}
+
+% Journal abbreviations
+
+\def\AAP{\emph{Advances in Applied Probability}}
+\def\AnnProbab{\emph{Annals of Probability}}
+\def\AISM{\emph{Annals of the Institute of Statistical Mathematics}}
+\def\AMS{\emph{Annals of Mathematical Statistics}}
+\def\ApplStatist{\emph{Applied Statistics}}
+\def\AS{\emph{Annals of Statistics}}
+\def\B{\emph{Bernoulli}}
+\def\Bka{\emph{Biometrika}}
+\def\CJS{\emph{Canadian Journal of Statistics}}
+\def\CSDA{\emph{Computational Statistics \& Data Analysis}}
+\def\Eca{\emph{Econometrica}}
+\def\ISI{\emph{International Statistical Review}}
+\def\ISR{\emph{International Statistical Review}}
+\def\JAMA{\emph{Journal of the American Medical Association}}
+\def\JAP{\emph{Journal of Applied Probability}}
+\def\JASA{\emph{Journal of the American Statistical Association}}
+\def\JBES{\emph{Journal of Business \& Economic Statistics}}
+\def\JCGS{\emph{Journal of Computational and Graphical Statistics}}
+\def\JSCS{\emph{Journal of Statistical Computation and Simulation}}
+\def\JRSSA{\emph{Journal of the Royal Statistical Society series A}}
+\def\JRSSB{\emph{Journal of the Royal Statistical Society series B}}
+\def\JRSSD{\emph{The Statistician}}
+\def\SJS{\emph{Scandinavian Journal of Statistics}}
+\def\SPA{\emph{Stochastic Processes and their Applications}}
+\def\SM{\emph{Survey Methodology}}
+\def\SS{\emph{Statistical Science}}
+\def\TAS{\emph{The American Statistician}}
+\def\Tech{\emph{Technometrics}}
+\def\ZW{\emph{Z. Wahrsch. v. geb.}}
+\def\JC{\emph{Journal of Classification}}
+\def\PNAS{\emph{Proceedings of the National Academy of Science}}
+
+% utility macros
+
+\def\np{{\newpage}}
+\def\gap{{\vskip 0.3in}}
+\def\etal{{\sl et al.}} 
+\def\pound{{\it \$}}
+\def\apriori{{\sl a priori }}
+\def\examfoot{{\vfill\hfill{\bf Turn over}\eject}}
+\def\newtransparency{{\newpage}}
+\def\Section{{Section~}}
+\def\Sections{{Sections~}}
+\def\Pvalue{{P-value}}
+\def\Pvalues{{P-values}}
+
+\def\report#1{{\newpage\centerline{\bf #1}\smallskip}}
+
+% odds and ends
+
+\def\redbf#1{{\color{red}\bf #1}}%
+\def\Defn{\redbf{Definition:\ }}%
+\def\Thm#1{\redbf{Theorem #1:\ }}%
+\def\Ex#1{\redbf{Example #1:\ }}%
+\def\Note{\redbf{Note:\ }}%
+\def\Exercise#1{\redbf{Exercise #1:\ }}%
+\def\Ill{\redbf{Illustration:\ }}%
+\def\endex{{\hfill\redbf{$\bullet$}\smallskip}}
+\def\calP{{\mathcal{P}}}
+\def\calS{{\mathcal{S}}}
+\def\calI{{\mathcal{I}}}
+\def\eme{{\`eme}}
+\def\ere{{\`ere}}
+%\def\picbox#1#2{{\centerline{\psfig{figure=#1,height=#2pc}}}}%
+\def\picbox#1#2#3{{\centerline{\psfig{figure=#1,height=#2pc,angle=#3}}}}%
+\def\tt#1{{\texttt{#1}}}
+\def\Der#1{\textbf{D#1}}
+

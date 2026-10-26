@@ -1,0 +1,11 @@
+\begin{thebibliography}{2}
+
+\bibitem[Engelke \emph{et~al.}(2015)Engelke, Malinowski, Kabluchko and Schlather]{Engelke.etal:2015}
+Engelke, S., Malinowski, A., Kabluchko, Z. and Schlather, M. (2015) {Estimation of Huesler--Reiss distributions and Brown--Resnick processes}.
+\newblock \emph{{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}} \textbf{77}, 239--265.
+
+\bibitem[Wadsworth and Tawn(2014)]{Wadsworth.Tawn:2014}
+Wadsworth, J.~L. and Tawn, J.~A. (2014) {Efficient inference for spatial extreme value processes associated to log-Gaussian random functions}.
+\newblock \emph{{Biometrika}} \textbf{101}, 1--15.
+
+\end{thebibliography}

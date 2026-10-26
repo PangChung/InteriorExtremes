@@ -1,3 +1,15 @@
+library(parallel)
+library(mvtnorm)
+library(TruncatedNormal)
+library(evd)
+library(partitions)
+library(Rfast)
+library(evd)
+source("code/simulation.R")
+source("code/exponent_functions.R")
+source("code/likelihood_inference.R")
+source("code/pareto_inference.R")
+set.seed(12342)
 d = 3
 loc = matrix(rnorm(d*2),ncol=2)*10
 

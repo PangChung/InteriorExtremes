@@ -1,0 +1,135 @@
+\begin{thebibliography}{33}
+
+\bibitem[Azzalini(2013)]{Azzalini:2013}
+Azzalini, A. (2013) \emph{The skew-normal and related families}. Volume~3.
+\newblock Cambridge University Press.
+
+\bibitem[Beranger and Padoan(2015)]{Beranger.Padoan:2015}
+Beranger, B. and Padoan, S. (2015) Extreme dependence models.
+\newblock In \emph{Extreme Value Modeling and Risk Analysis}, pp. 325--352--. Chapman and Hall/CRC.
+
+\bibitem[Beranger \emph{et~al.}(2019)Beranger, Padoan, Xu and Sisson]{Beranger.etal:2019}
+Beranger, B., Padoan, S., Xu, Y. and Sisson, S. (2019) Extremal properties of the multivariate extended skew-normal distribution, part b.
+\newblock \emph{Statistics \& Probability Letters} \textbf{147}, 105 -- 114.
+
+\bibitem[Beranger \emph{et~al.}(2017)Beranger, Padoan and Sisson]{Beranger.etal:2017}
+Beranger, B., Padoan, S.~A. and Sisson, S.~A. (2017) Models for extremal dependence derived from skew-symmetric families.
+\newblock \emph{Scandinavian Journal of Statistics} \textbf{44}, 21--45.
+
+\bibitem[Beranger \emph{et~al.}(2021)Beranger, Stephenson and Sisson]{Beranger.etal:2021}
+Beranger, B., Stephenson, A.~G. and Sisson, S.~A. (2021) {High-dimensional inference using the extremal skew-$t$ process}.
+\newblock \emph{{Extremes}} \textbf{24}, 653--685.
+
+\bibitem[Botev and Belzile(2021)]{Botev.Belzile:2021}
+Botev, Z. and Belzile, L. (2021) \emph{TruncatedNormal: Truncated Multivariate Normal and Student Distributions}.
+\newblock R package version 2.2.2.
+
+\bibitem[Castruccio \emph{et~al.}(2016)Castruccio, Huser and Genton]{Castruccio.etal:2016}
+Castruccio, S., Huser, R. and Genton, M.~G. (2016) {High-order composite likelihood inference for max-stable distributions and processes}.
+\newblock \emph{{Journal of Computational and Graphical Statistics}} \textbf{25}, 1212--129.
+
+\bibitem[Coles and Tawn(1991)]{Coles.Tawn:1991}
+Coles, S.~G. and Tawn, J.~A. (1991) {Modelling Extreme Multivariate Events}.
+\newblock \emph{{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}} \textbf{53}, 377--392.
+
+\bibitem[Coles and Tawn(1994)]{Coles.Tawn:1994}
+Coles, S.~G. and Tawn, J.~A. (1994) {Statistical Methods for Multivariate Extremes: An Application to Structural Design}.
+\newblock \emph{{Journal of the Royal Statistical Society: Series C (Applied Statistics)}} \textbf{43}, 1--48.
+
+\bibitem[Cooley \emph{et~al.}(2010)Cooley, Davis and Naveau]{Cooley.etal:2010}
+Cooley, D., Davis, R.~A. and Naveau, P. (2010) {The pairwise beta distribution: A flexible parametric multivariate model for extremes}.
+\newblock \emph{{Journal of Multivariate Analysis}} \textbf{101}, 2103--2117.
+
+\bibitem[Davison \emph{et~al.}(2012)Davison, Padoan and Ribatet]{Davison.etal:2012}
+Davison, A.~C., Padoan, S. and Ribatet, M. (2012) {Statistical modelling of spatial extremes (with Discussion)}.
+\newblock \emph{{Statistical Science}} \textbf{27}, 161--186.
+
+\bibitem[{de Fondeville} and Davison(2018)]{deFondeville.Davison:2018}
+{de Fondeville}, R. and Davison, A.~C. (2018) {High-dimensional peaks-over-threshold inference}.
+\newblock \emph{{Biometrika}} \textbf{105}, 575--592.
+
+\bibitem[Dombry \emph{et~al.}(2016)Dombry, Engelke and Oesting]{Dombry.Engelke.Oesting:2016}
+Dombry, C., Engelke, S. and Oesting, M. (2016) {Exact simulation of max-stable processes}.
+\newblock \emph{Biometrika} \textbf{103}, 303--317.
+
+\bibitem[Dombry \emph{et~al.}(2024)Dombry, Legrand and Opitz]{Dombry.etal:2024}
+Dombry, C., Legrand, J. and Opitz, T. (2024) Pareto processes for threshold exceedances in spatial extremes.
+\newblock \emph{arXiv preprint arXiv:2407.05699} .
+
+\bibitem[Dombry and Ribatet(2015)]{Dombry.Ribatet:2015}
+Dombry, C. and Ribatet, M. (2015) {Functional regular variations, Pareto processes and peaks over threshold}.
+\newblock \emph{{Statistics and Its Interface}} \textbf{8}, 9--17.
+
+\bibitem[Engelke and Hitz(2020)]{Engelke.Hitz:2020}
+Engelke, S. and Hitz, A.~S. (2020) {Graphical models for extremes (with Discussion)}.
+\newblock \emph{{Journal of the Royal Statistical Society: Series B}} \textbf{82}, 871--932.
+
+\bibitem[Engelke \emph{et~al.}(2015)Engelke, Malinowski, Kabluchko and Schlather]{Engelke.etal:2015}
+Engelke, S., Malinowski, A., Kabluchko, Z. and Schlather, M. (2015) {Estimation of Huesler--Reiss distributions and Brown--Resnick processes}.
+\newblock \emph{{Journal of the Royal Statistical Society: Series B (Statistical Methodology)}} \textbf{77}, 239--265.
+
+\bibitem[de~Haan(1984)]{Haan1984}
+de~Haan, L. (1984) A spectral representation for max-stable processes.
+\newblock \emph{{The Annals of Probability}} \textbf{12}, 1194--1204.
+
+\bibitem[Hentschel \emph{et~al.}(2024)Hentschel, Engelke and Segers]{Hentschel.Engelke.Segers:2024}
+Hentschel, M., Engelke, S. and Segers, J. (2024) Statistical inference for h{\"u}sler--reiss graphical models through matrix completions.
+\newblock \emph{Journal of the American Statistical Association} pp. 1--25.
+
+\bibitem[Horrace(2005)]{Horrace:2005}
+Horrace, W.~C. (2005) Some results on the multivariate truncated normal distribution.
+\newblock \emph{Journal of multivariate analysis} \textbf{94}, 209--221.
+
+\bibitem[Huser and Davison(2013)]{Huser.Davison:2013a}
+Huser, R. and Davison, A.~C. (2013) {Composite likelihood estimation for the Brown--Resnick process}.
+\newblock \emph{{Biometrika}} \textbf{100}, 511--518.
+
+\bibitem[Huser \emph{et~al.}(2016)Huser, Davison and Genton]{Huser.etal:2016}
+Huser, R., Davison, A.~C. and Genton, M.~G. (2016) {Likelihood estimators for multivariate extremes}.
+\newblock \emph{Extremes} \textbf{19}, 79--103.
+
+\bibitem[Huser \emph{et~al.}(2023)Huser, Stein and Zhong]{Huser.Zhong:2023}
+Huser, R., Stein, M.~L. and Zhong, P. (2023) Vecchia likelihood approximation for accurate and fast inference with intractable spatial max-stable models.
+\newblock \emph{Journal of Computational and Graphical Statistics} pp. 1--22.
+
+\bibitem[Opitz(2013)]{Opitz:2013}
+Opitz, T. (2013) {Extremal $t$ processes: Elliptical domain of attraction and a spectral representation}.
+\newblock \emph{{Journal of Multivariate Analysis}} \textbf{122}, 409--413.
+
+\bibitem[Padoan(2011)]{Padoan:2011}
+Padoan, S.~A. (2011) {Multivariate extreme models based on underlying skew-$t$ and skew-normal distributions}.
+\newblock \emph{{Journal of Multivariate Analysis}} \textbf{102}, 977--991.
+
+\bibitem[Padoan \emph{et~al.}(2010)Padoan, Ribatet and Sisson]{Padoan.etal:2010}
+Padoan, S.~A., Ribatet, M. and Sisson, S.~A. (2010) {Likelihood-based inference for max-stable processes}.
+\newblock \emph{{Journal of the American Statistical Association}} \textbf{105}, 263--277.
+
+\bibitem[Resnick(1987)]{Resnick1987}
+Resnick, S.~I. (1987) \emph{Extreme Values, Regular Variation and Point Processes}.
+\newblock Spinger-Verlag New York.
+
+\bibitem[Sainsbury-Dale \emph{et~al.}(2024)Sainsbury-Dale, Zammit-Mangion and Huser]{Sainsbury.Zammit.Huser:2024}
+Sainsbury-Dale, M., Zammit-Mangion, A. and Huser, R. (2024) Likelihood-free parameter estimation with neural bayes estimators.
+\newblock \emph{The American Statistician} \textbf{78}, 1--14.
+
+\bibitem[Smith(1990)]{Smith:1990b}
+Smith, R.~L. (1990) {Max-stable processes and spatial extremes}.
+\newblock Unpublished.
+
+\bibitem[Stephenson and Tawn(2005)]{Stephenson.Tawn:2005}
+Stephenson, A. and Tawn, J.~A. (2005) {Exploiting occurrence times in likelihood inference for componentwise maxima}.
+\newblock \emph{{Biometrika}} \textbf{92}, 213--227.
+
+\bibitem[Thibaud and Opitz(2015)]{Thibaud.Opitz:2015}
+Thibaud, E. and Opitz, T. (2015) {Efficient inference and simulation for elliptical Pareto processes}.
+\newblock \emph{{Biometrika}} \textbf{102}, 855--870.
+
+\bibitem[Wadsworth and Tawn(2014)]{Wadsworth.Tawn:2014}
+Wadsworth, J.~L. and Tawn, J.~A. (2014) {Efficient inference for spatial extreme value processes associated to log-Gaussian random functions}.
+\newblock \emph{{Biometrika}} \textbf{101}, 1--15.
+
+\bibitem[Wan and Zhou(2023)]{Wan.Zhou:2023}
+Wan, P. and Zhou, C. (2023) Graphical lasso for extremes.
+\newblock \emph{arXiv preprint arXiv:2307.15004} .
+
+\end{thebibliography}

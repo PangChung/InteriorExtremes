@@ -1,0 +1,50 @@
+This is BibTeX, Version 0.99d (TeX Live 2023)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: InteriorExtremes.aux
+The style file: CUP.bst
+Database file #1: Total.bib
+Warning--entry type for "doermann2024rainfall" isn't style-file defined
+--line 31 of file Total.bib
+Warning--there's a number but no volume in Hentschel.Engelke.Segers:2024
+You've used 53 entries,
+            2744 wiz_defined-function locations,
+            967 strings with 13912 characters,
+and the built_in function-call counts, 22359 in all, are:
+= -- 2183
+> -- 1090
+< -- 34
++ -- 423
+- -- 369
+* -- 2125
+:= -- 3857
+add.period$ -- 112
+call.type$ -- 53
+change.case$ -- 284
+chr.to.int$ -- 52
+cite$ -- 160
+duplicate$ -- 921
+empty$ -- 1598
+format.name$ -- 462
+if$ -- 4384
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 51
+newline$ -- 219
+num.names$ -- 212
+pop$ -- 262
+preamble$ -- 1
+purify$ -- 229
+quote$ -- 0
+skip$ -- 555
+stack$ -- 0
+substring$ -- 1178
+swap$ -- 187
+text.length$ -- 4
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 468
+warning$ -- 1
+while$ -- 241
+width$ -- 0
+write$ -- 641
+(There were 2 warnings)

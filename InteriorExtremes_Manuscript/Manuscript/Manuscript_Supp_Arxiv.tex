@@ -1,0 +1,812 @@
+\documentclass[12pt]{article}
+\usepackage[colorlinks,citecolor=blue,urlcolor=red]{hyperref}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{natbib}
+\usepackage{url} % not crucial - just used below for the URL 
+\usepackage{array}
+\usepackage{bm}
+\usepackage{multirow}
+\usepackage{booktabs} 
+\usepackage{adjustbox}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{sectsty}
+\usepackage{adjustbox}
+\usepackage{longtable}
+\usepackage[figuresright]{rotating}
+\usepackage{multicol}
+\setlength{\columnsep}{1cm}
+\usepackage{wrapfig}
+\usepackage[plain,noend]{algorithm2e}
+\usepackage{bbm}
+\usepackage{newtxtext}
+\usepackage{amsthm}
+\usepackage[subscriptcorrection]{newtxmath}
+\usepackage[margin=1in]{geometry}
+%\usepackage{natbib}
+
+% NOTE: To produce blinded version, replace "0" with "1" below.
+\newcommand{\blind}{0}
+
+% DON'T change margins - should be 1 inch all around.
+\input{macros.tex}
+\begin{document}
+
+\def\spacingset#1{\renewcommand{\baselinestretch}%
+{#1}\small\normalsize} \spacingset{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\title{\bf Supplemental Material for ``Fast and Efficient Inference for Flexible Max-Stable Processes"}
+\if0\blind
+{
+  \author{Peng Zhong, Scott A.~Sisson, and Boris Beranger \\ 
+  UNSW Data Science Hub, School of Mathematics and Statistics,\\ University of New South Wales, Sydney 2052, Australia. \\
+  \{peng.zhong, scott.sisson, b.beranger\}@unsw.edu.au}
+  \maketitle
+} \fi
+
+
+\baselineskip=26pt
+
+\appendix
+\section{Truncated extremal-t processes}
+\label{sec:appendix_truncated_extremal_t}
+\subsection{Proof of Theorem 2}
+By applying the first half of the equation (8) in the main manuscript %\eqref{eq:expfunc1}, 
+we have 
+\begin{align}
+& V(\bm x) = \sum_{k=1}^D\frac{1}{a_kx_k}\int_0^\infty u_k^\nu \int_{\bm 0}^{u_k \left(\frac{\bm x_{-k}^\circ}{x_{k}^\circ}\right)^{1/\nu}} \frac{\phi(\bm u;\bm 0, \Sigma)}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)}\text d \bm u_{-k}\text d u_k \nonumber \\ 
+&=\sum_{k=1}^D\frac{1}{a_k x_k \Phi^\circ(\bm \infty;\bm 0, \Sigma)}\int_0^\infty u_k^\nu \phi(u_k;0, 1) \int_{\bm 0}^{u_k\left(\frac{\bm x_{-k}^\circ}{x_k^\circ}\right)^{1/\nu}}\phi(\bm u_{-k}; \Sigma_{-k,k}u_k, \mathbb{I}_{D-1}-\Sigma_{-k,k}\Sigma_{k,-k})\text d \bm u_{-k}\text d u_k \nonumber \\ 
+&=\sum_{k=1}^D\frac{1}{a_kx_k \Phi^\circ(\bm \infty;\bm 0, \Sigma)}\int_0^\infty u_k^\nu \phi(u_k; 0, 1) \Phi^\circ\left(u_k\left(\frac{\bm x_{-k}^\circ}{x_k^\circ}\right)^{1/\nu};\Sigma_{-k,k}u_k,\mathbb{I}_{D-1} -\Sigma_{-k,k}\Sigma_{k,-k}\right)\text d u_k \nonumber \\  
+&=\sum_{k=1}^D \frac{2^{(\nu-2)/2} \Gamma((\nu+1)/2)}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) a_jx_j \sqrt{\pi}} T_{\nu+1}^\circ\left(\left(\frac{\bm x_{-k}^\circ}{x_k^\circ}\right)^{1/\nu};\Sigma_{-k,k},\frac{\mathbb{I}_{D-1}-\Sigma_{-k,k}\Sigma_{k,-k}}{\nu+1}\right)
+\label{eq:truncated_extremal_t_V},
+\end{align}
+where $\bm x^\circ = \bm x \bm a$, with $\bm a = (a_1, \ldots, a_D)$, $\mathbb{I}_{D-1}$ is the $(D-1)$-dimensional identity matrix, and the index $-k$ represents the set $B_D \backslash \left\{ k\right\}$.
+%\textcolor{magenta}{Boris: I believe going from line 3 to 4 is correct but that result has never been proven for the truncated t. It is based on the result for the t. I guess we can add more details if a referee asks for it.}
+
+% where $I_j=\{1,2,\dots,j-1,j+1,\dots,D\}$, $x_i^\circ=x_ia_i$, and $T^\circ$ is the truncated multivariate student-t distribution function. 
+The normalising constants $a_k$ can be either derived from the fact that $V(\infty,\dots,\infty,x_k,\infty,\dots,\infty) = 1/x_k$ or by comparing the integral above to the following integral 
+\begin{equation*}
+\label{eq:normalising_trunc}
+a_k = E[\tilde Y_k^\nu] = \int_0^\infty u_k^\nu \int_{\bm 0}^{\bm \infty} \frac{\phi(\bm u; \bm 0,\Sigma)}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)}\text d \bm u_{-k}\text d u_k.	
+\end{equation*}
+The use of either way will lead us to 
+\begin{equation*}
+\label{eq:truncate_extremal_t_a}
+a_k =\frac{2^{(\nu-2)/2}\Gamma((\nu+1)/2)}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)\sqrt{\pi}} T_{\nu+1}^\circ\left(
+% \left(\frac{\bm x_{-k}^\circ}{x_k^\circ}\right)^{1/\nu}
+\bm \infty_{D-1}
+;\Sigma_{-k,k},\frac{\mathbb{I}_{D-1}-\Sigma_{-k,k}\Sigma_{k,-k}}{\nu+1}\right).
+\end{equation*}
+Plugging the expression for $a_k$ in \eqref{eq:truncated_extremal_t_V}, we have 
+\begin{equation*}
+V(\bm x) = \sum_{k=1}^D \frac{T_{\nu+1}^\circ\left( \left(\frac{\bm x_{-k}^\circ}{x_k^\circ}\right)^{1/\nu} ;\Sigma_{-k,k},\frac{\mathbb{I}_{D-1}-\Sigma_{-k,k}\Sigma_{k,-k}}{\nu+1}\right)}{x_k T_{\nu+1}^\circ\left(\bm \infty_{D-1};\Sigma_{-k,k},\frac{\mathbb{I}_{D-1}-\Sigma_{-k,k}\Sigma_{k,-k}}{\nu+1}\right)}.	
+\end{equation*}
+
+\subsection{Proof of Proposition~1}
+
+From the distribution of $\tilde{\bm Y}$ and therefore $\bm W$, the conditional probability in (12) from the manuscript is written as
+%
+\begin{align*}
+\Pr(\bm W_{\bar{B}_k} = \bm 0_{D-k} \ | \ \bm W_{B_k} = r \bm x_{B_k} )
+& = \Phi^\circ \left( \bm 0_{D-k};
+\Sigma_{\bar{B}_k}\Sigma_{B_k B_k}^{-1} \left(r \bm x_{B_k}^\circ\right)^{1/\nu},\Sigma_{\bar{B}_k\bar{B}_k}-\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\Sigma_{\bar{B}_k B_k} \right) \\
+& = 0,
+\end{align*}
+%
+which, by Theorem~1, implies that the truncated extramal-t process has no mass on $\partial\Omega$. It now remains to derive its density on $\Omega^\circ$. 
+
+Take $\bm w = (w_1, \ldots, w_D) \in \mathbb{R}^D_+$ and let $\bm w^\circ = \bm w \bm a$, the density of $\bm W$ is given by
+%
+\begin{align}
+\label{eq:fW}
+f_W(\bm w) &= f_{\tilde{\bm Y}} \left( \left( \bm w^\circ \right)^{1/\nu} \right) \times \prod_{k=1}^D \left\{ \frac{a_k}{\nu} \left(w_k^\circ \right)^{1/\nu-1} \right\} \nonumber \\
+&= \frac{\phi\left( \left( \bm w^\circ \right)^{1/\nu} ;\bm 0, \Sigma \right)} {\Phi^\circ(\bm \infty;\bm 0, \Sigma)} 
+\times \prod_{k=1}^D \left\{ \frac{a_k}{\nu} \left(w_k^\circ\right)^{1/\nu-1} \right\}.
+\end{align}
+%
+
+In order to complete the proof we need the following lemma.
+
+
+\begin{lemma}
+\label{lem:kappEt}
+The intensity function for the truncated extremal-t process is
+%
+\begin{equation*}
+\kappa(\bm x) = \frac{\prod_{k=1}^D \left(a_k x_k^{1-\nu}\right)^{1/\nu}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) \nu^{D-1}|\Sigma|^{1/2}\pi^{D/2}2^{(2-\nu)/2}} \left\{\left[(\bm x^\circ)^{1/\nu}\right]^\top \Sigma^{-1}\left[(\bm x^\circ)^{1/\nu}\right]\right\}^{-(\nu+D)/2} \Gamma\left(\frac{\nu+D}{2}\right).
+\end{equation*}
+\end{lemma}
+
+\begin{proof}
+
+By plugging \eqref{eq:fW} into (9) from the main manuscript, we get 
+%
+\begin{align*}
+\kappa(\bm x) &= \int_0^\infty r^D \frac{\phi( (r \bm x^\circ)^{1/\nu};\bm 0, \Sigma)}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)} \prod_{k=1}^D \left\{ \frac{a_k}{\nu} (r x_k^\circ)^{1/\nu-1}\right\}\text d r	\\
+&= \frac{\prod_{k=1}^D \left\{a_k^{1/\nu} x_k^{1/\nu-1}\right\}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)\nu^D}\int_0^\infty r^{D/\nu} \phi( (r\bm x^\circ)^{1/\nu};\bm 0, \Sigma) \text d r\\
+&= \frac{\prod_{k=1}^D \left(a_k x_k^{\nu-1}\right)^{1/\nu}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) \nu^D |\Sigma|^{1/2} \pi^{D/2}2^{(2-\nu)/2}} \int_0^\infty r^{D/\nu} \exp \left\{-\frac{r^{2/\nu}}{2} \left[(\bm x^\circ)^{1/\nu}\right]^\top\Sigma^{-1}\left[(\bm x^\circ)^{1/\nu}\right]\right\} \text dr\\
+&= \frac{\prod_{k=1}^D \left(a_k x_k^{1-\nu}\right)^{1/\nu}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) \nu^{D-1}|\Sigma|^{1/2}\pi^{D/2}2^{(2-\nu)/2}} \left\{\left[(\bm x^\circ)^{1/\nu}\right]^\top \Sigma^{-1}\left[(\bm x^\circ)^{1/\nu}\right]\right\}^{-(\nu+D)/2} \Gamma\left(\frac{\nu+D}{2}\right),
+\label{eq:truncated_extremal_t_intensity}
+\end{align*}
+%
+which completes the proof.
+%
+\end{proof}
+
+By Lemma~\ref{lem:kappEt}, the density on the interior of the simplex, $\Omega^\circ$ is therefore given by
+%
+\begin{equation*}
+h(\bm w) = \frac{\prod_{k=1}^D \left(a_k w_k^{1-\nu}\right)^{1/\nu}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) \nu^{D-1}|\Sigma|^{1/2}\pi^{D/2}2^{(2-\nu)/2}} \left\{\left[(\bm w^\circ)^{1/\nu}\right]^\top \Sigma^{-1}\left[(\bm w^\circ)^{1/\nu}\right]\right\}^{-(\nu+D)/2} \Gamma\left(\frac{\nu+D}{2}\right), \quad \bm w = \frac{\bm x}{\| \bm x \|}.
+\end{equation*}
+%
+
+\subsection{Partial derivatives of the exponent function for the truncated extremal-t processes}
+
+\begin{lemma}
+\label{lem:dV_et}
+The partial derivatives of the exponent function of the truncated extremal-t process are given by
+%
+\begin{align*}
+-V_{B_k}(\bm x) &= \frac{\prod_{i\in B_k} \left\{a_i x_i^{1-\nu} \right\}^{1/\nu} 2^{(\nu-2)/2} \Gamma \left(\frac{k+\nu}{2}\right) \nu^{1-k}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) \pi^{k/2}|\Sigma_{B_k B_k}|^{1/2}Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)^{k+\nu}} \\
+& \quad \times T^\circ_{\nu+k}\left(\frac{\left(\bm x_{\bar{B}_k}^\circ\right)^{1/\nu}}{Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)};\frac{\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\left(\bm x_{B_k}^\circ\right)^{1/\nu}}{Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)},\frac{\Sigma_{\bar{B}_k \bar{B}_k}-\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\Sigma_{\bar{B}_k B_k}}{k+\nu}\right),
+\end{align*}
+%
+where $Q_\Sigma \left( \bm x \right) = \left\{ \bm x^\top \Sigma^{-1} \bm x\right\}^{1/2}$.
+\end{lemma}
+
+\begin{proof}
+Since the interest is in the partial derivatives of the exponent function $V(\bm x)$ with respect to the first $k$ components, i.e.,  $\bm x_{B_k}$, the correlation matrix $\sigma$ is decomposed as
+$$\Sigma = \begin{bmatrix}
+ \Sigma_{B_k B_k} &  \Sigma_{B_k \bar{B}_k} \\
+  \Sigma_{\bar{B}_k B_k} &  \Sigma_{\bar{B}_k \bar{B}_k}	
+ \end{bmatrix}.
+$$
+Plugging \eqref{eq:fW} into (11) from the main manuscript, we have
+%
+\begin{align*}
+ -V_{B_k}(\bm x) =&\ \int_0^\infty r^k f_{\bm W_{B_k}}(r \bm x_{B_k})  \Pr(\bm W_{\bar{B}_k} \in [0, r \bm x_{\bar{B}_k} ]\ | \ \bm W_{B_k} = r \bm x_{B_k} )\text dr \\
+=&\ \int_0^\infty r^k \frac{\phi\left( \left( r \bm x_{B_k}^\circ) \right)^{1/\nu}; \bm 0_{k}, \Sigma_{B_k B_k}\right)}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)} 
+\prod_{i=1}^k \left\{ \frac{a_i}{\nu}(r x_i^\circ)^{1/\Delta-1} \right\} \\
+&\quad \times \Phi^\circ \left( \left(r \bm x_{\bar{B}_k}^\circ)\right)^{1/\nu};
+\Sigma_{\bar{B}_k}\Sigma_{B_k B_k}^{-1} \left(r \bm x_{B_k}^\circ\right)^{1/\nu},\Sigma_{\bar{B}_k\bar{B}_k}-\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\Sigma_{\bar{B}_k B_k} \right)  \text dr \\
+=&\ \frac{\prod_{i\in B_k} \left\{ x_i^{1/\nu-1}a_i^{1/\nu}\right\}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)} \nu^{-k} \int_0^\infty r^{k/\nu} \phi\left( \left( r \bm x_{B_k}^\circ\right)^{1/\nu}; \bm 0_k, \Sigma_{B_k B_k}\right) \\
+&\quad \times \Phi^\circ \left( \left(r \bm x_{\bar{B}_k}^\circ \right)^{1/\nu};
+\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1} \left(r \bm x_{B_k}^\circ\right)^{1/\nu},\Sigma_{\bar{B}_k \bar{B}_k}-\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\Sigma_{\bar{B}_k B_k}\right) \text dr\\
+\end{align*} 
+%
+Using the notation $Q_\Sigma \left( \bm x \right) = \left\{ \bm x^\top \Sigma^{-1} \bm x\right\}^{1/2}$ and applying the change of variable $t=r^{1/\nu}Q_{\Sigma_{B_k B_k}}(\bm x_{B_k}^\circ)$, leads to 
+
+\begin{align*}
+ -V_{B_k}(\bm x)  =&\ \frac{\prod_{i\in B_k} \left\{ x_i^{1/\nu-1}a_i^{1/\nu}\right\}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)} \nu^{1-k} (2\pi)^{-k/2}|\Sigma_{B_k B_k}|^{-1/2}\int_0^\infty t^{k+\nu-1} Q_{\Sigma_{B_k B_k}} \left(\bm x_{B_k}^\circ\right)^{-k-\nu} e^{-t^2/2} \\
+ &\ \times \Phi^\circ \left( \frac{\left(\bm x_{\bar{B}_k}^\circ \right)^{1/\nu} t}{Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)}; \frac{\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\left(\bm x_{B_k}^\circ\right)^{1/\nu}t}{Q_{\Sigma_{B_k B_k}} \left(\bm x_{B_k}^\circ\right)},\Sigma_{\bar{B}_k \bar{B}_k}-\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\Sigma_{\bar{B}_k B_k} \right) \text dt  \\
+ =&\ \frac{\prod_{i\in B_k} \left\{ x_i^{1/\nu-1}a_i^{1/\nu}\right\}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma)} 2^{(\nu-2)/2} \nu^{1-k} \pi^{-k/2}|\Sigma_{B_k B_k}|^{-1/2} Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)^{-k-\nu} \Gamma\left(\frac{k+\nu}{2}\right) \\  
+ &\ \times T_{\nu+k}^\circ \left( \frac{\left(\bm x_{\bar{B}_k}^\circ \right)^{1/\nu}}{Q_{\Sigma_{B_k B_k}} \left( \bm x_{B_k}^\circ \right)}; \frac{\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\left(\bm x_{B_k}^\circ\right)^{1/\nu}}{Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)}, \frac{\Sigma_{\bar{B}_k \bar{B}_k}-\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\Sigma_{\bar{B}_k B_k}}{k+\nu} \right), 
+ \end{align*} 
+which concludes the proof.
+%
+\end{proof}
+
+From Lemma~\ref{lem:dV_et}, we can demonstrate that, for $k = 1, \ldots, D-1$ we have 
+%
+\begin{align*}
+\lim_{\bm x_{\bar{B}_k} \downarrow \bm 0_{D_k}} V_{B_k}(\bm x) 
+&= \frac{\prod_{i\in B_k} \left\{a_i x_i^{1-\nu} \right\}^{1/\nu} 2^{(\nu-2)/2} \Gamma \left(\frac{k+\nu}{2}\right) \nu^{1-k}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) \pi^{k/2}|\Sigma_{B_kB_k}|^{1/2}Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)^{k+\nu}} \\
+&\quad \times \lim_{\bm x_{\bar{B}_k} \downarrow \bm 0_{D_k}}
+T^\circ_{\nu+k}\left(\frac{\left(\bm x_{\bar{B}_k}^\circ\right)^{1/\nu}}{Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)};\frac{\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\left(\bm x_{B_k}^\circ\right)^{1/\nu}}{Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)},\frac{\Sigma_{\bar{B}_k \bar{B}_k}-\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\Sigma_{\bar{B}_k B_k}}{k+\nu}\right) \\
+&= \frac{\prod_{i\in B_k} \left\{a_i x_i^{1-\nu} \right\}^{1/\nu} 2^{(\nu-2)/2} \Gamma \left(\frac{k+\nu}{2}\right) \nu^{1-k}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) \pi^{k/2}|\Sigma_{B_k,B_k}|^{1/2}Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)^{k+\nu}} \\
+&\quad \times T^\circ_{\nu+k}\left(\bm 0_{D_k};\frac{\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\left(\bm x_{B_k}^\circ\right)^{1/\nu}}{Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)},\frac{\Sigma_{\bar{B}_k \bar{B}_k}-\Sigma_{\bar{B}_k B_k}\Sigma_{B_k B_k}^{-1}\Sigma_{\bar{B}_k B_k}}{k+\nu}\right) \\
+&= \frac{\prod_{i\in B_k} \left\{a_i x_i^{1-\nu} \right\}^{1/\nu} 2^{(\nu-2)/2} \Gamma \left(\frac{k+\nu}{2}\right) \nu^{1-k}}{\Phi^\circ(\bm \infty;\bm 0, \Sigma) \pi^{k/2}|\Sigma_{B_k,B_k}|^{1/2}Q_{\Sigma_{B_k B_k}}\left(\bm x_{B_k}^\circ\right)^{k+\nu}} \times 0 \\
+&= 0,
+\end{align*}
+%
+which implies that all densities on $\partial\Omega$ take the value zero. 
+
+% \subsection{Partial derivatives of the exponent function for the truncated extremal-t processes}
+% Here, we calculate the partial derivatives of the exponent function $V(x_{1:D})$ with respect to the first $k$ components $x_{1:D}$. For the $D$ by $D$ matrix $\Sigma$, we write it into a block matrix as
+% $$\Sigma = \begin{bmatrix}
+%  \Sigma_{11} &  \Sigma_{12} \\
+%   \Sigma_{21} &  \Sigma_{22}	
+%  \end{bmatrix}.$$
+% Using the notation above and the expression in Equation 11 in the main manuscript, 
+% %\eqref{eq:partialV_2}, 
+% we have 
+% \begin{align*}
+%  -V_{1:k}(\bm x) =&\ \int_0^\infty r^k f_{W_{1:k}}(rx_{1:k})  \Pr(W_{(k+1):D} \in [0,rx_{(k+1):D} ]\ |\ W_{1:k} = rx_{1:k} )\text dr \\
+% =&\ \int_0^\infty \Phi^\circ(\bm \infty_d;\bm 0_d, \Sigma)^{-1} \phi( r^{1/\Delta}(x_{1:k}^\circ)^{1/\Delta};\Sigma_{11})\Phi^\circ(x_{(k+1):D}^\circ)^{1/\Delta}r^{1/\Delta};\\
+% &\ \Sigma_{21}\Sigma_{11}^{-1}(x_{1:k}^\circ)^{1/\Delta}r^{1/\Delta},\Sigma_{22}-\Sigma_{21}\Sigma_{11}^{-1}\Sigma_{21}) \prod_{i=1}^k (x_i^\circ r)^{1/\Delta-1}ra_i/\Delta \text dr \\
+% =&\ \left(\prod_{i=1}^k x_i^{1/\Delta-1}a_i^{1/\Delta}\right)\Phi^\circ(\bm \infty_d;\bm 0_d, \Sigma)^{-1}\Delta^{-k}\int_0^\infty \phi( r^{1/\Delta}(x_{1:k}^\circ)^{1/\Delta};\Sigma_{11})\Phi^\circ(x_{(k+1):D}^\circ)^{1/\Delta}r^{1/\Delta};\\
+% &\ \Sigma_{21}\Sigma_{11}^{-1}(x_{1:k}^\circ)^{1/\Delta}r^{1/\Delta},\Sigma_{22}-\Sigma_{21}\Sigma_{11}^{-1}\Sigma_{21}) r^{k/\Delta}\text dr\\
+% \end{align*} 
+% Let $Q_{\Sigma_{11}}(x_{1:k}^\circ) = \left\{(x_{1:k}^\circ)^{1/\Delta,T}\Sigma_{11}^{-1}(x_{1:k}^\circ)^{1/\Delta}\right\}^{1/2}$, and use of the change of variable $t=r^{1/\Delta}Q_{\Sigma_{11}}(x_{1:k}^\circ)$ leads to 
+% \begin{align}
+%  -V_{1:k}(\bm x)  =&\ \left(\prod_{i=1}^k x_i^{1/\Delta-1}a_i^{1/\Delta}\right)\Phi^\circ(\bm \infty_d;\bm 0_d, \Sigma)^{-1}\Delta^{1-k}(2\pi)^{-k/2}|\Sigma_{11}|^{-1/2}\int_0^\infty t^{k+\Delta-1} Q_{\Sigma_{11}}(x_{1:k}^\circ)^{-k-\Delta}e^{-t^2/2}\\
+%  &\ \Phi^\circ((x_{(k+1):D}^\circ)^{1/\Delta}t/Q_{\Sigma_{11}}(x_{1:k}^\circ); \Sigma_{21}\Sigma_{11}^{-1}(x_{1:k}^\circ)^{1/\Delta}t/Q_{\Sigma_{11}}(x_{1:k}^\circ),\Sigma_{22}-\Sigma_{21}\Sigma_{11}^{-1}\Sigma_{21}) \text dt\\
+%  =&\ \left(\prod_{i=1}^k x_i^{1/\Delta-1}a_i^{1/\Delta}\right)\Phi^\circ(\bm \infty_d;\bm 0_d, \Sigma)^{-1}  2^{(\Delta-2)/2}\Delta^{1-k}\pi^{-k/2}|\Sigma_{11}|^{-1/2}Q_{\Sigma_{11}}(x_{1:k}^\circ)^{-k-\Delta}\Gamma((k+\Delta)/2) \\  
+%  &\ \times T^\circ((x_{(k+1):D}^\circ)^{1/\Delta}/Q_{\Sigma_{11}}(x_{1:k}^\circ); \Sigma_{21}\Sigma_{11}^{-1}(x_{1:k}^\circ)^{1/\Delta}/Q_{\Sigma_{11}}(x_{1:k}^\circ),(\Sigma_{22}-\Sigma_{21}\Sigma_{11}^{-1}\Sigma_{21})/(k+\Delta)) \label{eq:truncated_extremal_t_partialV}
+% \end{align} 
+
+\subsection{Exact simulation algorithm} 
+The exact simulation algorithm for truncated extremal-t processes arises using Algorithm 2 in \cite{Dombry.Engelke.Oesting:2016}, which requires simulating a processes $\bm W/W(s_0)$ with distribution $P_{s_0}(A) = \E_{\bm W}[\mathbbm 1_{\{\bm W/W(s_0)\in A\}}W(s_0)]$ and where $\bm W = (W_0, W_1, \ldots, W_D) \equiv \left( W(s_0), W(s_1), \ldots, W(s_D)\right)$ is defined as in Theorem~2 to the exception of being $D+1$ dimensional. The distribution $P_{s_0}$ can be written as,
+\begin{align*}
+	P_{s_0}(A) =&\ \int_{\mathbb{R}_+^{D+1}} \mathbbm 1 \left\{w_i/w_0 \in A_i, i=1,\dots,D  \right\} w_0 \text dF_{\bm W}(\bm w)  \\
+	=&\ \int_{\mathbb{R}_+^{D+1}} \mathbbm 1 \left\{ w_i/w_0 \in A_i, i=1,\dots,D \right\} w_0 \frac{\phi\left(\left( \bm a \bm w\right)^{1/\nu};\bm 0_{D+1},\Sigma\right)}{\Phi^\circ(\bm \infty; \bm 0_{D+1}, \Sigma)} \prod_{i=0}^D(a_i w_i)^{1/\nu-1} \frac{a_i}{\nu} \text d \bm w,
+\end{align*}  	
+where $\bm a = (a_o, \ldots, a_D)$.
+Let $\bm z = (z_0, z_1, \ldots, z_D)$, with $z_0 = 1$ and $z_i = w_i/w_0, i=1, \ldots, D$. The above equation can be written as
+%
+\begin{align*}
+P_{s_0}(A) =&\ \int_{\mathbb{R}_+^{D+1}} \mathbbm 1 \left\{z_i \in A_i, i=1,\dots,D\right\} w_0^{D+1} 
+\frac{\phi\left(\left( \bm a \bm z\right)^{1/\nu};\bm 0_{D+1},\Sigma\right)}{\Phi^\circ(\bm \infty; \bm 0_{D+1}, \Sigma)} \prod_{i=0}^D(a_i w_0 z_i)^{1/\nu-1} \frac{a_i}{\nu} \text dw_0 d \bm z_{-1}\\
+=&\ \int_{\mathbb{R}_+^{D+1}} \mathbbm 1 \left\{ z_i \in A_i, i=1,\dots,D\right\} w_0^{(D+1)/\nu} \frac{\phi\left(\left( \bm a \bm z\right)^{1/\nu};\bm 0_{D+1},\Sigma\right)}{\Phi^\circ(\bm \infty; \bm 0_{D+1}, \Sigma)} \prod_{i=0}^D(a_i z_i)^{1/\nu-1} \frac{a_i}{\nu} \text dw_0 d \bm z_{-1}\\
+\end{align*}
+%
+Therefore, letting $\tilde{\bm z} = ( \bm a \bm z)^{1/\nu}$, the density of the distribution $P_{s_0}(\bm z)$ is proportional to 
+\begin{align*}
+f(\bm z) & \propto \prod_{i=1}^D \left\{ z_i^{1/\nu-1}\right\}
+ \int_{0}^{\infty} w_0^{(D+1)/\nu} \exp\left\{- w_0^{2/\nu} \tilde{\bm z}^\top \Sigma^{-1} \tilde{\bm z} \right\} \text dw_0 \\
+	&= \prod_{i=1}^D \left\{ z_i^{1/\nu-1} \right\}
+ \int_{0}^{\infty} (2t)^{(D+1)/2} (\tilde{\bm z}^\top \Sigma^{-1} \tilde{\bm z})^{-(D+\nu+1)/2} e^{-t} \nu (2t)^{\nu/2-1} \text dt \\
+	& \propto  \prod_{i=1}^D \left\{ z_i^{1/\nu-1}\right\}  \left(\tilde{\bm z}^\top \Sigma^{-1} \tilde{\bm z}\right)^{-(D+\nu+1)/2} \int_{0}^{\infty} t^{(D+\nu-1)/2} e^{-t} \text dt \\
+	&\propto \prod_{i=1}^D \left\{z_i^{1/\nu-1}\right) \left(\tilde{\bm z}^\top \Sigma^{-1}\tilde{\bm z}\right)^{-(D+\nu+1)/2}
+\end{align*}
+Recall that $B_D$ represents the set $\left\{ 1, \ldots, D\right\}$, given the block decomposition of the correlation matrix, $\Sigma = \begin{bmatrix}
+	1 & \Sigma_{0;B_D} \\
+	\Sigma_{0;B_D}^\top & \Sigma_{B_D;B_D} \\
+\end{bmatrix}$, 
+the above equation can be written as
+
+\begin{equation*}
+    f(\bm z) \propto \prod_{i=1}^D \left\{z_i^{1/\nu-1}\right\} 
+    \left[ \frac{\tilde{\bm z}_{B_D}/\tilde{z}_0 - \Sigma_{B_D;0}}{\Sigma_{B_D;B_D} - \Sigma_{B_D;0}\Sigma_{B_D;0}}
+    \left(\tilde{\bm z}_{B_D}/\tilde{z}_0 - \Sigma_{B_D;0}\right) + 1 \right]^{-(D+\nu+1)/2},    
+\end{equation*}
+which can be identified as the joint density function of $a_0 Z_i^\nu/a_i,i=1,\dots,D$, where $(Z_1,\dots,Z_D)$ follows a multivariate truncated student-t distribution from below zero with scale parameter $(\Sigma_{B_D;B_D} - \Sigma_{B_D;0} \Sigma_{B_D;0}^\top) / (\nu+1)$, location parameter $\Sigma_{B_D;0}$ and $\nu+1$ degrees of freedom. Algorithm~\ref{algo:trunc_extremal_t} gives the pseudo-code of the exact simulation of the truncated extremal-t processes at finite location $s_1,\dots,s_D$.
+
+\begin{algorithm}
+\caption{Exact simulation of truncated extremal-t processes at locations $\bm s = (s_1,\dots,s_D)$}.
+\label{algo:trunc_extremal_t}
+\begin{tabbing}
+    \qquad \enspace Set Degrees of freedom $\nu>0$ and some $D\times D$ correlation matrix $\Sigma$ \\
+    \qquad \enspace Compute $a_{1:D}$ from  \eqref{eq:normalising_trunc}. \\
+    \qquad \enspace Simulate $E_0 \sim \rm{Exp}(1)$ and set $z=1/E_0$. \\    
+    \qquad \enspace Set $Y(s_1)=1$ and simulate $Y(\bm s)$ from a truncated-t distribution with location parameter $\Sigma_{-1;1}$,\\ 
+    \qquad \enspace scale matrix $(\Sigma - \Sigma_{-1;1}\Sigma_{-1;1}^\top)/(\nu+1)$, and $\nu+1$ degrees of freedom at location $s_i\neq s_1$. \\
+    \qquad \enspace Set $W(s_j) = a_0 Y^{\nu}(s_j)/a_j$ for $j=1,\dots,D$. \\
+    \qquad \enspace Set $Z(s_j)=W(s_j)z$ for $j=1,\dots,D$. \\
+    \qquad \enspace For {$i=2,\dots,D$} \\
+    \qquad \qquad \enspace Simulate $E_0 \sim \rm{Exp}(1)$ and set $z=1/E_0$. \\
+    \qquad \qquad \enspace While {$z > Z(\bm s_i)$} \\
+    \qquad \qquad \qquad \enspace Set $Y(s_j)=1$ and simulate $Y(s_j),j\neq i$ from a truncated-t distribution with \\
+    \qquad \qquad \qquad \enspace location $\Sigma_{-j;j}$ and scale matrix $(\Sigma - \Sigma_{-j;j}\Sigma_{-j;j}^\top)/(\nu+1)$, and $\nu+1$ degrees of freedom. \\
+    \qquad \qquad \qquad \enspace Let $W(s_j) = a_0Y^{\nu}(s_j)/a_j,j=1,\dots,D$. \\
+    \qquad \qquad \qquad \enspace If {$W(s_{j})*z < Z(\bm s_j), \forall j=1,\dots,i-1$} \\
+    \qquad \qquad \qquad \qquad \enspace Set $Z(s_j)=\max(Z(s_j),zW(s_j)),j=1,\dots,D$. \\
+    \qquad \qquad \qquad \enspace Simulate $E_1 \sim \rm{Exp}(1)$ and Set $E_0 = E_0 + E_1$ and $z=1/E_0$.\\
+    \qquad \enspace Return $Z(s_j ),j=1,\dots,D$.
+\end{tabbing}
+\end{algorithm}
+
+\section{Skew log-normal based max-stable processes}
+\label{sec:skew-log-normal_appendix}
+\subsection{Proof of Theorem~3}
+
+By applying the first half of equation (8) in the main manuscript we have
+% The exponent function for the skew log-normal-based max-stable processes can be also similarly calculated as
+\begin{align}
+\label{eq:V_skBR1}
+V(\bm x) &= 
+% \sum_{k=1}^D \int_{-\infty}^\infty e^{y_k-a_k-\log(x_k)}\int_{-\infty}^{y_k+\bm a_{-k}-a_k\bm 1_{D-1}+ \log(\bm x_{-k}/x_k)}\psi( \bm y;\bm 0, \Sigma, \bm \alpha, 0)\text d \bm y_{-k} \text d y_k \nonumber \\
+% &= 
+\sum_{k=1}^D \frac{1}{x_k} \int_{-\infty}^\infty \int_{-\infty}^{y_k+\bm a_{-k}-a_k\bm 1_{D-1}+\log(\bm x_{-k}/x_k)} e^{y_k-a_k} \psi(\bm y;\bm 0, \Sigma,\bm \alpha, 0) \text d \bm y_{-k} \text d y_k \nonumber \\
+&= \sum_{k=1}^D \frac{\Phi\left(\tau_k; 0, 1\right)}{2} \frac{\exp \left\{\tilde{\omega}_k^2/2-a_k\right\}}{x_k} \int_{-\infty}^\infty\int_{-\infty}^{y_k+ \bm a_{-k}-a_k\bm 1_{D-1}+\log(\bm x_{-k}/x_k)}
+\psi(\bm y;\Sigma_{\cdot;k}, \Sigma, \bm \alpha, \tau_k)\text d \bm y_{-k} \text d y_k
+\end{align}
+where $\tau_k=\bm \alpha^\top\omega^{-1}\Sigma_{\cdot;k} \left(1+\bm\alpha^\top\bar\Sigma \bm\alpha \right)^{-1/2}$, $\bar{\Sigma} = \omega^{-1} \Sigma \omega^{-1}$, $\omega = \sqrt{\diag(\Sigma)}$ and $\tilde{\bm \omega} = \left( \tilde{\omega}_1, \ldots, \tilde{ \omega}_D\right) = \omega \bm 1$. The above integrals represent $\Pr[\bm X_{-k}-X_k\leq \bm a_{-k}-a_{k}\bm 1_{D-1}+\log(\bm x_{-k}/x_k)]$, with $\bm X \sim \text{ESN}(\Sigma_{\cdot;k},\Sigma,\bm \alpha, \tau_k)$. The random vector $\bm X_{-k}-X_k$ can be derived from $\bm X$ by applying the affine transformation $A_k \bm X$ where $A_k = (\bm e_1,\cdots,\bm e_{k-1},-\bm 1_{D-1},\bm e_{k},\ldots,\bm e_{D-1})$ and $\bm e_k, k=1, \ldots, D-1$ are standard basis vectors of dimension $(D-1)$. From \citet[Chapter~5]{Azzalini:2013} we have 
+%
+$$
+\bm X_{-k}-X_k \sim \text{ESN} \left( \bm \mu_k, \Sigma_k, \hat{\bm \alpha}_k, \tau_k\right)
+$$
+%
+where $\bm \mu_k = A_k\Sigma_{\cdot;k}$, 
+$\Sigma_k = A_k\Sigma A_k^\top$, 
+$\hat{\bm \alpha}_k = (1-\bm\delta^\top \omega A_k^\top\Sigma_k^{-1}A_k\omega\bm\delta)^{-1/2} \hat \omega_k \Sigma_k^{-1}A_k\omega\bm\delta$, 
+$\bm \delta = \left( 1 + \bm \alpha^\top \bar{\Sigma} \bm \alpha\right)^{-1/2}\bar{\Sigma} \bm \alpha$, 
+$\hat{\omega}_k = \sqrt{\diag(\Sigma_k)}$
+% $\hat{\alpha}_0 = \bm \alpha^\top\omega^{-1}\Sigma_{\cdot;k}(1+\bm\alpha^\top\bar\Sigma\bm\alpha)^{-1/2}(1+\hat{\bm\alpha}_k\bar{\Sigma}_k\hat{\bm\alpha}_k)^{1/2}$ 
+and therefore, \eqref{eq:V_skBR1} becomes
+%
+\begin{align}
+\label{eq:V_skBR2}
+V(\bm x) &= \sum_{k=1}^D c \frac{\exp\left\{\tilde{\omega}_k^2/2-a_k\right\}}{x_k}
+\Psi \left( \bm a_{-k}-a_{k} \bm 1_{D-1}+\log(\bm x_{-k}/x_k) ; \bm \mu_k, \Sigma_k, \hat{\bm \alpha}_k, \tau_k\right).
+\end{align}
+% 
+The normalizing constants are derived by solving $a_k = \log\left( E \left[ \exp \left\{ Y_k\right\}\right]\right)$ for $k=1, \ldots, D$. The moment generating function of $Y \sim \text{ESN}(\bm 0, \Sigma, \bm \alpha, 0)$ is given by
+%
+$$
+M(\bm t)  = 2 \exp \left\{ \frac{1}{2} \bm t^\top \Sigma \bm t \right\} \Phi\left( \bm \delta^\top \omega \bm t\right),
+$$
+%
+where $\bm \delta$ and $\omega$ are as defined above and considering $\bm t = \bm e_k$ yields 
+%
+$$
+a_k = \log(2) + \frac{1}{2} \tilde{\omega}_k^2 + \log \left( \Phi\left( \tilde{\omega}_{k} \delta_k \right)\right).
+$$
+Noting that $\tau_k = \tilde{\omega}_k \delta_k$ and
+%
+$$
+\bm a_{-k}-a_{k} \bm 1_{D-1}+\log \left(\frac{\bm x_{-k}}{x_k}\right)
+= \log \left( \frac{\bm x^{\circ\circ}_{-k}}{x^{\circ\circ}_k} \right) + \frac{\tilde{\bm \omega}_{-k}^2 - \tilde{\omega}_k^2\bm 1_{D-1}}{2},
+$$
+where $\bm x^{\circ\circ} = \left( x^{\circ\circ}_1, \ldots, x^{\circ\circ}_D\right)$, $x^{\circ\circ}_k = 2x_k \Phi\left( \tau_k; 0, 1 \right), k=1, \ldots, D$,
+we can therefore re-write \eqref{eq:V_skBR2} as
+%
+\begin{align*}
+V(\bm x) &= \sum_{k=1}^D \frac{1}{x_k}
+\Psi \left( \log \left( \frac{\bm x^{\circ\circ}_{-k}}{x^{\circ\circ}_k} \right) + \frac{\tilde{\bm \omega}_{-k}^2 - \tilde{\omega}_k^2\bm 1_{D-1}}{2} ; \bm \mu_k, \Sigma_k, \hat{\alpha}_k, \tau_k \right) \\
+%
+&= \sum_{k=1}^D \frac{1}{x_k} 
+\frac{\Phi \left(
+    \begin{bmatrix} 
+        \hat{\omega}_k^{-1}\left( \log \left( \frac{\bm x^{\circ\circ}_{-k}}{x^{\circ\circ}_k} \right) + \frac{\tilde{\bm \omega}_{-k}^2 - \tilde{\omega}_k^2\bm 1_{D-1}}{2} - \bm \mu_k\right)  \\
+        \tau_k
+    \end{bmatrix};
+    \begin{bmatrix} 
+    \bm 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+        \bar\Sigma_k & -\frac{\bar{\Sigma}_k \hat{\bm\alpha}_k}{(1+\hat{\bm\alpha}_k^\top\bar{\Sigma}_k \hat{\bm\alpha}_k)^{1/2}} \\
+       -\frac{\hat{\bm\alpha}_k^\top\bar{\Sigma}_k}{\left(1+\hat{\bm\alpha}_k^\top\bar{\Sigma}_k \hat{\bm\alpha}_k\right)^{1/2}} &	1
+    \end{bmatrix} \right)
+    }
+    {\Phi\left(\tau_k; 0, 1\right)} \\
+&= \sum_{k=1}^D \frac{1}{x_k} 
+\frac{\Phi \left(
+    \begin{bmatrix} 
+        \hat{\omega}_k^{-1}\left( \log \left( \frac{\bm x^{\circ\circ}_{-k}}{x^{\circ\circ}_k} \right) + \frac{\tilde{\bm \omega}_{-k}^2 - \tilde{\omega}_k^2\bm 1_{D-1}}{2} - \bm \mu_k\right)  \\
+        \tau_k
+    \end{bmatrix};
+    \begin{bmatrix} 
+    \bm 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+        \bar\Sigma_k & - \hat{\omega}_k^{-1} A_k \omega \bm \delta \\
+       - \delta^\top \omega A_k^\top \hat{\omega}_k^{-1} &	1
+    \end{bmatrix} \right)
+    }
+    {\Phi\left(\tau_k; 0, 1\right)}.
+\end{align*}
+%
+which completes the proof of Theorem~3.
+
+Notice that the expression above can be much simplified by re-parametrising the slant parameter $\bm \alpha$ by $\bm \eta = \omega^{-1}\bm\alpha$ which implies that $\omega \bm \delta = \Sigma\bm\eta\left(\sqrt{1+\bm\eta^\top\Sigma\bm\eta}\right)^{-1/2} \equiv \bm\xi$. As such, we have $\tau_k = \xi_k$ and $\hat{\bm\alpha}_k = \left(1-\bm\xi^\top A_k^\top\Sigma_k^{-1} A_k \bm\xi \right)^{-1/2} \hat{ \omega}_k\Sigma_k^{-1}A_k \bm\xi$, and the exponent function can be written as
+%
+\begin{align*}
+V(\bm x) &= \sum_{k=1}^D \frac{1}{x_k} 
+\frac{\Phi \left(
+    \begin{bmatrix} 
+        \hat{\omega}_k^{-1}\left( \log \left( \frac{\bm x^{\circ\circ}_{-k}}{x^{\circ\circ}_k} \right) + \frac{\tilde{\bm \omega}_{-k}^2 - \tilde{\omega}_k^2\bm 1_{D-1}}{2} - \bm \mu_k\right)  \\
+        \xi_k
+    \end{bmatrix};
+    \begin{bmatrix} 
+    \bm 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+        \bar\Sigma_k & - \hat{\omega}_k^{-1} A_k \bm \xi  \\
+       - \bm \xi^\top A_k^\top \hat{\omega}_k^{-1} &	1
+    \end{bmatrix} \right)
+    }
+    {\Phi\left(\xi_k; 0, 1\right)} \\
+ &= \sum_{k=1}^D \frac{1}{x_k} 
+\frac{\Phi \left(
+    \begin{bmatrix} 
+        \log \left( \frac{\bm x^{\circ\circ}_{-k}}{x^{\circ\circ}_k} \right) + \frac{\tilde{\bm \omega}_{-k}^2 - \tilde{\omega}_k^2\bm 1_{D-1}}{2} - \bm \mu_k  \\
+        \xi_k
+    \end{bmatrix};
+    \begin{bmatrix} 
+    \bm 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+        \Sigma_k & - A_k \bm \xi  \\
+       - \bm \xi^\top A_k^\top &	1
+    \end{bmatrix} \right).
+    }
+    {\Phi\left(\xi_k; 0, 1\right)}   
+\end{align*}
+%
+
+
+\subsection{Proof of Proposition~2}
+
+The conditional probability in (12) from the manuscript is written as
+%
+\begin{align*}
+\Pr(\bm W_{\bar{B}_k} = \bm 0_{D-k} \ | \ \bm W_{B_k} = r \bm x_{B_k} )
+& = \Pr(\bm Y_{\bar{B}_k} = - \bm \infty_{D-k} \ | \ \bm Y_{B_k} = \log(r \bm x_{B_k}) + a_{B_k} ),
+\end{align*}
+and since $\bm Y_{\bar{B}_k}| \ \bm Y_{B_k}$ is distributed according to the extended skew-Normal distribution, it directly implies that the above probability is zero and therefore the skewed Brown-Resnick process has no mass on $\partial\Omega$. It now remains to derive its densty on $\Omega^\circ$.
+
+Take $\bm w = (w_1, \ldots, w_D) \in \mathbb{R}^D_+$ and let $w_k^{\circ\circ} = 2w_k \Phi \left( \tau_k;0,1 \right)$, the density of $\bm W$ is given by
+%
+\begin{align}
+\label{eq:fW_BR}
+f_W(\bm w) &= f_{\tilde{\bm Y}} \left( \frac{\tilde{\bm w}^2}{2} + \log\left(\bm w^{\circ\circ}\right) \right) \times \prod_{k=1}^D \frac{1}{w_k} \nonumber \\
+&= \psi\left( \frac{\tilde{\bm \omega}^2}{2} + \log\left(\bm w^{\circ\circ}\right); \bm 0, \Sigma, \bm \alpha, \bm 0\right) \times \prod_{k=1}^D \frac{1}{w_k}.
+\end{align}
+%
+
+In order to complete the proof we need the following lemma.
+
+\begin{lemma}
+\label{lem:kappSBR}
+The intensity function for the skewed Brown-Resnick process is
+$$
+\kappa(\bm x) =\frac{2\Phi(\tilde{\tau};0,1)| \Sigma |^{-1/2} \left( \bm 1^\top \bm q\right)^{-1/2}}{\left( 2\pi \right)^{(D-1)/2}\prod_{k=1}^Dx_k}\exp \left\{ -\frac{1}{2} \left[ \log \bm x^{\circ\circ\top} \mathcal{A} \log \bm x^{\circ\circ} + \log \bm x^{\circ\circ\top} \left( \frac{2 \bm q}{\bm 1^\top \bm q}+\calA\tilde{\bm\omega}^2\right) + \frac{\bm q^\top\tilde{\bm \omega}^2 - 1}{\bm 1 ^\top \bm q } + \frac{1}{4}{\tilde{\bm\omega}}^{2,\top}\calA\tilde{\bm\omega^2} \right]\right\},
+$$
+where $\bm q = \Sigma^{-1} \bm 1$, $\mathcal{A} = \Sigma^{-1} - \bm q \bm q^\top / \bm 1^\top \bm q$ and
+%
+$$\tilde{\tau}=\left(1 + \frac{\left(\bm\alpha^\top\omega^{-1}\bm 1\right)^2}{\bm 1^\top q}\right)^{-1/2}\bm\alpha^\top\omega^{-1}\left[\left(\mathbb{I} - \frac{\bm 1q^\top}{\bm 1^\top q}\right)\left(\log \bm x^{\circ\circ} + \frac{\tilde{\bm\omega}^2}{2}\right) +  \frac{\bm 1}{\bm 1^\top q} \right].$$
+\end{lemma}
+
+\begin{proof}
+By plugging \eqref{eq:fW_BR} into (9) from the main manuscript, we get
+%
+\begin{align*}
+\kappa(\bm x) &= \int_0^\infty r^D \psi\left( \frac{\tilde{\bm \omega}^2}{2} + \log\left(\bm x^{\circ\circ}\right) + \log(r); \bm 0, \Sigma, \bm \alpha, \bm 0\right) \times \prod_{k=1}^D \frac{1}{r x_k} \text dr \\
+&= \int_0^\infty \psi\left( \frac{\tilde{\bm \omega}^2}{2} + \log\left(\bm x^{\circ\circ}\right) + \log(r); \bm 0, \Sigma, \bm \alpha, \bm 0\right) \times \prod_{k=1}^D \frac{1}{x_k} \text dr \\
+&= \int_{\mathbb{R}} e^{u} \psi\left( \frac{\tilde{\bm \omega}^2}{2} + \log\left(\bm x^{\circ\circ}\right) + u; \bm 0, \Sigma, \bm \alpha, \bm 0\right) \times \prod_{k=1}^D \frac{1}{x_k} \text du \\
+&= \int_{\mathbb{R}} \frac{e^{u} 2}{\prod_{k=1}^D x_k} \phi\left( \frac{\tilde{\bm \omega}^2}{2} + \log\left(\bm x^{\circ\circ}\right) + u; \bm 0, \Sigma\right) \Phi\left( \bm \alpha^\top \omega^{-1} \left( \frac{\tilde{\bm \omega}^2}{2} + \log\left(\bm x^{\circ\circ}\right) + u \right); 0, 1\right) \text du \\
+\end{align*}
+
+Following \citet{Wadsworth.Tawn:2014}, we have
+%
+\begin{align*}
+e^{u} \phi\left( \frac{\tilde{\bm \omega}^2}{2} + \log\left(\bm x^{\circ\circ}\right) + u; \bm 0, \Sigma\right) &=
+\phi \left( u; \mu_u, \omega_u^2 \right) 
+\frac{| \Sigma |^{-1/2} \left( \bm 1^\top \bm q\right)^{-1/2}}{\left( 2\pi \right)^{(D-1)/2}} \\
+&\quad \times \exp \left\{ -\frac{1}{2} \left[ \log \bm x^{\circ\circ\top} \mathcal{A} \log \bm x^{\circ\circ} + \log \bm x^{\circ\circ\top} \left( \frac{2 \bm q}{\bm 1^\top \bm q} + \calA\tilde{\bm\omega}^2\right) \right]\right\} \\
+& \quad \times \exp \left\{- \frac{1}{2} \left( \frac{\bm q^\top\tilde{\bm \omega}^2 - 1}{\bm 1 ^\top \bm q} + \frac{1}{4}\tilde{\bm\omega}^{2,\top}\calA\tilde{\bm\omega}^2\right) \right\}
+\end{align*}
+%
+where $\bm q = \Sigma^{-1} \bm 1$, $\mu_u=-\frac{\log \bm x^{\circ\circ}\bm q + \frac{1}{2} \left(\tilde{\bm \omega}^2\right)^\top \bm q - 1}{\bm 1^\top \bm q}$, $\omega_u=\left( \bm 1^\top \bm q \right)^{-1/2}$, and $\mathcal{A} = \Sigma^{-1} - \bm q \bm q^\top / \bm 1^\top \bm q$. In addition, note that
+%
+\begin{align*}
+\Phi\left( \bm \alpha^\top \omega^{-1} \left( \frac{\tilde{\bm \omega}^2}{2} + \log\left(\bm x^{\circ\circ}\right) + u \right); 0, 1\right) 
+&= \Phi\left( \alpha_u\left(\frac{u-\mu_u}{\omega_u}\right) + \alpha_{0,u};0,1\right)\frac{\Phi(\tilde{\tau};0,1)}{\Phi(\tilde{\tau};0,1)}
+\end{align*}
+where $\alpha_u = \omega_u\bm\alpha^\top\omega^{-1}\bm 1$, $\alpha_{0,u} = \bm\alpha^\top\omega^{-1}\left(I - \omega_u^2\bm 1\bm 1^\top \Sigma^{-1}\right)\left(\log \bm x^{\circ\circ}+\tilde{\bm\omega}^2/2\right) - \omega_u^2\bm\alpha^\top\omega^{-1}\bm 1$ and 
+%
+\begin{equation}
+\label{eq:tilde_tau}
+\tilde{\tau} = \alpha_{0,u}(1+\alpha_u^2)^{-1/2}= \left(1 + \frac{(\bm\alpha^\top\omega^{-1}\bm 1)^2}{\bm 1^\top \bm q}\right)^{-1/2}\bm\alpha^\top\omega^{-1}\left[\left(\mathbb{I} - \frac{\bm 1\bm q^\top}{\bm 1^\top\bm q}\right)\left(\log \bm x^{\circ\circ} + \frac{\tilde{\bm\omega}^2}{2}\right) +  \frac{\bm 1}{\bm 1^\top \bm q} \right].
+\end{equation}
+%
+Therefore, by matching the integrand with a univariate extended skew normal density function with respect to $u$,  we have,
+\begin{align*}
+\kappa(\bm x) &=  \int_{\mathbb R} \phi \left( u; \mu_u, \omega_u^2 \right) \Phi\left( \alpha_u\left(\frac{u-\mu_u}{\omega_u}\right) + \alpha_{0,u};0,1\right)\frac{\Phi(\tilde{\tau};0,1)}{\Phi(\tilde{\tau};0,1)}
+\frac{2| \Sigma |^{-1/2} \left( \bm 1^\top \bm q\right)^{-1/2}}{\left( 2\pi \right)^{(D-1)/2}\prod_{k=1}^Dx_k} \\
+&\quad \times \exp \left\{ -\frac{1}{2} \left[ \log \bm x^{\circ\circ\top} \mathcal{A} \log \bm x^{\circ\circ} + \log \bm x^{\circ\circ\top} \left( \frac{2 \bm q}{\bm 1^\top \bm q} + \calA\tilde{\bm\omega}^2\right) \right]\right\} \\
+& \quad \times \exp \left\{- \frac{1}{2} \left( \frac{\bm q^\top\tilde{\bm \omega}^2 - 1}{\bm 1 ^\top \bm q} + \frac{1}{4}\tilde{\bm\omega}^{2,\top}\calA\tilde{\bm\omega}^2\right) \right\} \text du   \\
+&=  \int_{\mathbb R} \phi \left( u; \mu_u, \omega_u^2 \right) \Phi\left( \alpha_u\left(\frac{u-\mu_u}{\omega_u}\right) + \alpha_{0,u};0,1\right)\frac{1}{\Phi(\tilde{\tau};0,1)} \text du \\
+&\quad\times \frac{2\Phi(\tilde{\tau};0,1)| \Sigma |^{-1/2} \left( \bm 1^\top \bm q\right)^{-1/2}}{\left( 2\pi \right)^{(D-1)/2}\prod_{k=1}^Dx_k} \\
+&\quad \times \exp \left\{ -\frac{1}{2} \left[ \log \bm x^{\circ\circ\top} \mathcal{A} \log \bm x^{\circ\circ} + \log \bm x^{\circ\circ\top} \left( \frac{2 \bm q}{\bm 1^\top \bm q} + \calA\tilde{\bm\omega}^2\right) \right]\right\} \\
+& \quad \times \exp \left\{- \frac{1}{2} \left( \frac{\bm q^\top\tilde{\bm \omega}^2 - 1}{\bm 1 ^\top \bm q} + \frac{1}{4}\tilde{\bm\omega}^{2,\top}\calA\tilde{\bm\omega}^2\right) \right\} \\
+&=\frac{2\Phi(\tilde{\tau};0,1)| \Sigma |^{-1/2} \left( \bm 1^\top \bm q\right)^{-1/2}}{\left( 2\pi \right)^{(D-1)/2}\prod_{k=1}^Dx_k}\exp \left\{ -\frac{1}{2} \left[ \log \bm x^{\circ\circ\top} \mathcal{A} \log \bm x^{\circ\circ} + \log \bm x^{\circ\circ\top} \left( \frac{2 \bm q}{\bm 1^\top \bm q}+\calA\tilde{\bm\omega}^2\right) + \frac{\bm q^\top\tilde{\bm \omega}^2 - 1}{\bm 1 ^\top \bm q } + \frac{1}{4}\tilde{\bm\omega}^{2,\top}\calA\tilde{\bm\omega}^2 \right]\right\},
+\end{align*}
+which gives the desired expression of the intensity function. 
+% 
+\end{proof}
+
+By Lemma~\ref{lem:kappSBR}, the density on the interior of the simplex, $\Omega^\circ$, is therefore given by
+%
+$$
+h(\bm w) =\frac{2\Phi(\tilde{\tau};0,1)| \Sigma |^{-1/2} \left( \bm 1^\top \bm q\right)^{-1/2}}{\left( 2\pi \right)^{(D-1)/2}\prod_{k=1}^D w_k}\exp \left\{ -\frac{1}{2} \left[ \log \bm w^{\circ\circ\top} \mathcal{A} \log \bm w^{\circ\circ} + \log \bm w^{\circ\circ\top} \left( \frac{2 \bm q}{\bm 1^\top \bm q} + \calA\tilde{\bm\omega}^2\right) + \frac{\bm q^\top\tilde{\bm \omega}^2 - 1}{\bm 1 ^\top \bm q} + \frac{1}{4}\tilde{\bm\omega}^{2,\top}\calA\tilde{\bm\omega}^2 \right]\right\},
+$$
+with $\tilde{\tau}$ as in \eqref{eq:tilde_tau} with $\bm x^{\circ\circ}$ replaced by $\bm w^{\circ\circ}$.
+
+% %
+% $$
+% V(\bm x) = 
+% \sum_{j=1}^D \frac{\Phi(\delta_j\omega_{jj}
+% )^{-1}}{x_j}\Phi\left( \begin{bmatrix}
+% 	\hat\omega_j^{-1}(a_{I_j} - a_j\bm 1 + \log(x_{I_j}/x_j)-\mu_j) \\
+% 	\delta_j\omega_{jj}
+% \end{bmatrix};\bar\Sigma^{\circ\circ}_j  \right)
+% $$
+% %
+
+% \begin{gather*}
+% \Sigma_j = A_j\Sigma A_j^\top, \mu_j = A_j\Sigma_{1:D;j}, \hat\omega_j = \sqrt{\diag(\Sigma_j)},\bar\Sigma_j = \hat\omega_j^{-1}\Sigma_j\hat\omega_j^{-1}, \\
+% A_j = (\bm e_1,\bm e_2,\dots,\bm e_{j-1},-\bm 1,\bm e_{j},\dots,\bm e_{D-1})_{(D-1)\times D},\\
+% \hat\alpha_j = (1-\delta^\top\omega A_j^\top\Sigma_j^{-1}A_j\omega\delta)^{-1/2}\hat\omega_j\Sigma_j^{-1}A_j\omega\delta, \\
+% 1+\hat\alpha_j^\top\bar\Sigma_j\hat\alpha_j = 1/(1-\delta^\top\omega A_j^\top\Sigma_j^{-1}A_j\omega\delta) \\
+% \bar\Sigma^{\circ\circ}_j = \begin{bmatrix}
+% \bar\Sigma_j & -(1+\hat\alpha_j^\top\bar\Sigma_j\hat\alpha_j)^{-1/2}\bar\Sigma_j\hat\alpha_j \\
+% -[(1+\hat\alpha_j^\top\bar\Sigma_j\hat\alpha_j)^{-1/2}\bar\Sigma_j\hat\alpha_j]^\top & 1	
+% \end{bmatrix},
+% \end{gather*}
+% and $\bm e_j$ is vector with dimension $D-1$ and its $j$-th component being 1, but zero elsewhere. The last step follows by using the fact the integral is indeed the probability $\Pr[X_{I_j}-X_j\leq a_{I_j}-a_{j}+\log(x_{I_j}/x_j)]$, where $\bm X \sim \psi_d(\bm x;\Sigma_{1:D;j},\Sigma,\alpha,\alpha^\top\omega^{-1}\Sigma_{1:D;j})$.  The term $(1+\hat\alpha_j^\top\bar\Sigma_j\hat\alpha_j)^{-1/2}\bar\Sigma_j\hat\alpha_j$ can be further simplified as $\hat\omega_j^{-1}A_j\omega\delta$. We also noticed that the expression above can be much simplified when we reparametrize the slant parameter $\bm \alpha$ by using $\bm \eta = \omega^{-1}\bm\alpha$ and $\bm\xi = \frac{\Sigma\bm\eta}{\sqrt{1+\bm\eta^\top\Sigma\bm\eta}}$, the intensity function $\kappa(\bm x)$ and the exponent function $V(\bm x)$ under the condition $\eta^\top\bm 1=0$ can be expressed as
+% \begin{gather*}
+%     V(\bm x) = \sum_{j=1}^D \frac{\Phi(\xi_j)^{-1}}{x_j}\Phi_D\left( \begin{bmatrix}
+%         a_{I_j} - a_j\bm 1 + \log(x_{I_j}/x_j)-\mu_j \\
+%         \xi_j
+%     \end{bmatrix}; \begin{bmatrix} \Sigma_j & A_j\bm \xi \\ \bm\xi^\top A_j^\top & 1 \end{bmatrix} \right), \\
+%     \kappa(\bm x) = \frac{2^{-(D-3)/2}\pi^{-(D-1)/2}\Phi(\bm \eta^\top(\log(x_{1:D})+a_{1:D}))}{|\Sigma|^{1/2}(\bm 1^\top\Sigma^{-1}\bm 1)^{1/2}\prod_{i=1}^D x_i}\times \\
+%     \exp\left\{ -\frac{1}{2} (\log(x_{1:D}) + a_{1:D})^\top\left(\Sigma^{-1} - \frac{\Sigma^{-1}\bm 1\bm 1^\top \Sigma^{-1}}{\bm 1^\top\Sigma^{-1}\bm 1} \right)(\log(x_{1:D}) + a_{1:D}) -\frac{2\bm 1^\top\Sigma^{-1}(\log(x_{1:D}) + a_{1:D})-1}{2\bm 1^\top\Sigma^{-1}\bm 1} \right\},	
+% \end{gather*}
+% where $a_i$ can be simplified as $a_i = \log(2) + \omega_{ii}^2/2 + \log\Phi(\xi_i)$.
+
+
+%  ------------------
+ 
+% To find the expressions for the normalizing constants $a_i$, which is the marginal expectation of the skew log-normal, we use the moment generating function of the skew-normal distribution and we get
+% \begin{equation}\label{eq:logskew_normalising_constant}
+% a_i = \log(E[e^Y_i]) =  \log(2) + \omega_{ii}^2/2 + \log\Phi(\omega_{ii}\delta_i),
+% \end{equation}
+% where $\omega = \diag(\Sigma)^{1/2}, \delta =   \frac{\bar\Sigma\alpha}{\sqrt{1+\alpha^\top\bar\Sigma\alpha}}$ and $\bar\Sigma = \omega^{-1}\Sigma\omega^{-1}$. 
+% The intensity function can be calculated similarly to the intensity function for the truncated extremal-t processes. More specifically, we have
+% \begin{multline*}
+% \kappa(x_1,\dots,x_d) = \int_0^\infty 2\phi(\log(x_{1:D}) + a_{1:D} - \log(r);\Sigma)\Phi(\alpha_{1:D}^\top\omega^{-1}(\log(x_{1:D}) + a_{1:D} - \log(r))\\
+%  \times \prod_{i=1}^D (x_i/r)^{-1}r^{-(D+2)}\text dr
+% \end{multline*}     
+% We can match the above integrand with the extended skew-normal about $\log r$ and utilize the moment generating functions of the extended skew-normal in \citep[Chapter 5]{Azzalini:2013} with respect to $\log r$. After some algebra calculations, one can arrive at
+% \begin{multline}\label{eq:logskew_intensity}
+% \kappa(x_1,\dots,x_d) = \frac{2^{-(D-3)/2}\pi^{-(D-1)/2}\Phi(\beta^\top(\log(x_{1:D})+a_{1:D}) + \hat\delta(\bm 1^\top\Sigma^{-1}\bm 1)^{-1/2}) }{|\Sigma|^{1/2}(\bm 1^\top\Sigma^{-1}\bm 1)^{1/2}\prod_{i=1}^D x_i}\times \\
+% \exp\left\{ -\frac{1}{2} (\log(x_{1:D}) + a_{1:D})^\top\left(\Sigma^{-1} - \frac{\Sigma^{-1}\bm 1\bm 1^\top \Sigma^{-1}}{\bm 1^\top\Sigma^{-1}\bm 1} \right)(\log(x_{1:D}) + a_{1:D}) -\frac{2\bm 1^\top\Sigma^{-1}(\log(x_{1:D}) + a_{1:D})-1}{2\bm 1^\top\Sigma^{-1}\bm 1} \right\}	
+% \end{multline}
+% where 
+% \begin{gather*}
+% \beta = \alpha^\top\omega^{-1}\left(I - \frac{\bm 1\bm 1^\top \Sigma^{-1}}{\bm 1^\top\Sigma^{-1}\bm 1}\right)\left(1 + \frac{(\alpha^\top\omega^{-1}\bm 1)^2}{\bm 1^\top\Sigma^{-1}\bm 1}\right)^{-1/2} \\
+% \hat\delta = \left(1 + \frac{(\alpha^\top\omega^{-1}\bm 1)^2}{\bm 1^\top\Sigma^{-1}\bm 1}\right)^{-1/2}\frac{\alpha^\top\omega^{-1}\bm 1}{(\bm 1^\top\Sigma^{-1}\bm 1)^{1/2}}	
+% \end{gather*}
+% Since both the matrix $I - \frac{\bm 1\bm 1^\top \Sigma^{-1}}{\bm 1^\top\Sigma^{-1}\bm 1}$ in the expression of $\beta$ and the matrix $\Sigma^{-1} - \frac{\Sigma^{-1}\bm 1\bm 1^\top \Sigma^{-1}}{\bm 1^\top\Sigma^{-1}\bm 1}$ are singular with a null space $\{c\bm 1:c\in\mathbb R\}$, which make the model less identifiable for the slant parameter $\alpha$,  it is necessary to let $\alpha^\top\omega^{-1}\bm 1 =0$. Then, we have $\beta = \alpha^\top\omega^{-1}(I - \bm 1\bm 1^\top \Sigma^{-1}/(\bm 1^\top\Sigma^{-1}\bm 1)) = \alpha^\top\omega^{-1}$ and $\hat\delta=0$. The intensity function in \eqref{eq:logskew_intensity} can be further simplified as
+% \begin{multline}\label{eq:logskew_intensity_simplified}
+%     \kappa(\bm x) = \frac{2^{-(D-3)/2}\pi^{-(D-1)/2}\Phi(\alpha^\top\omega^{-1}(\log(x_{1:D})+a_{1:D}))}{|\Sigma|^{1/2}(\bm 1^\top\Sigma^{-1}\bm 1)^{1/2}\prod_{i=1}^D x_i}\times \\
+%     \exp\left\{ -\frac{1}{2} (\log(x_{1:D}) + a_{1:D})^\top\left(\Sigma^{-1} - \frac{\Sigma^{-1}\bm 1\bm 1^\top \Sigma^{-1}}{\bm 1^\top\Sigma^{-1}\bm 1} \right)(\log(x_{1:D}) + a_{1:D}) -\frac{2\bm 1^\top\Sigma^{-1}(\log(x_{1:D}) + a_{1:D})-1}{2\bm 1^\top\Sigma^{-1}\bm 1} \right\}	
+% \end{multline}    
+
+\subsection{Partial derivatives of the exponent function}
+
+\begin{lemma}\label{lem:partial_BR}
+The partial derivatives of the exponent function for the skewed Brown-Resnick process are given as
+\begin{align*}
+-V_{B_k}(\bm x) &\ =  - \frac{V_{B_k}(\bm x_{B_k},\bm \infty_{D-k})}{\Phi\left(\tilde\alpha_0\left(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha}\right)^{-1/2}; 0, 1\right)} \\
+& \quad \times 
+\Phi\left(
+\begin{bmatrix} 
+\tilde\omega^{-1}_{(\bar B_k)}(\log \bm x_{\bar B_k}^{\circ\circ} - \tilde{\bm\mu})  \\
+\tilde\alpha_0(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2}
+\end{bmatrix};
+\begin{bmatrix}
+\bm 0 \\ 0
+\end{bmatrix}
+\begin{bmatrix}
+	\bar{\tilde\Sigma} & -(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2}\bar{\tilde\Sigma}\tilde{\bm\alpha} \\
+-(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2}\bar{\tilde\Sigma}\tilde{\bm\alpha} &	1
+\end{bmatrix} 
+\right), 
+\end{align*}
+where $-V_{B_k}(\bm x_{B_k}, \bm \infty_{D-k})$ is the marginal intensity function, which equals the intensity function in Lemma~\ref{lem:kappSBR} with parameters replaced by the marginal covariance matrix $\Sigma_{B_kB_k}$ and the marginal slant parameter, $\bm\alpha_{(B_k)}$, defined as, 
+$$\bm\alpha_{(B_k)} = \left(1+\bm\alpha_{\bar B_k}^\top\left(\bar\Sigma_{\bar B_k\bar B_k} -\bar \Sigma_{\bar B_k B_k}\bar\Sigma_{B_kB_k}^{-1}\bar\Sigma_{B_k\bar B_k}\right)\bm \alpha_{\bar B_k}\right)^{-1/2}\left(\bm \alpha_{B_k} + \bar\Sigma_{B_kB_k}^{-1}\bar\Sigma_{B_k\bar B_k}\bm\alpha_{\bar B_k}\right),$$
+and
+$\tilde\Sigma = \left(\calA_{\bar B_k\bar B_k}\right)^{-1}$, 
+$\bar{\tilde\Sigma} = \omega_{(\bar B_k)}^{-1}\tilde\Sigma\omega_{(\bar B_k)}^{-1}$, $\omega_{(\bar B_k)}=\sqrt{\diag(\tilde\Sigma)}$,
+$\tilde{\bm\alpha}=\left(1 + \frac{\left(\alpha^\top\omega^{-1}\bm 1\right)^2}{\bm 1^\top q}\right)^{-1/2}\omega_{(\bar B_k)} K_{01}\left(\mathbb{I} - \frac{\bm 1 q^\top}{\bm 1^\top q}\right)\omega^{-1}\bm\alpha$,
+$\tilde\alpha_0 = \bm\beta^\top K_{10}^\top(\log \bm x_{B_k}^{\circ\circ}+K_{10}\tilde{\bm\omega}^2/2) + \bm\beta^\top K_{01}^\top(\tilde{\bm\mu} + K_{01}\tilde{\bm\omega}^2/2) +  \left(1 + \frac{(\bm\alpha^\top\omega^{-1}\bm 1)^2}{\bm 1^\top q}\right)^{-1/2}\frac{\bm\alpha^\top\bm\omega^{-1}\bm 1}{\bm 1^\top q},$ 
+$K_{10} = (\mathbb I_{k},\bm 0_{k,D-k})$, 
+$K_{01} = (\bm 0_{D-k,k},\mathbb I_{D-k})$, 
+$\bm\beta = \left(1 + \frac{(\bm\alpha^\top\omega^{-1}\bm 1)^2}{\bm 1^\top q}\right)^{-1/2}\left(\mathbb I - \frac{q\bm 1^\top}{\bm 1^\top q}\right)\omega^{-1}\bm\alpha$, $\tilde{\bm\mu} = -\tilde\Sigma\left(\calA_{\bar B_kB_k}\log \bm x_{B_k}^{\circ\circ} + K_{01}q/(\bm 1^\top q)+K_{01}\calA\tilde{\bm\omega}^2/2\right).$
+\end{lemma}
+
+\begin{proof}
+We can write 
+\begin{align*}
+-V_{B_k}(\bm x) 
+% &=  -\frac{V_{B_k}(x_{B_k},\bm\infty_{D-k})}{V_{B_k}(x_{B_k},\bm\infty_{D-k})}\int_{\bm 0}^{\bm x_{\bar B_k}} V_{1:D}(\bm x_{B_k},\bm y) \text d \bm y  \\
+&=-V_{B_k}(x_{B_k},\bm\infty_{D-k})\int_{\bm 0}^{\bm x_{\bar B_k}}\frac{V_{B_D}(\bm x_{B_k},\bm y)}{V_{B_k}(x_{B_k},\bm\infty_{D-k})} \text d \bm y,
+\end{align*}
+which involves two parts, the marginal intensity function $-V_{B_k}(x_{B_k},\infty_{D-k})$ and the integral of the conditional intensity function over $\bm x_{\bar B_k}$. As the marginal distribution of the constructive spectral component $\bm Y_{B_k}$ in Theorem~3 from the main manuscript follows the distribution $\text{ESN}(\bm 0,\Sigma_{B_kB_k},\bm\alpha_{(B_k)},\bm 0)$ \citep[Chapter 5.1.4]{Azzalini:2013}, where $\bm\alpha_{(B_k)}$ is defined above, the marginal intensity function $-V_{B_k}(x_{B_k},\infty_{D-k})$ has the same expression as in Lemma~\ref{lem:kappSBR} but with parameters, $\Sigma$ and $\bm\alpha$, replaced by their marginal counterparts, $\Sigma_{B_kB_k}$ and $\bm\alpha_{(B_k)}$. 
+
+The conditional intensity function $V_{B_D}(\bm x)/V_{B_k}(\bm x_{B_k},\bm \infty_{D-k})$ is indeed a valid density function \citep{Wadsworth.Tawn:2013} with respect to $\bm x_{\bar B_k}$. Treating $\bm x_{B_k}$ as constant, the conditional intensity function can be expressed as 
+\begin{align*}
+    & \frac{V_{B_D}(\bm x)}{V_{B_k}(\bm x_{B_k},\bm \infty_{D-k})} \\
+    & \propto \kappa(\bm x) \\
+    & = \frac{2\Phi(\tilde{\tau};0,1)| \Sigma |^{-1/2} \left( \bm 1^\top \bm q\right)^{-1/2}}{\left( 2\pi \right)^{(D-1)/2}\prod_{k=1}^Dx_k}\exp \left\{ -\frac{1}{2} \left[ \log \bm x^{\circ\circ\top} \mathcal{A} \log \bm x^{\circ\circ} + \log \bm x^{\circ\circ\top} \left( \frac{2 \bm q}{\bm 1^\top \bm q}+\calA\tilde{\bm\omega}^2\right) + \frac{\bm q^\top\tilde{\bm \omega}^2 - 1}{\bm 1 ^\top \bm q } + \frac{1}{4}\tilde{\bm\omega}^{2,\top}\calA\tilde{\bm\omega}^2 \right]\right\}.
+\end{align*}    
+ By comparing above equation with the multivariate extended skew normal density function, we can show that the conditional intensity function with respect to $\log\bm x_{\bar B_k}^{\circ\circ}$ is a density function for a multivariate  extended skew normal random vector, $\log\bm X_{\bar B_k}^{\circ\circ}$, with scale matrix $\tilde\Sigma = \left(\calA_{\bar B_k\bar B_k}\right)^{-1}$, location parameter $\tilde{\bm\mu} = -\tilde\Sigma\left(\calA_{\bar B_kB_k}\log(\bm x_{B_k}^{\circ\circ}) + K_{01}q/(\bm 1^\top q)+K_{01}\calA\tilde{\bm\omega}^2/2\right)$, where $K_{01} = (\bm 0_{D-k,k},\mathbb I_{D-k})$, slant parameter $\tilde{\bm\alpha}=\left(1 + \frac{\left(\alpha^\top\omega^{-1}\bm 1\right)^2}{\bm 1^\top q}\right)^{-1/2}\omega_{(\bar B_k)} K_{01}\left(\mathbb{I} - \frac{\bm 1 q^\top}{\bm 1^\top q}\right)\omega^{-1}\bm\alpha$, where $\omega_{(\bar B_k)}=\sqrt{\diag(\tilde\Sigma)}$, and parameter 
+$$\tilde\alpha_0 = \bm\beta^\top K_{10}^\top(\log \bm x_{B_k}^{\circ\circ}+K_{10}\tilde{\bm\omega}^2/2) + \bm\beta^\top K_{01}^\top(\tilde{\bm\mu} + K_{01}\tilde{\bm\omega}^2/2) +  \left(1 + \frac{(\alpha^\top\omega^{-1}\bm 1)^2}{\bm 1^\top q}\right)^{-1/2}\frac{\bm\alpha^\top\bm\omega^{-1}\bm 1}{\bm 1^\top q},$$ 
+where $K_{10} = (\mathbb I_{k},\bm 0_{k,D-k})$ and
+$\bm\beta = \left(1 + \frac{(\alpha^\top\omega^{-1}\bm 1)^2}{\bm 1^\top q}\right)^{-1/2}\left(\mathbb I - \frac{q\bm 1^\top}{\bm 1^\top q}\right)\omega^{-1}\bm\alpha.$
+Therefore, we have
+\begin{align*}
+\frac{V_{B_D}(\bm x)}{V_{B_k}(\bm x_{B_k},\bm \infty_{D-k})} &= \frac{|\tilde\Sigma|^{-1/2}(2\pi)^{-(D-k)/2}}{\Phi\left(\tilde\alpha_0\left(1+\tilde{\bm\alpha}^\top\omega_{(\bar B_k)}^{-1}\tilde\Sigma\omega_{(\bar B_k)}^{-1}\tilde{\bm\alpha}\right)^{-1/2};0,1\right) \prod_{i\in\bar B_k}x_i^{\circ\circ}} \Phi\left(\tilde\alpha_0 + \tilde{\bm\alpha}^\top\omega_{(\bar B_k)}^{-1}\left(\log \bm x_{\bar B_k}^{\circ\circ} - \tilde{\bm\mu}\right);0,1\right) \\
+&\quad \times \exp\left\{-\frac{1}{2} (\log \bm x_{\bar B_k}^{\circ\circ}-\tilde{\bm\mu})^\top \calA_{\bar B_k \bar B_k} (\log \bm x_{\bar B_k}^{\circ\circ}-\tilde{\bm\mu})\right\}. 
+\end{align*}
+Then, by using the cumulative distribution function of $\log\bm X_{\bar B_k}^{\circ\circ}$, the integral can be computed as
+\begin{align*}
+   \int_{\bm 0}^{\bm x_{\bar B_k}}\frac{V_{B_D}(\bm x_{B_k},\bm y)}{V_{B_k}(x_{B_k},\bm\infty_{D-k})} \text d \bm y 
+   &= \Pr[\bm X_{\bar B_k} \leq \bm x_{\bar B_k}] \\
+& = \Pr[\log\bm X_{\bar B_k} \leq \log\bm x_{\bar B_k}]\\
+& = \Pr[\log\bm X_{\bar B_k}^{\circ\circ} \leq \log\bm x_{\bar B_k}^{\circ\circ}] \\
+& =  \frac{\Phi\left(
+\begin{bmatrix} \tilde\omega^{-1}_{(\bar B_k)}(\log \bm x_{\bar B_k}^{\circ\circ} - \tilde{\bm\mu})  \\\tilde\alpha_0(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2}
+\end{bmatrix};
+\begin{bmatrix}
+\bm 0 \\ 0
+\end{bmatrix},
+\begin{bmatrix}
+	\bar{\tilde\Sigma} & -(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2}\bar{\tilde\Sigma}\tilde{\bm\alpha} \\
+-(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2}\bar{\tilde\Sigma}\tilde{\bm\alpha} &	1
+\end{bmatrix} 
+\right)}{\Phi(\tilde\alpha_0(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2})}   
+\end{align*}
+where $\bar{\tilde\Sigma} = \omega_{(\bar B_k)}^{-1}\tilde\Sigma\omega_{(\bar B_k)}^{-1}$. 
+Plugging the above results, the partial derivative of the exponent function are given by
+\begin{align*}
+   -V_{B_k}(\bm x) &\ =  
+   \frac{-V_{B_k}(\bm x_{B_k},\bm \infty_{D-k})}{\Phi(\tilde\alpha_0(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2})} \\
+   & \quad \times
+   \Phi\left(
+   \begin{bmatrix} \tilde\omega^{-1}_{(\bar B_k)}(\log \bm x_{\bar B_k}^{\circ\circ} - \tilde{\bm\mu})  \\
+\tilde\alpha_0(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2}
+    \end{bmatrix};
+    \begin{bmatrix}
+    \bm 0 \\ 0
+    \end{bmatrix},
+    \begin{bmatrix}
+	\bar{\tilde\Sigma} & -(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha})^{-1/2}\bar{\tilde\Sigma}\tilde{\bm\alpha} \\
+-\left(1+\tilde{\bm\alpha}^\top\bar{\tilde\Sigma}\tilde{\bm\alpha}\right)^{-1/2} \bar{\tilde\Sigma}\tilde{\bm\alpha} &	1
+\end{bmatrix} 
+\right)
+\end{align*}
+which concludes the proof. 
+ \end{proof}
+From Lemma~\ref{lem:partial_BR}, one can easily show the limit of the partial derivative $-V_{B_k}(\bm x)$ for any index set $B_k\neq \emptyset $ and $B_k\subsetneqq \{1,\dots,D\}$ as $\bm x_{\bar B_k}\to \bm 0$ is zero.
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ----------------
+
+% The marginal intensity function $-V_{1:k}(x_{1:k},\infty_{D-k})$ has the form
+% \begin{multline}\label{eq:marginal_intensity_logskew}
+% -V_{1:k}(x_{1:k},\infty_{D-k}) = \frac{2^{-(k-3)/2}\pi^{-(k-1)/2}\Phi(\beta_{(k)}^\top(\log(x_{1:k})+a_{1:k}) + \hat\delta_{(k)}(\bm 1^\top\Sigma_{11}^{-1}\bm 1)^{-1/2}) }{|\Sigma_{11}|^{1/2}(\bm 1^\top\Sigma^{-1}_{11}\bm 1)^{1/2}\prod_{i=1}^k x_i}\times \\
+% \exp\left\{ -\frac{1}{2} (\log(x_{1:k}) + a_{1:k})^\top\left(\Sigma_{11}^{-1} - \frac{  \Sigma_{11}^{-1}\bm 1\bm 1^\top \Sigma_{11}^{-1}}{\bm 1^\top\Sigma_{11}^{-1}\bm 1} \right)(\log(x_{1:k}) + a_{1:k}) -\frac{2\bm 1^\top\Sigma_{11}^{-1}(\log(x_{1:k}) + a_{1:k})-1}{2\bm 1^\top\Sigma_{11}^{-1}\bm 1} \right\}	
+% \end{multline}
+% where we only need to replace the slant parameter $\alpha$ in \eqref{eq:logskew_intensity} with the marginal slant parameter $\alpha_{(k)}$, defined as below.
+% \begin{gather*}
+% \beta_{(k)} = \alpha_{(k)}^\top\omega_{1}^{-1}  \left(I - \frac{\bm 1\bm 1^\top \Sigma_{11}^{-1}}{\bm 1^\top\Sigma_{11}^{-1}\bm 1}\right)\left(1 + \frac{(\alpha^\top_{(k)}\omega_{1}^{-1}\bm 1)^2}{\bm 1^\top\Sigma_{11}^{-1}\bm 1}\right)^{-1/2} \\
+% \hat\delta_{(k)} = \left(1 + \frac{(\alpha_{(k)}^\top\omega_1^{-1}\bm 1)^2}{\bm 1^\top\Sigma_{11}^{-1}\bm 1}\right)^{-1/2}\frac{\alpha_{(k)}^\top\omega_1^{-1}\bm 1}{(\bm 1^\top\Sigma_{11}^{-1}\bm 1)^{1/2}} \\
+% \alpha_{(k)} = (1+\alpha_{(k+1):D}^\top(\bar\Sigma_{22} -\bar \Sigma_{21}\bar\Sigma_{11}^{-1}\bar\Sigma_{12})\alpha_{(k+1):D})^{-1/2}(\alpha_{1:k} + \bar\Sigma_{11}^{-1}\bar\Sigma_{12}\alpha_{(k+1):D}) \\
+% \omega_1 = \diag(\Sigma_{11})^{1/2}
+% \end{gather*}	
+% Then, the conditional intensity function $V_{1:D}(x)/V_{1:k}(x_{1:k},\infty_{D-k})$ can be written as
+% \begin{align*}
+% &\ \frac{2^{-(D-k)/2}\pi^{-(D-k)/2}|\Sigma_{11}|^{1/2}(\bm 1^\top\Sigma^{-1}_{11}\bm 1)^{1/2}\Phi(\beta^\top(\log(x_{1:D})+a_{1:D}) + \hat\delta(\bm 1^\top\Sigma^{-1}\bm 1)^{-1/2})}{(\bm 1^\top\Sigma^{-1}\bm 1)^{1/2}|\Sigma|^{1/2}\Phi(\beta_{(k)}^\top(\log(x_{1:k})+a_{1:k}) + \hat\delta_{(k)}(\bm 1^\top\Sigma_{11}^{-1}\bm 1)^{-1/2})\prod_{i=k+1}^D x_i}\times \\ & \exp\left\{ -\frac{1}{2} (\log(x_{1:D}) + a_{1:D})^\top\left(\Sigma^{-1} - \frac{\Sigma^{-1}\bm 1\bm 1^\top \Sigma^{-1}}{\bm 1^\top\Sigma^{-1}\bm 1} \right)(\log(x_{1:D}) + a_{1:D}) -\frac{2\bm 1^\top\Sigma^{-1}(\log(x_{1:D}) + a_{1:D})-1}{2\bm 1^\top\Sigma^{-1}\bm 1}\right. \\ &\left. +\frac{1}{2} (\log(x_{1:k}) + a_{1:k})^\top\left(\Sigma_{11}^{-1} - \frac{  \Sigma_{11}^{-1}\bm 1\bm 1^\top \Sigma_{11}^{-1}}{\bm 1^\top\Sigma_{11}^{-1}\bm 1} \right)(\log(x_{1:k}) + a_{1:k}) +\frac{2\bm 1^\top\Sigma_{11}^{-1}(\log(x_{1:k}) + a_{1:k})-1}{2\bm 1^\top\Sigma_{11}^{-1}\bm 1} \right\},
+% \end{align*}    
+% Let $H = \Sigma^{-1} - \frac{\Sigma^{-1}\bm 1\bm 1^\top \Sigma^{-1}}{\bm 1^\top\Sigma^{-1}\bm 1}$, we can show that the conditional intensity function with respect to $\log(x_{(k+1):D})$ is a density function for a multivariate logarithmic extended skew normal with scale matrix $\tilde\Sigma = H^{-1}_{22}$, where $H$ has the same partition as $\Sigma$, location parameter $\tilde\mu = -\tilde\Sigma(H_{21}\log(x_{1:k}) + K_{01}(\Sigma^{-1}\bm 1/(\bm 1^\top \Sigma^{-1}\bm 1)+Ha_{1:D}))$, where $K_{01} = (0_{D-k,k},I_{D-k})$, slant parameter $\tilde\alpha=\beta^\top_{(k+1):D}\tilde\omega$, where $\tilde\omega=\sqrt{\diag(\tilde\Sigma)}$, and the extended parameter 
+% $$\tilde\alpha_0 = \beta_{1:k}^\top\log(x_{1:k}) + \beta^\top_{1:D}a_{1:D} + \hat\delta(\bm 1^\top\Sigma^{-1}\bm 1)^{-1/2} + \beta_{(k+1):D}^\top\tilde\mu.$$  
+% Then, the partial derivative $-V_{1:k}(x_{1:D})$ equals the product between the conditional probability of the above multivariate log extended skew normal and the marginal intensity function $-V_{1:k}(x_{1:k},\infty_{D-k})$. Thus, we have
+% \begin{align*}
+% -V_{1:k}(\bm x) =&\ \Phi_{D-k+1}\left(\begin{bmatrix} \tilde\omega^{-1}(\log(x_{(k+1):D}) - \tilde\mu)  \\
+% \tilde\alpha_0(1+\tilde\alpha^\top\bar{\tilde\Sigma}\tilde\alpha)^{-1/2}
+% \end{bmatrix};\begin{bmatrix}
+% 	\bar{\tilde\Sigma} & -(1+\tilde\alpha^\top\bar{\tilde\Sigma}\tilde\alpha)^{-1/2}\bar{\tilde\Sigma}\tilde\alpha \\
+% -(1+\tilde\alpha^\top\bar{\tilde\Sigma}\tilde\alpha)^{-1/2}\bar{\tilde\Sigma}\tilde\alpha &	1
+% \end{bmatrix} \right) \times \\  
+% &\ \Phi^{-1}(\tilde\alpha_0(1+\tilde\alpha^\top\bar{\tilde\Sigma}\tilde\alpha)^{-1/2})(-V_{1:k}(x_{1:k},\infty_{D-k}))
+% \end{align*}
+% Using the notation $\bm\eta$ and $\bm\xi$ with the condition that $\bm\eta^\top\bm 1=0$ instead, the partial derivatives $V_{1:k}(\bm x)$ can be further simplified as
+
+% \begin{align*}
+%     V_{1:k}(\bm x) =&\ \Phi_{D-k+1}\left(\begin{bmatrix} \log(x_{(k+1):D}) - \tilde\mu  \\
+%     \tilde\alpha_0(1+\tilde{\bm\eta}^\top\tilde\Sigma\tilde{\bm\eta})^{-1/2}
+%     \end{bmatrix};\begin{bmatrix}
+%         \tilde\Sigma & -\tilde{\bm\xi} \\
+%     -\tilde{\bm\xi} &	1
+%     \end{bmatrix} \right)\Phi^{-1}(\tilde\alpha_0(1+\tilde{\bm\eta}^\top\tilde\Sigma\tilde{\bm\eta})^{-1/2})V_{1:k}(x_{1:k},\infty_{D-k}),
+% \end{align*}
+% where $V_{1:k}(x_{1:k},\infty_{D-k})$ is defined in \eqref{eq:marginal_intensity_logskew}, but with $\beta_{(k)}$, $\hat\delta_{(k)}$, $\eta_{(k)}$, $\tilde{\bm\eta}$, $\tilde{\bm\xi}$, and $\tilde\alpha_0$ defined as following
+% \begin{gather*}
+%     \beta_{(k)} = \eta_{(k)}^\top\left(I - \frac{\bm 1\bm 1^\top \Sigma_{11}^{-1}}{\bm 1^\top\Sigma_{11}^{-1}\bm 1}\right)\left(1 + \frac{(\bm\eta^\top_{(k)}\bm 1)^2}{\bm 1^\top\Sigma_{11}^{-1}\bm 1}\right)^{-1/2} \\
+%     \hat\delta_{(k)} = \left(1 + \frac{(\bm\eta_{(k)}^\top\bm 1)^2}{\bm 1^\top\Sigma_{11}^{-1}\bm 1}\right)^{-1/2}\frac{\bm\eta_{(k)}^\top\bm 1}{(\bm 1^\top\Sigma_{11}^{-1}\bm 1)^{1/2}} \\
+%     \bm\eta_{(k)} = (1+\eta_{(k+1):D}^\top(\Sigma_{22} - \Sigma_{21}\Sigma_{11}^{-1}\Sigma_{12})\eta_{(k+1):D})^{-1/2}(\eta_{1:k} + (\Sigma_{11})^{-1}\Sigma_{12}\eta_{(k+1):D}) \\
+%     \tilde{\bm\eta} = \eta_{(k+1):D},\quad \tilde{\bm\xi} = (1+\tilde{\bm\eta}^\top\tilde\Sigma\tilde{\bm\eta})^{-1/2}\tilde\Sigma\tilde{\bm\eta},\quad \tilde\alpha_0 = \eta_{1:k}^\top\log(x_{1:k}) + \eta_{1:D}^\top a_{1:D} + \eta_{(k+1):D}^\top\tilde\mu,
+% \end{gather*}	    
+
+\subsection{Exact simulation algorithms}
+
+Let $\bm W = (W_0, W_1, \ldots, W_D) \equiv \left( W(s_0), W(s_1), \ldots, W(s_D)\right)$ be defined as in Theorem~3 to the exception of being $D+1$ dimensional.
+The distribution $P_{s_0}$ defines the joint distribution of $W_i/W_0, i=1,\dots,D$ under the transformed probability measure $\hat \Pr = W(s_0)\text{d}\Pr$. The moment generating function of $Y_i \equiv Y(s_i),i=0,\dots,D$ evaluated at $\bm t = (t_0, t_1, \ldots, t_D)$ can be calculated under the transformed probability measure $\hat\Pr$ as
+\begin{align*}
+	\E\left[\exp\left\{Y_0-a_0 + \sum_{i=0}^D t_i Y_i\right\}\right]
+	=&\ 2\exp\left\{\frac{1}{2}(1+t_0,\bm t_{B_D})^\top\Sigma(1+t_0,\bm t_{B_D})-a_0 \right\} \Phi(\delta^\top\omega(1+t_0,\bm t_{B_D}))\\
+	 =&\ 2\exp\{\frac{1}{2}(\Sigma_{0;0} + \bm t^\top\Sigma \bm t) + \Sigma_{0;\cdot} \bm t - a_0\}\Phi\left(\delta_0\omega_{0;0} + \delta^\top\omega \bm t\right) 
+\end{align*}        
+where the matrices $\omega$ and $\Sigma$ can be decomposed as $\Sigma = \begin{bmatrix}
+	\Sigma_{00} & \Sigma_{B_D;0} \\
+	\Sigma_{B_D;0}^\top & \Sigma_{B_D;B_D} \\
+\end{bmatrix}$. 
+%
+Plugging in the expression for $a_0$ given in Theorem~3 leads to 
+%
+\begin{equation*}
+\E\left[\exp\left\{Y_0-a_0 + \sum_{i=0}^D t_i Y_i\right\}\right] = \exp\{\frac{1}{2} \bm t^\top\Sigma \bm t + \Sigma_{\cdot;0} \bm t^\top \} 
+\frac{\Phi(\delta_0\omega_{00} + \delta^\top\omega \bm t)}{\Phi(\delta_0\omega_{00})}, 
+\end{equation*}
+%
+which corresponds to the moment generating function of the extended skew-normal random vector $(Y^*(s_0),\ldots,Y^*(s_D)$ with location parameter $\Sigma_{\cdot;0}$, scale parameter $\Sigma$, slant parameter $\bm\alpha$, and the extended parameter $\tau_0 = \delta_0\omega_{00}$. The distribution of $P_{s_0}$ therefore becomes 
+%
+$$\exp\{Y^*(s_i)-Y^*(s_0)-a_i + a_0\}, i=0,\dots,D.$$
+%
+Details about random generation from the multivariate extended skew-normal can be found in \cite[Chapter 5.3.3]{Azzalini:2013}. The pseudo-code of the exact simulation algorithms is summarised in Algorithm~\ref{algo:log_skew_normal}.   
+
+\begin{algorithm}
+\caption{Exact simulation from the skewed Brown-Resnick process at location $s_i,i=1,\dots,D$}.
+\label{algo:log_skew_normal}
+\begin{tabbing}
+    \qquad \enspace Set the slant parameter $\bm \alpha \in \mathbb{R}^D$ and the $D \times D$ scale matrix $\Sigma$ \\
+    \qquad \enspace Compute $\bm a$ and $\delta$ as defined in Theorem~3.\\
+    \qquad \enspace Simulate $E_0 \sim \rm{Exp}(1)$ and set $z=1/E_0$.\\    
+    \qquad \enspace Simulate $Y^*(\bm s)$ from an extended skew normal with location parameter $\Sigma_{\cdot;1}$,\\
+    \qquad \enspace scale matrix $\Sigma$, slant parameter $\bm \alpha$ and the extended parameter $\tau_1=\delta_1 \omega_{11}$.\\
+    \qquad \enspace Set $W(\bm s) = \exp(Y(\bm s)-Y(s_1)+a_1 - \bm a)$ \\
+    \qquad \enspace Set $Z(s_j)=W(s_j)*z$ for $j=1,\dots,D$. \\
+    \qquad \enspace For {$i=2,\dots,D$}, \\
+    \qquad \qquad \enspace Simulate $E_0 \sim \rm{Exp}(1)$ and set $z=1/E_0$. \\
+    \qquad \qquad \enspace While {$z > Z(\bm s_i)$} \\
+    \qquad \qquad \qquad \enspace Simulate $Y(\bm s)$ from an extended skew normal with location parameter $\Sigma_{\cdot;i}$, \\
+    \qquad \qquad \qquad \enspace scale matrix $\Sigma$, slant parameter $\bm \alpha$ and extended parameter $\tau_i=\delta_i\omega_{ii}$ \\
+    \qquad \qquad \qquad \enspace Set $W(\bm s) = \exp(\bm Y(s)-Y(s_i)+a_i - \bm a)$ \\
+    \qquad \qquad \qquad \enspace  If {$W(s_{j})*z < Z(\bm s_j), \forall j=1,\dots,i-1$} \\
+    \qquad \qquad \qquad \qquad \enspace Set $Z(s_j)=\max(Z(s_j),W(s_j)*z),j=1,\dots,D$. \\
+    \qquad \qquad \qquad \enspace Simulate $E_1 \sim \rm{Exp}(1)$, Set $E_0 = E_0 + E_1$ and $z=1/E_0$. \\
+    \qquad \enspace Return $Z(s_j),j=1,\dots,D$.
+\end{tabbing}
+\end{algorithm}
+
+\newpage 
+
+\section{Proof of Theorem~1}
+For any $k \in \left\{1, \ldots, D-1 \right\}$ we have
+\begin{align*}
+\lim_{\bm x_{\bar{B}_k} \downarrow \bm 0_{D-k} } -V_{B_k}(\bm x) &= \int_0^\infty r^k f_{\bm W_{B_k}}(r \bm x_{B_k}) \lim_{\bm x_{\bar{B}_k} \downarrow \bm 0_{D-k} }\Pr(\bm W_{\bar{B}_k} \in [\bm 0,r \bm x_{\bar{B}_k} ]\ |\ \bm W_{B_k} = r \bm x_{B_k} )\text dr\\
+&= \int_0^\infty r^k f_{\bm W_{B_k}}(r \bm x_{B_k})\Pr(\bm W_{\bar{B}_k}=\bm 0_{D-k}\ |\ \bm W_{B_k}=r \bm x_{B_k} )\text dr,
+% &= \int_0^\infty r^k f_{W_{1:k}}(r \bm x_{1:k}) \times 0 \text dr \\
+% &= 0.
+\end{align*}
+which implies that if $\Pr(\bm W_{\bar{B}_k}=\bm 0_{D-k}\ |\ \bm W_{B_k}=r \bm x_{B_k} )=0$ then $\lim_{\bm x_{\bar{B}_k} \downarrow \bm 0_{D-k} } -V_{1:k}(\bm x) = 0$ and consequently by \eqref{eq:angular_density}, $h_{B_k}\left(\bm x_{B_k} / \|\bm x_{B_k}\| \right)=0$.
+%
+% Therefore, we have the equation in \eqref{eq:angular_density} that equals zero by plugging in the above results. 
+Moreover, if the angular density on $\partial\Omega$ is zero everywhere, then we must have 
+
+$$\lim_{x_{\bar{B}_k}\downarrow \bm 0_{D-k} } -V_{B_k}(\bm x) = \int_0^\infty r^k f_{\bm W_{B_k}}(r \bm x_{B_k})\Pr(W_{\bar{B}_k} = \bm 0_{D-k}\ |\ \bm W_{Bk}=r \bm x_{B_k} )\text dr = 0.$$
+As the integrand is non-negative and the integral is zero, we conclude that the integrand must be zero almost everywhere. Therefore, we have $\Pr(W_{\bar{B}_k} = \bm 0_{D-k}\ |\ W_{B_k}=r\bm x_{B_k} )=0$ for any $r>0$ and $\bm x_{B_k} > \bm 0_k$ almost everywhere because $r^k$ is positive and $W$ is a non-negative continuous random process, which implies the condition in \eqref{eq:thm_angular_density} must hold.
+
+\section{Proof of Theorem~4}
+    The distribution of the r-Pareto process with risk functional $r$ is 
+    $$\upkappa_D(\cdot\cap \calA_r )/\upkappa_D\left(\calA_r\right).$$ 
+    Suppose we have $\bm{\tilde Y}\in\Omega$ follow the angular distribution $\calH/D$ and $\tilde R$ follows a unit Pareto distribution, i.e., $\Pr[\tilde R>x]=1/x, x>1$, we have
+    $$\Pr[\tilde R\bm{\tilde Y}\in \tilde A] = \frac{1}{D}\int_{\Omega}\int_{1}^{\infty} x^{-2}\bm 1_{\{x\bm w\in \tilde A\}}\text dx\calH(\text d\bm w).$$
+    If we have $\tilde A\subset\calA_{r_0}$, then $x\bm w\in\tilde A$ leads to $r_0(x\bm w)=x\|w\|_1=x >1$. Therefore, we have 
+    $$\Pr[\tilde R\bm{\tilde Y}\in \tilde A] = \frac{1}{D}\int_{\Omega}\int_{1}^{\infty} x^{-2}\bm 1_{\{x\bm w\in \tilde A\}}\text dx\calH(\text d\bm w) = \frac{1}{D}\int_{\Omega}\int_{0}^{\infty} x^{-2}\bm 1_{\{x\bm w\in \tilde A\}}\text dx\calH(\text d\bm w) = \upkappa_D(\tilde A)/D.$$ 
+    As we have $\Pr( \tilde R\tilde {\bm Y} \in \calA_{r_0}) = \upkappa_D(\calA_{r_0})/D=1/D$, it immediately follows that $\tilde R\bm {\tilde Y}$ is distributed as the r-Pareto process with risk functional $r_0$. Let $\tilde r(\cdot) = c_0 r(\cdot)$, then $\tilde r$ will be also a risk functional that is convex and homogeneous of order 1. Thus, we have $\tilde r(\bm e_i)=c_0/c_i\leq 1$. The complement set of $\calA_{\tilde r}$ in $\mathbb R_+^D$, $\calA_{\tilde r}^C=\{\bm x\in\mathbb R_+^D: \tilde r(\bm x)\leq 1\}$, is a convex set and contains points $\bm e_i, i=1,\dots,D$ on its boundary as well as the origin $\bm 0$ since any homogenous function of order 1 maps the origin to the origin. For $r_0$, we know that $\calA_{r_0}^C$ is a convex set and contains $\bm 0$ and $\bm e_i,i=1,\dots D$ on its boundary, and $\calA_{r_0}^C$ is the smallest convex set that contains points $\bm e_i,i=1,\dots,D$ and $\bm 0$. Therefore, we have $\calA_{r_0}^C\subset \calA_{\tilde r}^C$, which implies that $\calA_{\tilde r} \subset \calA_{r_0}$. If we have $\tilde A\subset\calA_{\tilde r}$, then we also have  $\tilde A\subset\calA_{r_0}$. Moreover, we can get
+    \begin{equation}
+        \Pr[\bm{\tilde Z}^{(r_0)}\in \tilde A | \bm{\tilde Z}^{(r_0)} \in \calA_{\tilde r} ] = \frac{1/D\upkappa_D(\tilde A\cap \calA_{\tilde r})}{1/D\upkappa_D(\calA_{\tilde r})} = \frac{\upkappa_D(\tilde A \cap \calA_{\tilde r})}{\upkappa_D(\calA_{\tilde r})}
+    \end{equation}
+    Since $\upkappa_D$ is homogeneous of order -1 and $\calA_{\tilde r} =  1/c_0\calA_r$, it follows that
+    \begin{align*}
+        & \Pr[\bm{\tilde Z}^{(r_0)}\in \tilde A | \bm{\tilde Z}^{(r_0)} \in \calA_{\tilde r} ] \\
+        &= \Pr[c_0\bm{\tilde Z}^{(r_0)}\in c_0\tilde A | c_0\bm{\tilde Z}^{(r_0)} \in \calA_{r} ] \\
+        &= \frac{\upkappa_D(\tilde A \cap \calA_r/c_0)}{\upkappa_D(\calA_{r}/c_0)} = \frac{c_0\upkappa_D(c_0\tilde A \cap \calA_r)}{c_0\upkappa_D(\calA_{r})} = \frac{\upkappa_D(c_0\tilde A \cap \calA_r)}{\upkappa_D(\calA_{r})}. 
+    \end{align*}
+    where $c_0\tilde A\subset \calA_{r}$ since $\tilde A\subset \calA_{\tilde r}$. Therefore, we have $\bm{\tilde Z}^{(r)}\eqd c_0\bm{\tilde Z}^{(r_0)}\ | \ r\left(c_0\bm{\tilde Z}^{(r_0)}\right) > 1 $.
+
+
+
+\bibliographystyle{CUP}
+\bibliography{Total.bib}
+\end{document}
